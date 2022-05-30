@@ -3,131 +3,12 @@
 ;EFT VERSION 1.8I (INTERRUPT) 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;===================================================================
 
+                .include "equates_system_atari8.asm"
+                .include "equates_directpage.asm"
+                .include "equates_page6.asm"
+
 START           = $6E00
 
-;======================================
-;Page zero RAM
-;======================================
-RTCLKL          = $14
-ATRACT          = $4D
-DRKMSK          = $4E
-COLRSH          = $4F
-
-;--------------------------------------
-;--------------------------------------
-                * = $B0
-;--------------------------------------
-
-;
-;These locations are used by the interrupt service routine
-;
-DLSTPT          .word ?                 ; Zero page pointer to display list
-MAPLO           .byte ?
-MAPHI           .byte ?
-CORPS           .byte ?                 ; number of unit under window
-CURSXL          .byte ?
-CURSXH          .byte ?
-CURSYL          .byte ?                 ; cursor coordinates on screen (map frame)
-CURSYH          .byte ?
-OFFLO           .byte ?                 ; How far to offset new LMS value
-OFFHI           .byte ?
-TEMPI           .byte ?                 ; An all-purpose temporary register
-CNT1            .byte ?                 ; DLI counter
-CNT2            .byte ?                 ; DLI counter for movable map DLI
-CHUNKX          .byte ?                 ; cursor coordinates (pixel frame)
-CHUNKY          .byte ?
-
-;
-;THIS VALUE IS USED BY MAINLINE ROUTINE AND INTERRUPT
-;
-TURN            = $C9
-
-;
-;OS locations (see OS manual)
-;
-PCOLR0          = $02C0
-STICK           = $0278
-CH              = $2FC
-
-;
-;HARDWARE LOCATIONS
-;
-HPOSP0          = $D000
-HPOSP1          = $D001
-HPOSP2          = $D002
-HPOSP3          = $D003
-TRIG0           = $D010
-TRIG1           = $D011
-TRIG2           = $D012
-COLPF0          = $D016
-COLPF1          = $D017
-COLPF2          = $D018
-COLBAK          = $D01A
-CONSOL          = $D01F
-
-AUDF1           = $D200
-AUDC1           = $D201
-
-HSCROLL         = $D404
-VSCROLL         = $D405
-WSYNC           = $D40A
-CHBASE          = $D409
-
-SETVBV          = $E45C
-XITVBV          = $E462
-
-;
-;Page 6 usage
-;
-
-;--------------------------------------
-;--------------------------------------
-                * = $0600
-;--------------------------------------
-;first come locations used by the interrupt service routine
-XPOSL           .byte ?                 ; Horizontal position of
-YPOSL           .byte ?                 ; Vertical position of
-YPOSH           .byte ?                 ; upper-left corner of screen window
-SCY             .byte ?                 ; vert position of cursor (player frame)
-SHPOS0          .byte ?                 ; shadows player 0 position
-TRCOLR          .byte ?
-EARTH           .byte ?
-ICELAT          .byte ?
-SEASN1          .byte ?
-SEASN2          .byte ?
-SEASN3          .byte ?
-DAY             .byte ?
-MONTH           .byte ?
-YEAR            .byte ?
-BUTFLG          .byte ?
-BUTMSK          .byte ?
-TYL             .byte ?
-TYH             .byte ?
-DELAY           .byte ?                 ; acceleration delay on scrolling
-TIMSCL          .byte ?                 ; frame to scroll in
-TEMPLO          .byte ?                 ; temporary
-TEMPHI          .byte ?
-BASEX           .byte ?                 ; start position for arrow (player frame)
-BASEY           .byte ?
-STEPX           .byte ?                 ; intermediate position of arrow
-STEPY           .byte ?
-STPCNT          .byte ?                 ; which intermediate steps arrow is on
-ORDCNT          .byte ?                 ; which order arrow is showing
-ORD1            .byte ?                 ; orders record
-ORD2            .byte ?
-ARRNDX          .byte ?                 ; arrow index
-HOWMNY          .byte ?                 ; how many orders for unit under cursor
-KRZX            .byte ?                 ; maltakreuze coords (player frame)
-KRZY            .byte ?
-DBTIMR          .byte ?                 ; joystick debounce timer
-STICKI          .byte ?                 ; coded value of stick direction (0-3)
-ERRFLG          .byte ?
-KRZFLG          .byte ?
-STKFLG          .byte ?
-HITFLG          .byte ?
-TXL             .byte ?                 ; temporary values---slightly shifted
-TXH             .byte ?
-HANDCP          = $68F
 
 ;--------------------------------------
 ;--------------------------------------
@@ -163,6 +44,7 @@ XADD            .fill 4                 ; offsets for moving arrow
 YADD            .fill 4
 TreeColors      .fill 13
 MLTKRZ          .fill 8                 ; maltese cross shape
+
 ;
 ;RAM from $6000 to $6430 is taken up by
 ;character sets and the display list
@@ -195,6 +77,7 @@ EXEC            .fill 159
 ;
 ;everything in here is taken up by the map data
 ;
+
 ;
 ;This is the vertical blank interrupt routine
 ;It reads the joystick and scrolls the screen
@@ -204,7 +87,7 @@ EXEC            .fill 159
                 * = $7400
 ;--------------------------------------
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-; added for binary compatibility
+;   added for binary compatibility
                 ;LDA TRIG1               ; check for break button
                 LDA #$FF
                 NOP
@@ -262,7 +145,7 @@ LOOP8           STA TXTWDW+8,X          ; clear text window
                 LDA #$08
                 STA DELAY
                 CLC
-                ADC RTCLKL
+                ADC RTCLOK
                 STA TIMSCL
                 JSR SWITCH
                 LDA #$00
@@ -271,7 +154,7 @@ LOOP8           STA TXTWDW+8,X          ; clear text window
                 JSR CLRP2
                 JMP ENDISR
 X17             STA ATRACT              ; button is pressed
-                LDA STICK
+                LDA STICK0
                 AND #$0F
                 EOR #$0F
                 BEQ X20                 ; joystick active?
@@ -286,14 +169,14 @@ BUTHLD          JSR ERRCLR              ; no, clear errors
 X61             LDA HITFLG
                 BEQ X63                 ; anybody in the window?
                 JMP ENDISR              ; no
-X63             LDA CH
+X63             LDA CH_
                 CMP #$21
                 BNE X80                 ; space bar pressed?
                 LDX CORPS               ; yes, check for Russian
                 CPX #$37
                 BCS X80
                 LDA #$00
-                STA CH
+                STA CH_
                 STA HowManyOrders,X            ; clear out orders
                 STA HOWMNY
                 STA STPCNT
@@ -305,7 +188,7 @@ X63             LDA CH
                 STA STEPX
                 LDA BASEY
                 STA STEPY
-X80             LDA RTCLKL
+X80             LDA RTCLOK
                 AND #$03
                 BEQ X54                 ; time to move arrow?
                 JMP ENDISR              ; no
@@ -323,9 +206,7 @@ X52             AND #$03                ; isolate bit pair index
                 LDA BITTAB,Y            ; get mask
 X50             AND ORD1,X              ; get orders
 
-;
-;right justify orders
-;
+;   right justify orders
                 DEY
                 BPL X51
                 LDY #$03
@@ -339,7 +220,7 @@ X53             STA ARRNDX
                 ASL A
                 ASL A
 
-;get arrow image and store it to player RAM
+;   get arrow image and store it to player RAM
                 TAX
                 LDY STEPY
 X55             LDA ArrowTbl,X
@@ -354,9 +235,8 @@ X43             INX
 
                 LDA STEPX               ; position arrow
                 STA HPOSP1
-;
-;now step arrow
-;
+
+;   now step arrow
                 LDX ARRNDX
                 LDA STEPX
                 CLC
@@ -380,9 +260,7 @@ X43             INX
                 LDA #$01
                 STA ORDCNT              ;yes, reset to start of arrow's path
 
-;
-;display maltese cross ('maltakreuze' or KRZ)
-;
+;   display maltese cross ('maltakreuze' or KRZ)
 PCURSE          LDY STEPY
                 STY KRZY
                 LDA #$FF
@@ -402,7 +280,7 @@ X44             INY
                 STA KRZX
                 STA HPOSP2
                 JSR CLRP1               ; clear arrow
-                LDA BASEX               ;reset arrow's coords
+                LDA BASEX               ; reset arrow's coords
                 STA STEPX
                 LDA BASEY
                 STA STEPY
@@ -417,9 +295,7 @@ X59             JMP ENDISR
 FBUTPS          LDA #$FF
                 STA BUTFLG
 
-;
-;first get coords of center of cursor (map frame)
-;
+;   first get coords of center of cursor (map frame)
 X24             LDA CURSXL
                 CLC
                 ADC #$06
@@ -441,9 +317,7 @@ X24             LDA CURSXL
                 LSR A
                 LSR A
 
-;
-;coords of cursor (pixel frame)
-;
+;   coords of cursor (pixel frame)
                 STA CHUNKX
                 LDA TYH
                 LSR A
@@ -459,9 +333,7 @@ X24             LDA CURSXL
                 LSR A
                 STA CHUNKY
 
-;
-;now look for a match with unit coordinates
-;
+;   look for a match with unit coordinates
                 LDX #$9E
 LOOP6           CMP CorpsY,X
                 BEQ MAYBE
@@ -483,18 +355,14 @@ MAYBE           LDA CHUNKX
 X35             LDA CHUNKY
                 JMP X16
 
-;
-;match obtained
-;
+;   match obtained
 MATCH           LDA #$00
                 STA HITFLG              ; note match
-                STA CH
+                STA CH_
                 LDA #$5C
                 STA PCOLR0              ; light up cursor
 
-;
-;display unit specs
-;
+;   display unit specs
                 STX CORPS
                 LDY #$0D
                 LDA CorpNumber,X        ; ID number
@@ -549,6 +417,7 @@ X27             JSR SWITCH              ; flip unit with terrain
                 LDA #$FF                ; yes, mask orders and exit
                 STA HITFLG
                 BMI X75
+
 ;
 ;German unit
 ;set up orders display
@@ -577,9 +446,8 @@ X79             LDA #$01
                 ADC SCY
                 STA BASEY
                 STA STEPY
-;
-;now set up page 6 values
-;
+
+;   set up page 6 values
                 LDX CORPS
                 LDA HowManyOrders,X
                 STA HOWMNY
@@ -588,6 +456,7 @@ X79             LDA #$01
                 LDA WHORDH,X
                 STA ORD2
 X75             JMP ENDISR
+
 ;
 ;ORDERS INPUT ROUTINE
 ;
@@ -614,14 +483,13 @@ X67             INC DBTIMR
                 BCC X75
 X68             LDA #$00
                 STA DBTIMR              ; reset debounce timer
-                LDX STICK
+                LDX STICK0
                 LDA STKTAB,X
                 BPL X69
                 LDX #$60                ; no diagonal orders allowed
                 JMP SQUAWK
-;
-;OK, this is a good order
-;
+
+;   OK, this is a good order
 X69             TAY
                 STA STICKI
                 LDA BEEPTB,Y
@@ -647,7 +515,8 @@ X69             TAY
                 LSR A
                 TAX
                 LDA STICKI
-;isolate order
+
+;   isolate order
 X71             DEY
                 BMI X70
                 ASL A
@@ -663,9 +532,8 @@ X70             LDY TEMPI
                 STA WhatOrders,X
                 LDA ORD2
                 STA WHORDH,X
-;
-;move maltakreuze
-;
+
+;   move maltakreuze
                 JSR CLRP2
                 LDX STICKI
                 LDA KRZX
@@ -689,6 +557,7 @@ X45             INY
                 CPX #$08
                 BNE LOOP26
                 BEQ EXITI
+
 ;
 ;ERROR on inputs routine
 ;squawks speaker and puts out error message
@@ -710,11 +579,12 @@ LOOP28          LDA ERRMSG,X
                 LDA #$FF
                 STA ERRFLG
                 BMI EXITI
+
 ;
 ;NO BUTTON PRESSED ROUTINE
 ;
 NOBUT           STA DBTIMR
-                LDA STICK
+                LDA STICK0
                 AND #$0F
                 EOR #$0F
                 BNE SCROLL
@@ -723,17 +593,16 @@ NOBUT           STA DBTIMR
                 LDA #$08
                 STA DELAY
                 CLC
-                ADC RTCLKL
+                ADC RTCLOK
                 STA TIMSCL
                 JSR ERRCLR
 EXITI           JMP ENDISR
 SCROLL          LDA #$00
                 STA ATRACT
-;
-;acceleration feature of cursor
-;
+
+;   acceleration feature of cursor
                 LDA TIMSCL
-                CMP RTCLKL
+                CMP RTCLOK
                 BNE EXITI
                 LDA DELAY
                 CMP #$01
@@ -742,14 +611,14 @@ SCROLL          LDA #$00
                 SBC #$01
                 STA DELAY
 X21             CLC
-                ADC RTCLKL
+                ADC RTCLOK
                 STA TIMSCL
 
                 LDA #$00
                 STA OFFLO
                 STA OFFHI               ; zero the offset
 
-                LDA STICK               ; get joystick reading
+                LDA STICK0               ; get joystick reading
                 PHA                     ; save it on stack for other bit checks
                 AND #$08                ; joystick left?
                 BNE CHKRT               ; no, move on
@@ -775,7 +644,7 @@ X1              LDA XPOSL
                 SBC #$01
                 STA XPOSL
                 AND #$07
-                STA HSCROLL             ; fine scroll
+                STA HSCROL              ; fine scroll
                 CMP #$07                ; scroll overflow?
                 BNE CHKUP               ; no, move on
                 INC OFFLO               ; yes, mark it for offset
@@ -808,7 +677,7 @@ X2              LDA XPOSL
                 ADC #$01
                 STA XPOSL
 X4              AND #$07
-                STA HSCROLL             ; fine scroll
+                STA HSCROL              ; fine scroll
                 BNE CHKUP               ; scroll overflow? if not, move on
                 DEC OFFLO               ; yes, set up offset for character scroll
                 DEC OFFHI
@@ -850,7 +719,7 @@ X6              LDA YPOSL
                 DEC YPOSH
 X7              STA YPOSL
                 AND #$0F
-                STA VSCROLL             ; fine scroll
+                STA VSCROL              ; fine scroll
                 CMP #$0F
                 BNE CHKDN               ; scroll overflow? If not, amble on
                 LDA OFFLO               ; yes, set up offset for character scroll
@@ -903,7 +772,7 @@ X8              LDA YPOSL
                 BCC X9
                 INC YPOSH
 X9              AND #$0F
-                STA VSCROLL             ; fine scroll
+                STA VSCROL              ; fine scroll
                 BNE CHGDL               ; no, move on
                 LDA OFFLO               ; yes, mark offset
                 CLC
@@ -912,6 +781,7 @@ X9              AND #$0F
                 LDA OFFHI
                 ADC #$00
                 STA OFFHI
+
 ;
 ;In this loop we add the offset values to the existing
 ;LMS addresses of all display lines.
@@ -1050,6 +920,7 @@ SWITCH          LDA #$00
                 PLA
                 STA SWAP,X
 X34             RTS
+
 ;
 ;SUBROUTINE CLRP1
 ;clears the arrow player
@@ -1066,6 +937,7 @@ X22             INY
                 CPX #$0B
                 BNE LOOP23
                 RTS
+
 ;
 ;SUBROUTINE CLRP2
 ;clears the maltakreuze
@@ -1081,6 +953,7 @@ X42             INY
                 CPX #$0A
                 BNE LOOP25
                 RTS
+
 ;
 ;SUBROUTINE ERRCLR
 ;clears sound and the text window
@@ -1096,6 +969,9 @@ LOOP29          STA TXTWDW,Y
                 DEX
                 BPL LOOP29
 ENDERR          RTS
+
+;--------------------------------------
+;--------------------------------------
 
 BITTAB          .byte $C0,3,$C,$30
 ROTARR          .byte 4,9,14,19,24
@@ -1116,6 +992,7 @@ OBJX            ;.fill 104
 ;
 ;This is the DLI routine
 ;
+
 ;--------------------------------------
 ;--------------------------------------
                 * = $7B00
@@ -1209,6 +1086,7 @@ DLIOUT          PLA
                 TAX
                 PLA
                 RTI
+
 ;
 ;SUBROUTINE DNUMBR
 ;displays a number with leading zero suppress
@@ -1234,6 +1112,9 @@ X37             LDA OnesDigit,X
                 STA TXTWDW,Y
                 INY
                 RTS
+
+;--------------------------------------
+;--------------------------------------
 
 NDX             .byte 0,1,2,3,4,9,14,19
                 .byte 24,23,22,21,20,15,10,5

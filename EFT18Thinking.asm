@@ -3,122 +3,11 @@
 ;EFT VERSION 1.8T (THINKING) 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;==================================================================
 
-;======================================
-;Page zero RAM
-;======================================
+                .include "equates_system_atari8.asm"
+                .include "equates_directpage.asm"
+                .include "equates_page6.asm"
 
-;
-;These locations are for the mainline routines
-;
-CHUNKX          = $BE
-CHUNKY          = $BF
-CORPS           = $B4
-
-;--------------------------------------
-;--------------------------------------
-                * = $C0
-;--------------------------------------
-MAPPTR          .word ?
-ARMY            .byte ?
-UNITNO          .byte ?
-DEFNDR          .byte ?
-TEMPR           .byte ?
-TEMPZ           .byte ?
-ACCLO           .byte ?
-ACCHI           .byte ?
-TURN            .byte ?
-LAT             .byte ?
-LONG            .byte ?
-RFR             .byte ?
-TRNTYP          .byte ?
-SQVAL           .byte ?
-;
-;
-TRIG0           = $D010
-CONSOL          = $D01F
-AUDF1           = $D200
-AUDC1           = $D201
-RANDOM          = $D20A
-NMIEN           = $D40E
-SETVBV          = $E45C
-
-;
-;THESE VALUES ARE USED BY MAINLINE ROUTINE ONLY
-;
-;--------------------------------------
-;--------------------------------------
-                * = $605
-;--------------------------------------
-TRCOLR          .byte ?
-EARTH           .byte ?
-ICELAT          .byte ?
-SEASN1          .byte ?
-SEASN2          .byte ?
-SEASN3          .byte ?
-DAY             .byte ?
-MONTH           .byte ?
-YEAR            .byte ?
-
-;--------------------------------------
-;--------------------------------------
-                * = $62A
-;--------------------------------------
-OLDLAT          .byte ?
-TRNCOD          .byte ?
-TLO             .byte ?
-THI             .byte ?
-TICK            .byte ?
-UNTCOD          .byte ?
-UNTCD1          .byte ?
-BVAL            .byte ?                 ; best value
-BONE            .byte ?                 ; best index
-DIR             .byte ?                 ; direction
-TARGX           .byte ?                 ; square under consideration
-TARGY           .byte ?
-SQX             .byte ?                 ; adjacent square
-SQY             .byte ?
-JCNT            .byte ?                 ; counter for adjacent squares
-LINCOD          .byte ?                 ; code value of line configuration
-NBVAL           .byte ?                 ; another best value
-RORD1           .byte ?                 ; Russian orders
-RORD2           .byte ?
-HDIR            .byte ?                 ; horizontal direction
-VDIR            .byte ?                 ; vertical direction
-LDIR            .byte ?                 ; larger direction
-SDIR            .byte ?                 ; smaller direction
-HRNGE           .byte ?                 ; horizontal range
-VRNGE           .byte ?                 ; vertical range
-LRNGE           .byte ?                 ; larger range
-SRNGE           .byte ?                 ; smaller range
-CHRIS           .byte ?                 ; midway counter
-RANGE           .byte ?                 ; just that
-RCNT            .byte ?                 ; counter for Russian orders
-SECDIR          .byte ?                 ; secondary direction
-POTATO          .byte ?                 ; a stupid temporary
-BAKARR          .fill 25
-LINARR          .fill 25
-IFR0            .byte ?
-IFR1            .byte ?
-IFR2            .byte ?
-IFR3            .byte ?
-XLOC            .byte ?
-YLOC            .byte ?
-TEMPX           .byte ?
-TEMPY           .byte ?
-LV              .fill 5
-LPTS            .byte ?
-COLUM           .byte ?
-OCOLUM          .byte ?
-IFRHI           .byte ?
-PASSCT          .byte ?
-DELAY           .byte ?
-HANDCP          .byte ?
-TOTGS           .byte ?
-TOTRS           .byte ?
-OFR             .byte ?
-
-;
-;declarations of routines in other modules
+;   declarations of routines in other modules
 DEFNC           = $79B4
 ROTARR          = $7A78
 OBJX            = $7A91
@@ -167,10 +56,12 @@ XADD            .fill 4                 ; offsets for moving arrow
 YADD            .fill 4
 TreeColors      .fill 13                ; tree color table
 MLTKRZ          .fill 8                 ; maltese cross shape
+
 ;
 ;RAM from $6000 to $6430 is taken up by
 ;character sets and the display list
 ;
+
 ;--------------------------------------
 ;--------------------------------------
                 * = $6431
@@ -198,13 +89,13 @@ EXEC            .fill 159               ; execution times
 ;
 ;Russian artificial intelligence routine
 ;
+
 ;--------------------------------------
 ;--------------------------------------
                 * = $4700
 ;--------------------------------------
-;
-;initialization loop
-;
+
+;   initialization loop
                 LDX #$01
                 STA TEMPR
                 STA TOTRS
@@ -225,9 +116,8 @@ Z50             DEY
                 LDX #$00
                 CPY #$00
                 BNE LOOP80
-;
-;now shift values 4 places right
-;
+
+;   shift values 4 places right
                 LDA TOTRS
                 STA TEMPR
                 LDA TOTGS
@@ -241,9 +131,8 @@ LOOP82          LSR TEMPR
                 BEQ Z52
 Z51             DEX
                 BNE LOOP81
-;
-;now calculate overall force ratio
-;
+
+;   calculate overall force ratio
 Z52             LDY #$FF
                 LDX TEMPR
                 BEQ Z53
@@ -252,9 +141,8 @@ LOOP83          INY
                 SBC TEMPR
                 BCS LOOP83
 Z53             STY OFR
-;
-;now calculate individual force ratios
-;
+
+;   calculate individual force ratios
                 LDX #$9E
 LOOP50          STX ARMY
                 LDA ArrivalTurn,X
@@ -268,9 +156,8 @@ LOOP50          STX ARMY
 Y44             DEX
                 CPX #$37
                 BCS LOOP50
-;
-;here begins the main loop
-;
+
+;   here begins the main loop
 MLOOP           LDX #$9E                ; outer loop for entire Russian army
 LOOP51          STX ARMY                ; inner loop for individual armies
                 LDA ArrivalTurn,X
@@ -285,9 +172,8 @@ Z26             LDA CorpType,X
                 CMP IFR-55,X
                 BNE Y51                 ; yes
                 STA BVAL                ; no, treat as reinforcement
-;
-;find nearby beleaguered army
-;
+
+;   find nearby beleaguered army
                 LDY #$9E
 LOOP52          LDA ArrivalTurn,Y
                 CMP TURN
@@ -325,17 +211,15 @@ Y54             DEY
                 LDA CorpsY,Y
                 STA OBJY-55,X
                 JMP TOGSCN
-;
-;front line armies
-;
+
+;   front line armies
 Y51             LDA #$FF
                 STA DIR                 ; a direction of $FF means 'stay put'
                 STA BONE
                 LDA #$00
                 STA BVAL
-;
-;ad hoc logic for surrounded people
-;
+
+;   ad hoc logic for surrounded people
                 LDA IFRE-55,X
                 CMP #$10
                 BCS Z55
@@ -372,9 +256,8 @@ Y56             STA TARGY
                 LDA EXEC,Y              ; is square accessible?
                 BPL Y57                 ; yes
                 JMP EVALSQ              ; no, skip this square
-;
-;now fill in the direct line array
-;
+
+;   fill in the direct line array
 Y57             LDA #$00
                 STA LINCOD
                 LDA TARGX
@@ -426,9 +309,8 @@ Y59             LDY JCNT
                 STA ACCLO
                 STA ACCHI
                 STA SECDIR
-;
-;build LV array
-;
+
+;   build LV array
 Y88             LDX #$00
                 STX POTATO
 Y92             LDY #$00
@@ -470,9 +352,8 @@ LOOP76          LDX LV,Y
                 ADC #$28
 Z42             DEY
                 BPL LOOP76
-;
-;now add bonus if central column is otherwise empty
-;
+
+;   add bonus if central column is otherwise empty
                 LDY LINARR+10
                 BNE Y95
                 LDY LINARR+11
@@ -484,9 +365,8 @@ Z42             DEY
                 CLC
                 ADC #$30
 Y95             STA LPTS
-;
-;now evaluate blocking penalty
-;
+
+;   evaluate blocking penalty
                 LDX #$00
 LOOP72          LDA LV,X
                 CMP #$04
@@ -511,9 +391,8 @@ A91             STA LPTS
 Y96             INX
                 CPX #$05
                 BNE LOOP72
-;
-;now evaluate vulnerability to penetrations
-;
+
+;   evaluate vulnerability to penetrations
                 LDY #$00
 LOOP54          STY OCOLUM
                 LDX #$00
@@ -544,9 +423,8 @@ NXCLM           LDX COLUM
                 INY
                 CPY #$05
                 BNE LOOP54
-;
-;now get overall line value weighted by danger vector
-;
+
+;   get overall line value weighted by danger vector
                 LDX ARMY
                 LDY SECDIR
                 BNE Z18
@@ -575,16 +453,14 @@ LOOP75          ADC TEMPR
                 STA ACCHI
 Y34             DEX
                 BNE LOOP75
-;
-;next secondary direction
-;
+
+;   next secondary direction
 Z49             INY
                 CPY #$04
                 BEQ Y35
                 STY SECDIR
-;
-;rotate array
-;
+
+;   rotate array
                 LDX #$18
 LOOP70          LDA LINARR,X
                 STA BAKARR,X
@@ -601,9 +477,8 @@ LOOP71          LDY ROTARR,X
 
 Y35             LDA ACCHI
                 STA SQVAL
-;
-;get range to closest German into NBVAL
-;
+
+;   get range to closest German into NBVAL
 Y65             LDY #$36
                 LDA #$FF
                 STA NBVAL
@@ -627,9 +502,8 @@ Z45             LDA CorpsX,Y
                 STA NBVAL
 Y68             DEY
                 BPL LOOP59
-;
-;now determine whether to use offensive or defensive strategy
-;
+
+;   determine whether to use offensive or defensive strategy
                 LDX ARMY
                 LDA IFR-55,X
                 STA TEMPR
@@ -643,9 +517,8 @@ Y68             DEY
                 SEC
                 SBC NBVAL               ; I know that NBVAL<9 for all front line units
                 STA NBVAL
-;
-;now add NBVAL*IFR to SQVAL with defensive bonus
-;
+
+;   add NBVAL*IFR to SQVAL with defensive bonus
 A40             LDY NBVAL
                 BNE Z24                 ; this square occupied by a German?
                 STY SQVAL               ; yes, do not enter!!!
@@ -669,9 +542,8 @@ Y71             CLC
                 BCC X00
                 LDA #$FF
 X00             STA SQVAL
-;
-;extract penalty if somebody else has dibs on this square
-;
+
+;   extract penalty if somebody else has dibs on this square
                 LDY #$9E
 LOOP58          LDA OBJX-55,Y
                 CMP TARGX
@@ -692,9 +564,8 @@ Z44             LDA SQVAL
 Y63             DEY
                 CPY #$37
                 BCS LOOP58
-;
-;now extract distance penalty
-;
+
+;   extract distance penalty
 Y60             LDA CorpsX,X
                 SEC
                 SBC TARGX
@@ -726,9 +597,7 @@ LOOP77          ASL A
                 LDA #$00
                 STA SQVAL
 
-;
-;now evaluate this square
-;
+;   evaluate this square
 EVALSQ          LDY DIR
                 LDX ARMY
                 LDA SQVAL
@@ -873,6 +742,7 @@ Y77             DEX
                 BCC Y87
                 JMP LOOP62
 Y87             RTS
+
 ;
 ;Subroutine CALIFR determines individual force ratios
 ;in all four directions
@@ -910,9 +780,8 @@ Z21             CMP #$09                ;no point in checking if he's too far
 Z07             BCS Y48
                 LSR A
                 STA TEMPR               ; this is half of range to unit
-;
-;now select which IFR gets this German
-;
+
+;   select which IFR gets this German
                 LDA TEMPX
                 BPL Z00
                 LDA TEMPY
@@ -996,9 +865,8 @@ Z15             TXA
                 ADC OFR                 ; remember strategic situation
                 ROR A                   ; average strategic with tactical
                 STA IFR-55,X
-;
-;keep a record of danger vector
-;
+
+;   keep a record of danger vector
                 LDA IFR0
                 STA IFRN-55,X
                 LDA IFR1
@@ -1016,7 +884,7 @@ INVERT          BPL Z46
 Z46             RTS
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-; added for binary compatibility
+;   added for binary compatibility
 
 ; IFRN            .fill 104,$00
 ; IFRE            .fill 104,$00
@@ -1036,7 +904,7 @@ IFRN            .byte $01,$60,$4e,$60,$10,$05,$49,$ff
                 .byte $8d,$82,$06,$8d,$83,$06,$8d,$84
                 .byte $06,$8d,$85,$06,$8d,$92,$06,$8d
                 .byte $93,$06,$bd,$00,$54,$8d,$86,$06
-                
+
 IFRE            .byte $bd,$9f,$54,$8d,$87,$06,$a0,$9e
                 .byte $b9,$1b,$57,$cd,$23,$06,$90,$03
                 .byte $4c,$4b,$4e,$b9,$9f,$54,$38,$ed
@@ -1050,7 +918,7 @@ IFRE            .byte $bd,$9f,$54,$8d,$87,$06,$a0,$9e
                 .byte $b0,$35,$a2,$01,$90,$31,$ad,$89
                 .byte $06,$10,$10,$49,$ff,$18,$69,$01
                 .byte $a2,$02,$cd,$88,$06,$b0,$20,$a2
-                
+
 IFRS            .byte $03,$90,$1c,$a2,$00,$cd,$88,$06
                 .byte $b0,$15,$a2,$03,$90,$11,$ad,$88
                 .byte $06,$49,$ff,$18,$69,$01,$a2,$01
@@ -1064,7 +932,7 @@ IFRS            .byte $03,$90,$1c,$a2,$00,$cd,$88,$06
                 .byte $06,$90,$02,$a9,$ff,$ca,$10,$f5
                 .byte $0a,$2e,$93,$06,$0a,$2e,$93,$06
                 .byte $0a,$2e,$93,$06,$0a,$2e,$93,$06
-                
+
 IFRW            .byte $a2,$00,$38,$ed,$92,$06,$b0,$06
                 .byte $ce,$93,$06,$38,$30,$04,$e8,$4c
                 .byte $73,$4e,$8a,$a6,$c2,$18,$6d,$99
@@ -1078,6 +946,7 @@ IFRW            .byte $a2,$00,$38,$ed,$92,$06,$b0,$06
                 .byte $32,$4f,$ad,$85,$06,$9d,$8a,$4f
                 .byte $60,$00,$00,$00,$00,$00,$00,$00
                 .byte $00,$00,$00,$00,$00,$00,$00,$00
+
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
             .END

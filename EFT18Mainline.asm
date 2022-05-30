@@ -3,95 +3,10 @@
 ;EFT VERSION 1.8M (MAINLINE) 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;==================================================================
 
-;======================================
-;Page zero RAM
-;======================================
-DLSTPT          = $B0                   ; Zero page pointer to display list
-CORPS           = $B4
+                .include "equates_system_atari8.asm"
+                .include "equates_directpage.asm"
+                .include "equates_page6.asm"
 
-;--------------------------------------
-;--------------------------------------
-                * = $BE
-;--------------------------------------
-CHUNKX          .byte ?                 ; cursor coordinates (pixel frame)
-CHUNKY          .byte ?
-
-;
-;These locations are for the mainline routines
-;
-MAPPTR          .word ?
-ARMY            .byte ?
-UNITNO          .byte ?
-DEFNDR          .byte ?
-TEMPR           .byte ?
-TEMPZ           .byte ?
-ACCLO           .byte ?
-ACCHI           .byte ?
-TURN            .byte ?
-LAT             .byte ?
-LONG            .byte ?
-RFR             .byte ?
-TRNTYP          .byte ?
-SQVAL           .byte ?
-;
-;OS locations (see OS manual)
-;
-SDMCTL          = $022F
-DLSTLO          = $0230                 ; Existing OS pointer to display list
-DLSTHI          = $0231
-GPRIOR          = $026F
-PCOLR0          = $02C0
-;
-;HARDWARE LOCATIONS
-;
-HPOSP0          = $D000
-SIZEP0          = $D008
-COLBAK          = $D01A
-GRACTL          = $D01D
-RANDOM          = $D20A
-HSCROL          = $D404
-VSCROL          = $D405
-PMBASE          = $D407
-NMIEN           = $D40E
-SETVBV          = $E45C
-;
-;Page 6 usage
-;
-;--------------------------------------
-;--------------------------------------
-                * = $0600
-;--------------------------------------
-;first come locations used by the interrupt service routine
-XPOSL           .fill 5                 ; Horizontal position of screen window
-TRCOLR          .byte ?
-EARTH           .byte ?
-ICELAT          .byte ?
-SEASN1          .byte ?
-SEASN2          .byte ?
-SEASN3          .byte ?
-DAY             .byte ?
-MONTH           .byte ?
-YEAR            .byte ?
-BUTFLG          .byte ?
-BUTMSK          .byte ?
-;
-;THESE VALUES ARE USED BY MAINLINE ROUTINE ONLY
-;
-;--------------------------------------
-;--------------------------------------
-                * = $62A
-;--------------------------------------
-OLDLAT          .byte ?
-TRNCOD          .byte ?
-TLO             .byte ?
-THI             .byte ?
-TICK            .byte ?
-UNTCOD          .byte ?
-UNTCD1          .byte ?
-
-HANDCP          = $68F
-ZOC             = $694
-VICTRY          = $697
 ;
 ;declarations of routines in other modules
 ;
@@ -102,7 +17,7 @@ DWORDS          = $79C0
 SWITCH          = $79EF
 YINC            = $7BF1
 XINC            = $7BF2
-;
+
 
 ;--------------------------------------
 ;--------------------------------------
@@ -154,6 +69,7 @@ BHY1            .fill 22
 BHX2            .fill 22
 BHY2            .fill 22
 EXEC            .fill 159
+
 ;
 ;This is the initialization program
 ;The program begins here
@@ -179,11 +95,11 @@ BOOP98          LDA PSXVAL,X            ; initialize page six values
                 BPL BOOP98
 
                 LDA #$00
-                STA DLSTLO
+                STA SDLSTL
                 STA HSCROL
                 STA VSCROL
                 LDA DLSTPT+1
-                STA DLSTHI
+                STA SDLSTL+1
 
                 LDX #$00
 LOOP22          LDA MusterStrength,X
@@ -196,14 +112,11 @@ LOOP22          LDA MusterStrength,X
                 CPX #$A0
                 BNE LOOP22
 
-;
-;Now set up player window
-;
+;   set up player window
                 LDA #$50
                 STA PMBASE
-;
-;here follow various initializations
-;
+
+;   here follow various initializations
                 LDA #$2F
                 STA SDMCTL
                 LDA #$03
@@ -231,9 +144,8 @@ LOOP2           STA PLYR0,X
                 STA TURN
                 INX
                 STA PLYR0,X
-;
-;Now enable deferred vertical blank interrupt
-;
+
+;   enable deferred vertical blank interrupt
                 LDY #$00
                 LDX #$74
                 LDA #$07
@@ -244,11 +156,10 @@ LOOP2           STA PLYR0,X
                 STA $0201
                 LDA #$C0
                 STA NMIEN               ; Turn interrupts on
-;
+
 NEWTRN          INC TURN
-;
-;first do calendar calculations
-;
+
+;   first do calendar calculations
                 LDA DAY
                 CLC
                 ADC #07
@@ -305,9 +216,8 @@ LOOP13          STA TXTWDW,Y
                 CLC
                 ADC #$10
                 STA TXTWDW,Y
-;
-;now do season calculations
-;
+
+;   do season calculations
                 LDA MONTH
                 CMP #$04
                 BNE X87
@@ -347,9 +257,7 @@ X92             CMP #$03
                 BEQ X91
                 JMP ENDSSN
 
-;
-;freeze those rivers, baby
-;
+;   freeze those rivers, baby
 X91             LDA RANDOM
                 AND #$07
                 CLC
@@ -441,9 +349,8 @@ LOOPF           STX ARMY
                 LDX ARMY
                 DEX
                 BNE LOOPF
-;
-;calculate some points
-;
+
+;   calculate some points
                 LDA #$00
                 STA ACCLO
                 STA ACCHI
@@ -531,9 +438,8 @@ Z00             LDA #$00
                 STA BUTMSK
                 LDA #$02
                 JSR TXTMSG
-;
-;movement execution phase
-;
+
+;   movement execution phase
                 LDA #$00
                 STA TICK
                 LDX #$9E
@@ -656,10 +562,12 @@ Y07             INC TICK
                 CMP #$20
                 BEQ Y08
                 JMP LOOP33
-;
-;end of movement phase
-;
+
+;   end of movement phase
 Y08             JMP NEWTRN
+
+;--------------------------------------
+;--------------------------------------
 
 MOSCOW          .byte 0,0,0,0
 
@@ -684,10 +592,12 @@ LOOP79          PHA
                 ADC #$01
                 BNE LOOP79
                 RTS
+
 ;
 ;this is the debugging routine
 ;it can't be reached by any route any longer
 ;
+
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ; added for binary compatibility
                 JMP $6E9A
@@ -721,6 +631,7 @@ LOOP79          PHA
 ;
 ;Subroutine TERR determines what terrain is in a square
 ;
+
 ;--------------------------------------
 ;--------------------------------------
                 * = $7240
@@ -798,9 +709,8 @@ MATCH           STX UNITNO
                 LDA SWAP,X
                 STA TRNCOD
                 RTS
-;
-;determines execution time of next move
-;
+
+;   determines execution time of next move
 DINGO           LDX ARMY
                 LDA HowManyOrders,X
                 BNE Y00
@@ -869,6 +779,7 @@ LOOP35          LDA LAT
 Y03             DEY
                 BPL LOOP35
 Y02             RTS
+
 ;
 ;this subroutine determines the type of terrain
 ;in a square
@@ -916,6 +827,10 @@ NEXT2           INY
                 INY
 DONE            STY TRNTYP
                 RTS
+
+;--------------------------------------
+;--------------------------------------
+
 ZPVAL           .byte 0,$64,0,0,0,$22,1,$30,2
 PSXVAL          .byte $E0,0,0,$33,$78,$D6,$10,$27
                 .byte $40,0,1,15,6,41,0,1
@@ -923,6 +838,10 @@ COLTAB          .byte $58,$DC,$2F,0,$6A,$C,$94,$46,$B0
 MPTS            .byte 20,10,10,10
 MOSCX           .byte 20,33,20,6
 MOSCY           .byte 28,36,0,15
+
+;--------------------------------------
+;--------------------------------------
+
 TXTMSG          ASL A
                 ASL A
                 ASL A
@@ -941,5 +860,6 @@ LOOP19          LDA TxtTbl,X
                 BNE LOOP19
                 RTS
 
-                .fill 3,$00     ; i added
+                .fill 3,$00     ; added for compatibility
+
             .END

@@ -3,69 +3,10 @@
 ;EFT VERSION 1.8C (COMBAT) 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;================================================================
 
-;======================================
-;Page zero RAM
-;======================================
+                .include "equates_system_atari8.asm"
+                .include "equates_directpage.asm"
+                .include "equates_page6.asm"
 
-;
-;These locations are for the mainline routines
-;
-CHUNKX          = $BE
-CHUNKY          = $BF
-CORPS           = $B4
-
-;--------------------------------------
-;--------------------------------------
-                * = $C0
-;--------------------------------------
-MAPPTR          .word ?
-ARMY            .byte ?
-UNITNO          .byte ?
-DEFNDR          .byte ?
-TEMPR           .byte ?
-TEMPZ           .byte ?
-ACCLO           .byte ?
-ACCHI           .byte ?
-TURN            .byte ?
-LAT             .byte ?
-LONG            .byte ?
-RFR             .byte ?
-TRNTYP          .byte ?
-SQVAL           .byte ?
-;
-;
-CONSOL          = $D01F
-AUDF1           = $D200
-AUDC1           = $D201
-RANDOM          = $D20A
-NMIEN           = $D40E
-;
-;THESE VALUES ARE USED BY MAINLINE ROUTINE ONLY
-;
-EARTH           = $606
-TRNCOD          = $62B
-
-;--------------------------------------
-;--------------------------------------
-                * = $636
-;--------------------------------------
-SQX             .byte ?                 ; adjacent square
-SQY             .byte ?
-
-;--------------------------------------
-;--------------------------------------
-                * = $68E
-;--------------------------------------
-DELAY           .byte ?
-HANDCP          .byte ?
-TOTGS           .byte ?
-TOTRS           .byte ?
-OFR             .byte ?
-HOMEDR          .byte ?
-ZOC             .byte ?
-TEMPQ           .byte ?
-LLIM            .byte ?
-VICTRY          .byte ?
 ;
 ;declarations of routines in other modules
 ;
@@ -115,6 +56,7 @@ XADD            .fill 4                 ; offsets for moving arrow
 YADD            .fill 4
 TreeColors      .fill 13                ; tree color table
 MLTKRZ          .fill 8                 ; maltese cross shape
+
 ;
 ;RAM from $6000 to $6430 is taken up by
 ;character sets and the display list
@@ -142,15 +84,14 @@ BHY1            .fill 22
 BHX2            .fill 22
 BHY2            .fill 22
 EXEC            .fill 159               ; execution times
-;
+
 
 ;--------------------------------------
 ;--------------------------------------
                 * = $4ED8
 ;--------------------------------------
-;
-;combat routine
-;
+
+;   combat routine
                 LDA #$00
                 STA VICTRY              ; clear victory flag
                 LDX ARMY
@@ -187,33 +128,30 @@ LOOP78          STX AUDC1
                 DEX
                 CPX #$7F
                 BNE LOOP78
-;
-;now replace original unit character
-;
+
+;   replace original unit character
                 JSR SWITCH
                 LDX DEFNDR
                 PLA
                 STA SWAP,X
-;
-;
-                JSR TERRTY              ;terrain in defender's square
+
+
+                JSR TERRTY              ; terrain in defender's square
                 LDX DEFNC,Y             ; defensive bonus factor
-                LDA CombatStrength,Y            ;defender's strength
+                LDA CombatStrength,Y    ; defender's strength
                 LSR A
 Y15             DEX                     ; adjust for terrain
                 BEQ Y16
                 ROL A
                 BCC Y15
                 LDA #$FF
-;
-;now adjust for defender's motion
-;
+
+;   adjust for defender's motion
 Y16             LDX HowManyOrders,Y
                 BEQ DOBATL
                 LSR A
-;
-;evaluate defender's strike
-;
+
+;   evaluate defender's strike
 DOBATL          CMP RANDOM
                 BCC ATAKR
                 LDX ARMY
@@ -225,9 +163,8 @@ DOBATL          CMP RANDOM
                 BCS Y24
 Z28             JMP DEAD                ; attacker dies
 Y24             JSR BRKCHK              ; attacker lives; does he break?
-;
-;evaluate attacker's strike
-;
+
+;   evaluate attacker's strike
 ATAKR           LDX ARMY
                 LDA CorpsX,X
                 STA LONG
@@ -313,6 +250,7 @@ VICCOM          LDX ARMY
 ENDCOM          LDX ARMY
                 INC EXEC,X
                 RTS
+
 ;
 ;Subroutines for combat
 ;input: X = ID # of defender. Y = proposed DIR of retreat
@@ -333,9 +271,8 @@ RETRET          LDA CorpsX,X
                 LDA UNITNO              ; anybody in this square?
                 BNE Y22
                 LDA TRNTYP              ; no
-;
-;check for bad ocean crossings
-;
+
+;   check for bad ocean crossings
                 CMP #$07                ; coastline?
                 BCC Y41
                 CMP #$09
@@ -355,9 +292,8 @@ LOOP42          LDA LAT
                 BEQ Y22
 Y43             DEY
                 BPL LOOP42
-;
-;any blocking ZOC's?
-;
+
+;   any blocking ZOC's?
 Y41             JSR CHKZOC
                 LDX DEFNDR
                 LDA ZOC
@@ -376,9 +312,8 @@ Z27             JSR DEAD
                 CLC
 Y23             LDA #$FF
                 RTS
-;
-;supply evaluation routine
-;
+
+;   supply evaluation routine
                 LDA ArrivalTurn,X
                 CMP TURN
                 BEQ Z86
@@ -453,15 +388,14 @@ Z81             LDY HOMEDR
                 BNE Z85
                 CMP #$FF
                 BNE LOOP91
-                INC MusterStrength,X            ; Russian replacements
+                INC MusterStrength,X    ; Russian replacements
                 INC MusterStrength,X
                 RTS
 Z85             CMP #$2E
                 BNE LOOP91
                 RTS
-;
-;routine to check for zone of control
-;
+
+;   routine to check for zone of control
 CHKZOC          LDA #$00
                 STA ZOC
                 LDA #$40
@@ -513,8 +447,8 @@ A75             DEX
                 DEC LONG
                 LDX ARMY
                 RTS
-;
-;
+
+
 DEAD            LDA #$00
                 STA MusterStrength,X
                 STA CombatStrength,X
@@ -529,6 +463,7 @@ DEAD            LDA #$00
                 STA CHUNKY
                 JSR SWITCH
                 RTS
+
 ;
 ;Subroutine BRKCHK evaluates whether a unit under attack breaks
 ;
@@ -557,7 +492,7 @@ Y40             CMP CombatStrength,X
 A30             RTS
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    ; added for binary compatibility
+;   added for binary compatibility
 
                 .word $A90A
 
