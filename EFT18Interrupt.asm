@@ -3,6 +3,8 @@
 ;EFT VERSION 1.8I (INTERRUPT) 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;===================================================================
 
+                .cpu "65816"
+
                 .include "equates_system_atari8.asm"
                 .include "equates_directpage.asm"
                 .include "equates_page6.asm"

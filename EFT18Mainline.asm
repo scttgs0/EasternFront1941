@@ -3,6 +3,8 @@
 ;EFT VERSION 1.8M (MAINLINE) 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;==================================================================
 
+                .cpu "65816"
+
                 .include "equates_system_atari8.asm"
                 .include "equates_directpage.asm"
                 .include "equates_page6.asm"
@@ -17,6 +19,14 @@ DWORDS          = $79C0
 SWITCH          = $79EF
 YINC            = $7BF1
 XINC            = $7BF2
+
+;======================================
+;======================================
+                * = START-8
+                .text "PGX"
+                .byte $01
+                .dword START
+;======================================
 
 
 ;--------------------------------------

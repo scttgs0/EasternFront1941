@@ -3,6 +3,8 @@
 ;EFT VERSION 1.8D (DATA) 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;==============================================================
 
+                .cpu "65816"
+
                 .enc "atari-screen"
                 .cdef " Z", $00
                 .enc "none"
