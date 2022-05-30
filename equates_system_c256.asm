@@ -1,0 +1,136 @@
+;---------------------------------------
+; System Equates for Foenix C256
+;---------------------------------------
+
+BORDER_CTRL_REG         = $AF_0004              ; Bit[0] - Enable (1 by default)
+bcEnable            = $01                       ; Bit[4..6]: X Scroll Offset (Will scroll Left)
+
+BORDER_COLOR_B          = $AF_0005
+BORDER_COLOR_G          = $AF_0006
+BORDER_COLOR_R          = $AF_0007
+BORDER_X_SIZE           = $AF_0008              ; Values: 0 - 32 (Default: 32)
+BORDER_Y_SIZE           = $AF_0009              ; Values: 0 - 32 (Default: 32)
+
+TILE0_CONTROL           = $AF_0200
+TILE0_START_ADDR        = $AF_0201
+TILE0_X_SIZE            = $AF_0204
+TILE0_Y_SIZE            = $AF_0206
+TILE0_WINDOW_X_POS      = $AF_0208
+TILE0_WINDOW_Y_POS      = $AF_020A
+
+TILESET0_ADDR           = $AF_0280
+TILESET0_ADDR_CFG       = $AF_0283
+
+VDMA_CTRL               = $AF_0400
+vdcEnable       = $01
+vdc1D_2D        = $02                   ; 0 - 1D (Linear) Transfer , 1 - 2D (Block) Transfer
+vdcTRF_Fill     = $04                   ; 0 - Transfer Src -> Dst, 1 - Fill Destination with "Byte2Write"
+vdcInt_Enable   = $08                   ; Set to 1 to Enable the Generation of Interrupt when the Transfer is over.
+vdcSysRAM_Src   = $10                   ; Set to 1 to Indicate that the Source is the System Ram Memory
+vdcSysRAM_Dst   = $20                   ; Set to 1 to Indicate that the Destination is the System Ram Memory
+vdcStart_TRF    = $80                   ; Set to 1 To Begin Process, Need to Cleared before, you can start another
+VDMA_STATUS             = $AF_0401      ; Read only
+vdsSize_Err     = $01                   ; If Set to 1, Overall Size is Invalid
+vdsDst_Add_Err  = $02                   ; If Set to 1, Destination Address Invalid
+vdsSrc_Add_Err  = $04                   ; If Set to 1, Source Address Invalid
+vdsVDMA_IPS     = $80                   ; If Set to 1, VDMA Transfer in Progress (this Inhibit CPU Access to Mem)
+VDMA_DST_ADDR           = $AF_0405      ; Destination Pointer within Vicky's video memory Range
+VDMA_SIZE               = $AF_0408      ; Maximum Value: $40:0000 (4Megs)
+
+SDMA0_CTRL              = $AF_0420
+sdcEnable       = $01
+sdc1D_2D        = $02                   ; 0 - 1D (Linear) Transfer , 1 - 2D (Block) Transfer
+sdcTRF_Fill     = $04                   ; 0 - Transfer Src -> Dst, 1 - Fill Destination with "Byte2Write"
+sdcInt_Enable   = $08                   ; Set to 1 to Enable the Generation of Interrupt when the Transfer is over.
+sdcSysRAM_Src   = $10                   ; Set to 1 to Indicate that the Source is the System Ram Memory
+sdcSysRAM_Dst   = $20                   ; Set to 1 to Indicate that the Destination is the System Ram Memory
+sdcStart_TRF    = $80                   ; Set to 1 To Begin Process, Need to Cleared before, you can start another
+SDMA_SRC_ADDR           = $AF_0422      ; Pointer to the Source of the Data to be stransfered
+SDMA_SIZE               = $AF_0428      ; Maximum Value: $40:0000 (4Megs)
+
+MOUSE_PTR_CTRL          = $AF_0700
+
+KBD_INPT_BUF            = $AF_1803
+irqKBD          = $01                   ; keyboard Interrupt
+KEYBOARD_SCAN_CODE      = $AF_115F
+
+SIO_JOY                 = $AF_1200
+JOYSTICK0               = $AF_E800      ; (R) Joystick 0 - J7 (next to SD Card)
+
+GRPH_LUT0_PTR	        = $AF_2000
+
+FONT_MEMORY_BANK0       = $AF_8000      ; $AF8000 - $AF87FF
+FG_CHAR_LUT_PTR         = $AF_1F40              ; 16 entries = ARGB     $008060FF (medium slate blue)
+                                                ;                       $00108020 (la salle green)
+BG_CHAR_LUT_PTR		= $AF_1F80              ; 16 entries = ARGB
+CS_TEXT_MEM_PTR         = $AF_A000              ; ascii code for text character
+CS_COLOR_MEM_PTR        = $AF_C000              ; HiNibble = Foreground; LoNibble = Background
+                                                ; 0-15 = index into the CHAR_LUT tables
+
+MASTER_CTRL_REG_L       = $AF_0000
+mcTextOn            = $01                       ; Enable the Text Mode
+mcOverlayOn         = $02                       ; Enable the Overlay of the text mode on top of Graphic Mode (the Background Color is ignored)
+mcGraphicsOn        = $04                       ; Enable the Graphic Mode
+mcBitmapOn          = $08                       ; Enable the Bitmap Module In Vicky
+mcTileMapOn         = $10                       ; Enable the Tile Module in Vicky
+mcSpriteOn          = $20                       ; Enable the Sprite Module in Vicky
+mcDisableVideo      = $80                       ; This will disable the Scanning of the Video hence giving 100% bandwith to the CPU
+
+MASTER_CTRL_REG_H       = $AF_0001
+mcVideoMode640      = $00                       ; 0 - 640x480 (Clock @ 25.175Mhz)
+mcVideoMode800      = $01                       ; 1 - 800x600 (Clock @ 40Mhz)
+mcVideoMode320      = $02                       ; 2 - 320x240 pixel-doubling (Clock @ 25.175Mhz)
+mcVideoMode400      = $03                       ; 3 - 400x300 pixel-doubling (Clock @ 40Mhz)
+
+C256F_MODEL_MAJOR       = $AF_070B
+C256F_MODEL_MINOR       = $AF_070C
+
+SID_FREQ1               = $AF_E400              ; [word]
+SID_PULSE1              = $AF_E402              ; [word]
+SID_CTRL1               = $AF_E404
+SID_ATDCY1              = $AF_E405
+SID_SUREL1              = $AF_E406
+
+SID_FREQ2               = $AF_E407              ; [word]
+SID_PULSE2              = $AF_E409              ; [word]
+SID_CTRL2               = $AF_E40B
+SID_ATDCY2              = $AF_E40C
+SID_SUREL2              = $AF_E40D
+
+SID_FREQ3               = $AF_E40E              ; [word]
+SID_PULSE3              = $AF_E410              ; [word]
+SID_CTRL3               = $AF_E412
+SID_ATDCY3              = $AF_E413
+SID_SUREL3              = $AF_E414
+
+SID_CUTOFF              = $AF_E415              ; [word]
+SID_RESON               = $AF_E417
+SID_SIGVOL              = $AF_E418
+SID_RANDOM              = $AF_E41B
+SID_ENV3                = $AF_E41C
+
+;--------------------------------------
+
+SP_CONTROL_REG          = $AF_0C00
+scEnable            = $01
+
+scLUT0              = $00
+scLUT1              = $02
+scLUT2              = $04
+scLUT3              = $06
+scLUT4              = $08
+scLUT5              = $0A
+scLUT6              = $0C
+scLUT7              = $0E
+
+scDEPTH0            = $00
+scDEPTH1            = $10
+scDEPTH2            = $20
+scDEPTH3            = $30
+scDEPTH4            = $40
+scDEPTH5            = $50
+scDEPTH6            = $60
+
+;SP_ADDR                 = $AF_0C01      ; [long]
+;SP_X_POS                = $AF_0C04      ; [word]
+;SP_Y_POS                = $AF_0C06      ; [word]
