@@ -3,87 +3,11 @@
 ;EFT VERSION 1.8M (MAINLINE) 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;==================================================================
 
-                .cpu "65816"
-
-                .include "equates_system_atari8.asm"
-                .include "equates_directpage.asm"
-                .include "equates_page6.asm"
-
-;
-;declarations of routines in other modules
-;
-CHKZOC          = $5140
-LOGSTC          = $5091
-DNUMBR          = $7BB2
-DWORDS          = $79C0
-SWITCH          = $79EF
-YINC            = $7BF1
-XINC            = $7BF2
-
-;======================================
-;======================================
-                * = START-8
-                .text "PGX"
-                .byte $01
-                .dword START
-;======================================
-
-
-;--------------------------------------
-;--------------------------------------
-                * = $5200
-;--------------------------------------
-PLYR0           .fill 512
-CorpsX          .fill 159               ; x-coords of all units (pixel frame)
-CorpsY          .fill 159               ; y-coords of all units (pixel frame)
-MusterStrength  .fill 159               ; muster strengths
-CombatStrength  .fill 159               ; combat strengths
-SWAP            .fill 159               ; terrain code underneath unit
-ArrivalTurn     .fill 159               ; turn of arrival
-
-;--------------------------------------
-;--------------------------------------
-                * = $5C08
-;--------------------------------------
-OnesDigit       .fill 256
-TxtTbl          .fill 96                ; more text
-DaysInMonth     .fill 13                ; table of month lengths
-HowManyOrders   .fill 159               ; how many orders each unit has in queue
-WhatOrders      .fill 159               ; what the orders are
-WHORDH          .fill 159
-
-;--------------------------------------
-;--------------------------------------
-                * = $5FE2
-;--------------------------------------
-XADD            .fill 4                 ; offsets for moving arrow
-YADD            .fill 4
-TreeColors      .fill 13
-MLTKRZ          .fill 8                 ; maltese cross shape
-
-
-;--------------------------------------
-;--------------------------------------
-                * = $6450
-;--------------------------------------
-
-;--------------------------------------
-;--------------------------------------
-TXTWDW          * = $6CB1
-;--------------------------------------
-STKTAB          .fill 16                ; a joystick decoding table
-SSNCOD          .fill 12
-TRNTAB          .fill 60
-BHX1            .fill 22
-BHY1            .fill 22
-BHX2            .fill 22
-BHY2            .fill 22
-EXEC            .fill 159
-
 ;
 ;This is the initialization program
 ;The program begins here
 ;
+
 
 ;--------------------------------------
 ;--------------------------------------
@@ -433,13 +357,13 @@ A23             ldy #$05
                 sta TXTWDW,Y
                 lda TURN
                 cmp #$28
-                bne Z00
+                bne Z00_
                 lda #$01                ; end of game
                 jsr TXTMSG
 FINI            jmp FINI                ; hang up
 
 
-Z00             lda #$00
+Z00_            lda #$00
                 sta BUTMSK
                 sta CORPS
                 jsr TXTMSG
@@ -684,9 +608,9 @@ TERRB           lda #$00
                 sta TRNCOD
                 and #$3F
                 cmp #$3D
-                beq A80
+                beq _XIT
                 cmp #$3E
-A80             rts
+_XIT            rts
 
 LOOKUP          lda TRNCOD
                 sta UNTCOD

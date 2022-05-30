@@ -3,11 +3,6 @@
 ;EFT VERSION 1.8D (DATA) 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;==============================================================
 
-                .cpu "65816"
-
-                .enc "atari-screen"
-                .cdef " Z", $00
-                .enc "none"
 
 ;--------------------------------------
 ;--------------------------------------
@@ -15,6 +10,8 @@
 ;--------------------------------------
 
 ;   Initial Map Coordinates
+
+;   x-coords of all units (pixel frame)
 CorpsX          .byte 0,40,40,40,40,40,41,40,41,41,41,42,42,42,42,43
                 .byte 43,43,41,40,40,41,41,42,42,42,40,41,42,41,42,42
                 .byte 43,41,42,43,30,30,31,33,35,37,35,36,36,45,45,38
@@ -27,6 +24,8 @@ CorpsX          .byte 0,40,40,40,40,40,41,40,41,41,41,42,42,42,42,43
                 .byte 20,20,12,0,0,0,0,0,0,0,21,25,0,0,0,0
                 .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,38,21
                 .byte 12,20,21,20,15,21,20,19
+
+;   y-coords of all units (pixel frame)
 CorpsY          .byte 0,20,19,18,17,16,20,19,18,17,16,20,19,18,17,19
                 .byte 18,17,23,22,21,21,22,22,23,24,15,14,13,15,14,12
                 .byte 13,15,16,16,2,3,4,6,7,8,38,37,38,20,15,8
@@ -52,6 +51,7 @@ MusterStrength  .byte 0,203,205,192,199,184,136,127,150,129,136,109,72,70,81,131
                 .byte 105,111,112,127,119,89,108,113,105,94,103,97,108,110,111,96
                 .byte 109,112,95,93,114,103,107,105,92,109,101,106,95,99,101,118
                 .byte 106,112,104,185,108,94,102,98
+
 CombatStrength  .fill 159
 
 ;   Two purposes for the SWAP table
@@ -84,6 +84,7 @@ ArrivalTurn     .byte 255,0,255,0,0,0,0,0,0,0,0,255,255,255,255,255
                 .byte 6,11,5,17,2,11,20,21,22,23,24,26,28,30,2,3
                 .byte 3,3,3,6,6,4,4,4
 
+;   various words for messages
 WordsTbl        .text "        "
                 .text "SS      "
                 .text "FINNISH "
@@ -119,6 +120,7 @@ WordsTbl        .text "        "
                 .text "COMBAT  "
                 .text "STRENGTH"
 
+;   codes for unit types
 CorpType        .byte 0,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0
                 .byte 0,$40,3,3,0,0,0,0,0,0,3,3,3,3,0,0
                 .byte 0,0,0,0,$30,$30,$30,0,0,0,$20,$20,$20,3,0,$53
@@ -132,6 +134,7 @@ CorpType        .byte 0,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0
                 .byte 0,0,0,0,$72,1,$71,$70,1,$70,1,1,0,0,0,0
                 .byte 0,0,0,4,4,4,4,4
 
+;   ID numbers of units
 CorpNumber      .byte 0,24,39,46,47,57,5,6,7,8,9,12,13,20,42,43
                 .byte 53,3,41,56,1,2,10,26,28,38,3,14,48,52,49,4
                 .byte 17,29,44,55,1,2,4,11,30,54,2,4,6,40,27,1
@@ -238,28 +241,31 @@ TxtTbl          .text "PLEASE ENTER YOUR ORDERS NOW    "
 DaysInMonth     .byte 0,31,28,31,30,31
                 .byte 30,31,31,30,31,30,31
 
-HowManyOrders   .fill 159
-WhatOrders      .fill 318
+HowManyOrders   .fill 159               ; how many orders each unit has in queue
+WhatOrders      .fill 159               ; what the orders are
+WHORDH          .fill 159
 
 ;   Sound frequencies when order given
 BEEPTB          .byte 30,40,50,60
 
+;   table of error messages
 ERRMSG          .text "    THAT IS A RUSSIAN UNIT!     "
                 .text "   ONLY 8 ORDERS ARE ALLOWED!   "
                 .text "  PLEASE WAIT FOR MALTAKREUZE!  "
                 .text "   NO DIAGONAL MOVES ALLOWED!   "
 
 ;   Used for unit motion
-XOFF            .byte 0,8,0,$F8
+XOFF            .byte 0,8,0,$F8         ; offsets for moving maltakreuze
 YOFF            .byte $F8,0,8,0
-MASKO           .byte 3,$0C,$30,$C0
-XADD            .byte 0,1,0,$FF
+MASKO           .byte 3,$0C,$30,$C0     ; mask values for decoding orders
+XADD            .byte 0,1,0,$FF         ; offsets for moving arrow
 YADD            .byte $FF,0,1,0
 
 ;   Monthly color used for trees
 TreeColors      .byte 0,$12,$12,$12,$D2,$D8
                 .byte $D6,$C4,$D4,$C2,$12,$12,$12
 
+;   maltese cross shape
 MLTKRZ          .byte %00100100         ; ..#..#..
                 .byte %00100100         ; ..#..#..
                 .byte %11100111         ; ###..###
@@ -357,19 +363,21 @@ ArrowTbl        .byte %00010000         ; ...#....
 
 ;--------------------------------------
 ;--------------------------------------
-TXTWDW          * = $64FF               ; BUG: differs from all other files
+MAPWDW          * = $64FF               ; BUG: differs from all other files
 ;--------------------------------------
 
                 .include "MAP.asm"
 
+TXTWDW
 
 ;   Decoding for joystick
 STKTAB          .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,1
                 .byte $FF,$FF,$FF,3,$FF,2,0,$FF
 
+;   season codes
 SSNCOD          .byte 40,40,40,20,0,0,0,0,0,20,40,40
 
-;   Terrain table
+;   Terrain cost table
 TRNTAB          .byte 6,12,8,0,0,18,14,8,20,128
                 .byte 4,8,6,0,0,18,13,6,16,128
                 .byte 24,30,24,0,0,30,30,26,28,128
@@ -377,7 +385,7 @@ TRNTAB          .byte 6,12,8,0,0,18,14,8,20,128
                 .byte 10,16,10,12,12,24,28,12,24,128
                 .byte 6,10,8,8,8,24,28,8,20,128
 
-;   Blocked movement paths
+;   Blocked movement paths - intraversible square pair coordinates
 BHX1            .byte 40,39,38,36,35,34,22,15,15,14
                 .byte 40,39,38,35,35,34,22,15,14,14,19,19
 BHY1            .byte 35,35,35,33,36,36,4,7,7,8

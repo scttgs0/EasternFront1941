@@ -3,91 +3,6 @@
 ;EFT VERSION 1.8T (THINKING) 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;==================================================================
 
-                .cpu "65816"
-
-                .include "equates_system_atari8.asm"
-                .include "equates_directpage.asm"
-                .include "equates_page6.asm"
-
-;   declarations of routines in other modules
-DEFNC           = $79B4
-ROTARR          = $7A78
-OBJX            = $7A91
-JSTP            = $799C
-
-;--------------------------------------
-;--------------------------------------
-                * = $7BD9
-;--------------------------------------
-NDX             .fill 24
-YINC            .byte ?
-XINC            .fill 4
-OFFNC           .fill 10
-OBJY            = $5398
-IFR             = $698
-TERR            = $7240
-Y00             = $72DE
-
-;--------------------------------------
-;--------------------------------------
-                * = $5400
-;--------------------------------------
-CorpsX          .fill 159               ; x-coords of all units (pixel frame)
-CorpsY          .fill 159               ; y-coords of all units (pixel frame)
-MusterStrength  .fill 159               ; muster strengths
-CombatStrength  .fill 159               ; combat strengths
-SWAP            .fill 159               ; terrain code underneath unit
-ArrivalTurn     .fill 159               ; turn of arrival
-WordsTbl        .fill 272               ; various words for messages
-CorpType        .fill 159               ; codes for unit types
-CorpNumber      .fill 159               ; ID numbers of units
-HundredDigit    .fill 256               ; tables for displaying numbers (hundreds)
-TensDigit       .fill 256               ; tens tables
-OnesDigit       .fill 256               ; ones tables
-TxtTbl          .fill 96                ; more text
-DaysInMonth     .fill 13                ; table of month lengths
-HowManyOrders   .fill 159               ; how many orders each unit has in queue
-WhatOrders      .fill 159               ; what the orders are
-WHORDH          .fill 159
-BEEPTB          .fill 4                 ; table of beep tones
-ERRMSG          .fill 128               ; table of error messages
-XOFF            .fill 4                 ; offsets for moving maltakreuze
-YOFF            .fill 4
-MASKO           .fill 4                 ; mask values for decoding orders
-XADD            .fill 4                 ; offsets for moving arrow
-YADD            .fill 4
-TreeColors      .fill 13                ; tree color table
-MLTKRZ          .fill 8                 ; maltese cross shape
-
-;
-;RAM from $6000 to $6430 is taken up by
-;character sets and the display list
-;
-
-;--------------------------------------
-;--------------------------------------
-                * = $6431
-;--------------------------------------
-ArrowTbl        .fill 32                ; arrow shapes
-
-;--------------------------------------
-;--------------------------------------
-                * = $6450
-;--------------------------------------
-
-;--------------------------------------
-;--------------------------------------
-TXTWDW          * = $6CB1
-;--------------------------------------
-STKTAB          .fill 16                ; a joystick decoding table
-SSNCOD          .fill 12                ; season codes
-TRNTAB          .fill 60                ; terrain cost tables
-BHX1            .fill 22                ; intraversible square pair coordinates
-BHY1            .fill 22
-BHX2            .fill 22
-BHY2            .fill 22
-EXEC            .fill 159               ; execution times
-
 ;
 ;Russian artificial intelligence routine
 ;
@@ -98,7 +13,7 @@ EXEC            .fill 159               ; execution times
 ;--------------------------------------
 
 ;   initialization loop
-                ldx #$01
+INIT            ldx #$01
                 sta TEMPR
                 sta TOTRS
                 sta TOTGS

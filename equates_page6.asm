@@ -105,4 +105,5 @@ HOMEDR          .byte ?
 ZOC             .byte ?
 TEMPQ           .byte ?
 LLIM            .byte ?
-VICTRY          .byte ?         ; [$97]
+VICTRY          .byte ?
+IFR             .byte ?         ; [$98]

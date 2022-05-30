@@ -3,90 +3,6 @@
 ;EFT VERSION 1.8C (COMBAT) 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;================================================================
 
-                .cpu "65816"
-
-                .include "equates_system_atari8.asm"
-                .include "equates_directpage.asm"
-                .include "equates_page6.asm"
-
-;
-;declarations of routines in other modules
-;
-INVERT          = $4D26
-STALL           = $7200
-TERR            = $7240
-TERRB           = $7246
-Y00             = $72DE
-TERRTY          = $7369
-DNUMBR          = $7BB2
-JSTP            = $799C
-DWORDS          = $79C0
-SWITCH          = $79EF
-DEFNC           = $79B4
-OFFNC           = $7BF6
-XINC            = $7BF2
-YINC            = $7BF1
-
-
-;--------------------------------------
-;--------------------------------------
-                * = $5400
-;--------------------------------------
-CorpsX          .fill 159               ; x-coords of all units (pixel frame)
-CorpsY          .fill 159               ; y-coords of all units (pixel frame)
-MusterStrength  .fill 159               ; muster strengths
-CombatStrength  .fill 159               ; combat strengths
-SWAP            .fill 159               ; terrain code underneath unit
-ArrivalTurn     .fill 159               ; turn of arrival
-WordsTbl        .fill 272               ; various words for messages
-CorpType        .fill 159               ; codes for unit types
-CorpNumber      .fill 159               ; ID numbers of units
-HundredDigit    .fill 256               ; tables for displaying numbers (hundreds)
-TensDigit       .fill 256               ; tens tables
-OnesDigit       .fill 256               ; ones tables
-TxtTbl          .fill 96                ; more text
-DaysInMonth     .fill 13                ; table of month lengths
-HowManyOrders   .fill 159               ; how many orders each unit has in queue
-WhatOrders      .fill 159               ; what the orders are
-WHORDH          .fill 159
-BEEPTB          .fill 4                 ; table of beep tones
-ERRMSG          .fill 128               ; table of error messages
-XOFF            .fill 4                 ; offsets for moving maltakreuze
-YOFF            .fill 4
-MASKO           .fill 4                 ; mask values for decoding orders
-XADD            .fill 4                 ; offsets for moving arrow
-YADD            .fill 4
-TreeColors      .fill 13                ; tree color table
-MLTKRZ          .fill 8                 ; maltese cross shape
-
-;
-;RAM from $6000 to $6430 is taken up by
-;character sets and the display list
-;
-;--------------------------------------
-;--------------------------------------
-                * = $6431
-;--------------------------------------
-ArrowTbl        .fill 32                ; arrow shapes
-
-;--------------------------------------
-;--------------------------------------
-                * = $6450
-;--------------------------------------
-
-;--------------------------------------
-;--------------------------------------
-TXTWDW          * = $6CB1
-;--------------------------------------
-STKTAB          .fill 16                ; a joystick decoding table
-SSNCOD          .fill 12                ; season codes
-TRNTAB          .fill 60                ; terrain cost tables
-BHX1            .fill 22                ; intraversible square pair coordinates
-BHY1            .fill 22
-BHX2            .fill 22
-BHY2            .fill 22
-EXEC            .fill 159               ; execution times
-
 
 ;--------------------------------------
 ;--------------------------------------
@@ -316,7 +232,7 @@ Y23             lda #$FF
                 rts
 
 ;   supply evaluation routine
-                lda ArrivalTurn,X
+LOGSTC          lda ArrivalTurn,X
                 cmp TURN
                 beq Z86
                 bcc Z86
@@ -486,12 +402,12 @@ WEAKLG          lda MusterStrength,X
                 sec
                 sbc TEMPR
 Y40             cmp CombatStrength,X
-                bcc A30
+                bcc A30_
                 lda #$FF
                 sta EXEC,X
                 lda #$00
                 sta HowManyOrders,X
-A30             rts
+A30_             rts
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ;   added for binary compatibility
@@ -515,7 +431,7 @@ WEAKLG2         lda MusterStrength,X
                 lsr A
                 lsr A
                 lsr A
-                sta TEMPR
+OBJY            sta TEMPR
                 lda MusterStrength,X
                 sec
                 sbc TEMPR
