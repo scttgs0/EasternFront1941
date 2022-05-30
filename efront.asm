@@ -26,8 +26,8 @@ BOOT            jml START
 
 ;--------------------------------------
 
-                .include "EFT18Thinking.asm"
-                .include "EFT18Combat.asm"
-                .include "EFT18Data.asm"
-                .include "EFT18Mainline.asm"
-                .include "EFT18Interrupt.asm"
+                .include "thinking.asm"
+                .include "combat.asm"
+                .include "data.asm"
+                .include "main.asm"
+                .include "interrupt.asm"
