@@ -90,491 +90,491 @@ EXEC            .fill 159
                 * = $6E00
 ;--------------------------------------
 
-START           LDX #$08
-BOOP99          LDA ZPVAL,X             ; initialize page zero values
-                STA DLSTPT,X
-                LDA COLTAB,X
-                STA PCOLR0,X
-                DEX
-                BPL BOOP99
+START           ldx #$08
+BOOP99          lda ZPVAL,X             ; initialize page zero values
+                sta DLSTPT,X
+                lda COLTAB,X
+                sta PCOLR0,X
+                dex
+                bpl BOOP99
 
-                LDX #$0F
-BOOP98          LDA PSXVAL,X            ; initialize page six values
-                STA XPOSL,X
-                DEX
-                BPL BOOP98
+                ldx #$0F
+BOOP98          lda PSXVAL,X            ; initialize page six values
+                sta XPOSL,X
+                dex
+                bpl BOOP98
 
-                LDA #$00
-                STA SDLSTL
-                STA HSCROL
-                STA VSCROL
-                LDA DLSTPT+1
-                STA SDLSTL+1
+                lda #$00
+                sta SDLSTL
+                sta HSCROL
+                sta VSCROL
+                lda DLSTPT+1
+                sta SDLSTL+1
 
-                LDX #$00
-LOOP22          LDA MusterStrength,X
-                STA CombatStrength,X
-                LDA #$00
-                STA HowManyOrders,X
-                LDA #$FF
-                STA EXEC,X
-                INX
-                CPX #$A0
-                BNE LOOP22
+                ldx #$00
+LOOP22          lda MusterStrength,X
+                sta CombatStrength,X
+                lda #$00
+                sta HowManyOrders,X
+                lda #$FF
+                sta EXEC,X
+                inx
+                cpx #$A0
+                bne LOOP22
 
 ;   set up player window
-                LDA #$50
-                STA PMBASE
+                lda #$50
+                sta PMBASE
 
 ;   here follow various initializations
-                LDA #$2F
-                STA SDMCTL
-                LDA #$03
-                STA GRACTL
-                LDA #$78
-                STA HPOSP0
-                LDA #$01
-                STA HANDCP
-                STA GPRIOR
-                STA SIZEP0
-                LDX #$33
+                lda #$2F
+                sta SDMCTL
+                lda #$03
+                sta GRACTL
+                lda #$78
+                sta HPOSP0
+                lda #$01
+                sta HANDCP
+                sta GPRIOR
+                sta SIZEP0
+                ldx #$33
 
-                LDA #$FF
-                STA PLYR0,X
-                INX
-                STA PLYR0,X
-                INX
-                LDA #$81
-LOOP2           STA PLYR0,X
-                INX
-                CPX #$3F
-                BNE LOOP2
-                LDA #$FF
-                STA PLYR0,X
-                STA TURN
-                INX
-                STA PLYR0,X
+                lda #$FF
+                sta PLYR0,X
+                inx
+                sta PLYR0,X
+                inx
+                lda #$81
+LOOP2           sta PLYR0,X
+                inx
+                cpx #$3F
+                bne LOOP2
+                lda #$FF
+                sta PLYR0,X
+                sta TURN
+                inx
+                sta PLYR0,X
 
 ;   enable deferred vertical blank interrupt
-                LDY #$00
-                LDX #$74
-                LDA #$07
-                JSR SETVBV
-                LDA #$00                ; This is DLI vector (low byte)
-                STA $0200
-                LDA #$7B
-                STA $0201
-                LDA #$C0
-                STA NMIEN               ; Turn interrupts on
+                ldy #$00
+                ldx #$74
+                lda #$07
+                jsr SETVBV
+                lda #$00                ; This is DLI vector (low byte)
+                sta $0200
+                lda #$7B
+                sta $0201
+                lda #$C0
+                sta NMIEN               ; Turn interrupts on
 
-NEWTRN          INC TURN
+NEWTRN          inc TURN
 
 ;   first do calendar calculations
-                LDA DAY
-                CLC
-                ADC #07
-                LDX MONTH
-                CMP DaysInMonth,X
-                BEQ X28
-                BCC X28
-                CPX #$02
-                BNE X96
-                LDY YEAR
-                CPY #44
-                BNE X96
-                SEC
-                SBC #$01
-X96             SEC
-                SBC DaysInMonth,X
-                INX
-                CPX #13
-                BNE X29
-                INC YEAR
-                LDX #01
-X29             STX MONTH
-                LDY TreeColors,X
-                STY TRCOLR
-X28             STA DAY
-                LDY #$93
-                LDA #$00
-LOOP13          STA TXTWDW,Y
-                INY
-                CPY #$A7
-                BNE LOOP13
-                LDY #$93
-                TXA
-                CLC
-                ADC #$10
-                JSR DWORDS
-                LDA DAY
-                JSR DNUMBR
-                LDA #$0C
-                STA TXTWDW,Y
-                INY
-                INY
-                LDA #$11
-                STA TXTWDW,Y
-                INY
-                LDA #$19
-                STA TXTWDW,Y
-                INY
-                LDX YEAR
-                LDA #$14
-                STA TXTWDW,Y
-                INY
-                LDA OnesDigit,X
-                CLC
-                ADC #$10
-                STA TXTWDW,Y
+                lda DAY
+                clc
+                adc #07
+                ldx MONTH
+                cmp DaysInMonth,X
+                beq X28
+                bcc X28
+                cpx #$02
+                bne X96
+                ldy YEAR
+                cpy #44
+                bne X96
+                sec
+                sbc #$01
+X96             sec
+                sbc DaysInMonth,X
+                inx
+                cpx #13
+                bne X29
+                inc YEAR
+                ldx #01
+X29             stx MONTH
+                ldy TreeColors,X
+                sty TRCOLR
+X28             sta DAY
+                ldy #$93
+                lda #$00
+LOOP13          sta TXTWDW,Y
+                iny
+                cpy #$A7
+                bne LOOP13
+                ldy #$93
+                txa
+                clc
+                adc #$10
+                jsr DWORDS
+                lda DAY
+                jsr DNUMBR
+                lda #$0C
+                sta TXTWDW,Y
+                iny
+                iny
+                lda #$11
+                sta TXTWDW,Y
+                iny
+                lda #$19
+                sta TXTWDW,Y
+                iny
+                ldx YEAR
+                lda #$14
+                sta TXTWDW,Y
+                iny
+                lda OnesDigit,X
+                clc
+                adc #$10
+                sta TXTWDW,Y
 
 ;   do season calculations
-                LDA MONTH
-                CMP #$04
-                BNE X87
-                LDA #$02
-                STA EARTH
-                LDA #$40
-                STA SEASN1
-                LDA #$01
-                STA SEASN3
-                LDA #$00
-                STA SEASN2
-                JMP ENDSSN
-X87             CMP #$0A
-                BNE X88
-                LDA #$02
-                STA EARTH
-                JMP ENDSSN
-X88             CMP #$05
-                BNE X89
-                LDA #$10
-                STA EARTH
-                JMP ENDSSN
-X89             CMP #$0B
-                BNE X90
-                LDA #$0A
-                STA EARTH
-                JMP X91
-X90             CMP #$01
-                BNE X92
-                LDA #$80
-                STA SEASN1
-                LDA #$FF
-                STA SEASN2
-                STA SEASN3
-                JMP ENDSSN
-X92             CMP #$03
-                BEQ X91
-                JMP ENDSSN
+                lda MONTH
+                cmp #$04
+                bne X87
+                lda #$02
+                sta EARTH
+                lda #$40
+                sta SEASN1
+                lda #$01
+                sta SEASN3
+                lda #$00
+                sta SEASN2
+                jmp ENDSSN
+X87             cmp #$0A
+                bne X88
+                lda #$02
+                sta EARTH
+                jmp ENDSSN
+X88             cmp #$05
+                bne X89
+                lda #$10
+                sta EARTH
+                jmp ENDSSN
+X89             cmp #$0B
+                bne X90
+                lda #$0A
+                sta EARTH
+                jmp X91
+X90             cmp #$01
+                bne X92
+                lda #$80
+                sta SEASN1
+                lda #$FF
+                sta SEASN2
+                sta SEASN3
+                jmp ENDSSN
+X92             cmp #$03
+                beq X91
+                jmp ENDSSN
 
 ;   freeze those rivers, baby
-X91             LDA RANDOM
-                AND #$07
-                CLC
-                ADC #$07
-                EOR SEASN2
-                STA TEMPR
-                LDA ICELAT
-                STA OLDLAT
-                SEC
-                SBC TEMPR
-                BEQ X95
-                BPL X94
-X95             LDA #$01
-X94             CMP #$27
-                BCC X93
-                LDA #$27
-X93             STA ICELAT
-                LDA #$01
-                STA CHUNKX
-                STA LONG
-                LDA OLDLAT
-                STA CHUNKY
-                STA LAT
+X91             lda RANDOM
+                and #$07
+                clc
+                adc #$07
+                eor SEASN2
+                sta TEMPR
+                lda ICELAT
+                sta OLDLAT
+                sec
+                sbc TEMPR
+                beq X95
+                bpl X94
+X95             lda #$01
+X94             cmp #$27
+                bcc X93
+                lda #$27
+X93             sta ICELAT
+                lda #$01
+                sta CHUNKX
+                sta LONG
+                lda OLDLAT
+                sta CHUNKY
+                sta LAT
 
-LOOP40          JSR TERR
+LOOP40          jsr TERR
 
-                AND #$3F
-                CMP #$0B
-                BCC NOTCH
-                CMP #$29
-                BCS NOTCH
-                LDX CHUNKY
-                CPX #$0E
-                BCS DOTCH
-                CMP #$23
-                BCS NOTCH
-DOTCH           ORA SEASN1
-                LDX UNITNO
-                BEQ X86
-                STA SWAP,X
-                JMP NOTCH
-X86             STA (MAPPTR),Y
-NOTCH           INC CHUNKX
-                LDA CHUNKX
-                STA LONG
-                CMP #46
-                BNE LOOP40
-                LDA #$00
-                STA CHUNKX
-                STA LONG
-                LDA CHUNKY
-                CMP ICELAT
-                BEQ ENDSSN
-                SEC
-                SBC SEASN3
-                STA CHUNKY
-                STA LAT
-                JMP LOOP40
+                and #$3F
+                cmp #$0B
+                bcc NOTCH
+                cmp #$29
+                bcs NOTCH
+                ldx CHUNKY
+                cpx #$0E
+                bcs DOTCH
+                cmp #$23
+                bcs NOTCH
+DOTCH           ora SEASN1
+                ldx UNITNO
+                beq X86
+                sta SWAP,X
+                jmp NOTCH
+X86             sta (MAPPTR),Y
+NOTCH           inc CHUNKX
+                lda CHUNKX
+                sta LONG
+                cmp #46
+                bne LOOP40
+                lda #$00
+                sta CHUNKX
+                sta LONG
+                lda CHUNKY
+                cmp ICELAT
+                beq ENDSSN
+                sec
+                sbc SEASN3
+                sta CHUNKY
+                sta LAT
+                jmp LOOP40
 
-ENDSSN          LDX #$9E                ; any reinforcements?
-LOOP14          LDA ArrivalTurn,X
-                CMP TURN
-                BNE X33
-                LDA CorpsX,X
-                STA CHUNKX
-                STA LONG
-                LDA CorpsY,X
-                STA CHUNKY
-                STA LAT
-                STX CORPS
-                JSR TERRB
-                BEQ SORRY
-                CPX #$37
-                BCS A51
-                LDA #$0A
-                STA TXTWDW+36
-A51             JSR SWITCH
-                JMP X33
-SORRY           LDA TURN
-                CLC
-                ADC #$01
-                STA ArrivalTurn,X
-X33             DEX
-                BNE LOOP14
+ENDSSN          ldx #$9E                ; any reinforcements?
+LOOP14          lda ArrivalTurn,X
+                cmp TURN
+                bne X33
+                lda CorpsX,X
+                sta CHUNKX
+                sta LONG
+                lda CorpsY,X
+                sta CHUNKY
+                sta LAT
+                stx CORPS
+                jsr TERRB
+                beq SORRY
+                cpx #$37
+                bcs A51
+                lda #$0A
+                sta TXTWDW+36
+A51             jsr SWITCH
+                jmp X33
+SORRY           lda TURN
+                clc
+                adc #$01
+                sta ArrivalTurn,X
+X33             dex
+                bne LOOP14
 
-X31             LDX #$9E
-LOOPF           STX ARMY
-                JSR LOGSTC              ; logistics subroutine
-                LDX ARMY
-                DEX
-                BNE LOOPF
+X31             ldx #$9E
+LOOPF           stx ARMY
+                jsr LOGSTC              ; logistics subroutine
+                ldx ARMY
+                dex
+                bne LOOPF
 
 ;   calculate some points
-                LDA #$00
-                STA ACCLO
-                STA ACCHI
-                LDX #$01
-LOOPB           LDA #$30
-                SEC
-                SBC CorpsX,X
-                STA TEMPR
-                LDA MusterStrength,X
-                LSR A
-                BEQ A01
-                TAY
-                LDA #$00
-                CLC
-LOOPA           ADC TEMPR
-                BCC A0
-                INC ACCHI
-                CLC
-                BNE A0
-                DEC ACCHI
-A0              DEY
-                BNE LOOPA
-A01             INX
-                CPX #$37
-                BNE LOOPB
+                lda #$00
+                sta ACCLO
+                sta ACCHI
+                ldx #$01
+LOOPB           lda #$30
+                sec
+                sbc CorpsX,X
+                sta TEMPR
+                lda MusterStrength,X
+                lsr A
+                beq A01
+                tay
+                lda #$00
+                clc
+LOOPA           adc TEMPR
+                bcc A0
+                inc ACCHI
+                clc
+                bne A0
+                dec ACCHI
+A0              dey
+                bne LOOPA
+A01             inx
+                cpx #$37
+                bne LOOPB
 
-LOOPC           LDA CorpsX,X
-                STA TEMPR
-                LDA CombatStrength,X
-                LSR A
-                LSR A
-                LSR A
-                BEQ A02
-                TAY
-                LDA #$00
-                CLC
-LOOPD           ADC TEMPR
-                BCC A03
-                INC ACCLO
-                CLC
-                BNE A03
-                DEC ACCLO
-A03             DEY
-                BNE LOOPD
-A02             INX
-                CPX #$9E
-                BNE LOOPC
+LOOPC           lda CorpsX,X
+                sta TEMPR
+                lda CombatStrength,X
+                lsr A
+                lsr A
+                lsr A
+                beq A02
+                tay
+                lda #$00
+                clc
+LOOPD           adc TEMPR
+                bcc A03
+                inc ACCLO
+                clc
+                bne A03
+                dec ACCLO
+A03             dey
+                bne LOOPD
+A02             inx
+                cpx #$9E
+                bne LOOPC
 
-                LDA ACCHI
-                SEC
-                SBC ACCLO
-                BCS A04
-                LDA #$00
-A04             LDX #$03
-LOOPG           LDY MOSCOW,X
-                BEQ A15
-                CLC
-                ADC MPTS,X
-                BCC A15
-                LDA #$FF
-A15             DEX
-                BPL LOOPG
+                lda ACCHI
+                sec
+                sbc ACCLO
+                bcs A04
+                lda #$00
+A04             ldx #$03
+LOOPG           ldy MOSCOW,X
+                beq A15
+                clc
+                adc MPTS,X
+                bcc A15
+                lda #$FF
+A15             dex
+                bpl LOOPG
 
-                LDX HANDCP              ; was handicap option used?
-                BNE A23                 ; no
-                LSR A                   ; yes, halve score
-A23             LDY #$05
-                JSR DNUMBR
-                LDA #$00
-                STA TXTWDW,Y
-                LDA TURN
-                CMP #$28
-                BNE Z00
-                LDA #$01                ; end of game
-                JSR TXTMSG
-FINI            JMP FINI                ; hang up
+                ldx HANDCP              ; was handicap option used?
+                bne A23                 ; no
+                lsr A                   ; yes, halve score
+A23             ldy #$05
+                jsr DNUMBR
+                lda #$00
+                sta TXTWDW,Y
+                lda TURN
+                cmp #$28
+                bne Z00
+                lda #$01                ; end of game
+                jsr TXTMSG
+FINI            jmp FINI                ; hang up
 
 
-Z00             LDA #$00
-                STA BUTMSK
-                STA CORPS
-                JSR TXTMSG
-                JSR $4700               ; artificial intelligence routine
-                LDA #$01
-                STA BUTMSK
-                LDA #$02
-                JSR TXTMSG
+Z00             lda #$00
+                sta BUTMSK
+                sta CORPS
+                jsr TXTMSG
+                jsr $4700               ; artificial intelligence routine
+                lda #$01
+                sta BUTMSK
+                lda #$02
+                jsr TXTMSG
 
 ;   movement execution phase
-                LDA #$00
-                STA TICK
-                LDX #$9E
-LOOP31          STX ARMY
-                JSR DINGO               ; determine first execution time
-                DEX
-                BNE LOOP31
+                lda #$00
+                sta TICK
+                ldx #$9E
+LOOP31          stx ARMY
+                jsr DINGO               ; determine first execution time
+                dex
+                bne LOOP31
 
-LOOP33          LDX #$9E
-LOOP32          STX ARMY
-                LDA MusterStrength,X
-                SEC
-                SBC CombatStrength,X
-                CMP #$02
-                BCC Y30
-                INC CombatStrength,X
-                CMP RANDOM
-                BCC Y30
-                INC CombatStrength,X
-Y30             LDA EXEC,X
-                BMI A60
-                CMP TICK
-                BNE A60
-                LDA WhatOrders,X
-                AND #$03
-                TAY
-                LDA CorpsX,X
-                CLC
-                ADC XINC,Y
-                STA LONG
-                STA ACCLO
-                LDA CorpsY,X
-                CLC
-                ADC YINC,Y
-                STA LAT
-                STA ACCHI
-                JSR TERR
-                LDA UNITNO
-                BEQ DOMOVE
-                CMP #$37
-                BCC GERMAN
-                LDA ARMY
-                CMP #$37
-                BCS TRJAM
-                BCC COMBAT
-GERMAN          LDA ARMY
-                CMP #$37
-                BCS COMBAT
-TRJAM           LDX ARMY
-                LDA TICK
-                CLC
-                ADC #$02
-                STA EXEC,X
-A60             JMP Y06
-COMBAT          JSR $4ED8
-                LDA VICTRY
-                BEQ A60
-                BNE Z94
-DOMOVE          LDX ARMY
-                STX CORPS
-                LDA CorpsY,X
-                STA CHUNKY
-                STA LAT
-                LDA CorpsX,X
-                STA CHUNKX
-                STA LONG
-                JSR CHKZOC
-                LDA ACCHI
-                STA LAT
-                LDA ACCLO
-                STA LONG
-                LDA ZOC
-                CMP #$02
-                BCC Z94
-                JSR CHKZOC
-                LDA ZOC
-                CMP #$02
-                BCS TRJAM
-Z94             JSR SWITCH
-                LDX CORPS
-                LDA LAT
-                STA CHUNKY
-                STA CorpsY,X
-                LDA LONG
-                STA CHUNKX
-                STA CorpsX,X
-                JSR SWITCH
-                LDX ARMY
-                LDA #$FF
-                STA EXEC,X
-                DEC HowManyOrders,X
-                BEQ Y06
-                LSR WHORDH,X
-                ROR WhatOrders,X
-                LSR WHORDH,X
-                ROR WhatOrders,X
-                LDY #$03
-LOOPH           LDA CorpsX,X
-                CMP MOSCX,Y
-                BNE A18
-                LDA CorpsY,X
-                CMP MOSCY,Y
-                BNE A18
-                LDA #$FF
-                CPX #$37
-                BCC A19
-                LDA #$00
-A19             STA MOSCOW,Y
-A18             DEY
-                BPL LOOPH
+LOOP33          ldx #$9E
+LOOP32          stx ARMY
+                lda MusterStrength,X
+                sec
+                sbc CombatStrength,X
+                cmp #$02
+                bcc Y30
+                inc CombatStrength,X
+                cmp RANDOM
+                bcc Y30
+                inc CombatStrength,X
+Y30             lda EXEC,X
+                bmi A60
+                cmp TICK
+                bne A60
+                lda WhatOrders,X
+                and #$03
+                tay
+                lda CorpsX,X
+                clc
+                adc XINC,Y
+                sta LONG
+                sta ACCLO
+                lda CorpsY,X
+                clc
+                adc YINC,Y
+                sta LAT
+                sta ACCHI
+                jsr TERR
+                lda UNITNO
+                beq DOMOVE
+                cmp #$37
+                bcc GERMAN
+                lda ARMY
+                cmp #$37
+                bcs TRJAM
+                bcc COMBAT
+GERMAN          lda ARMY
+                cmp #$37
+                bcs COMBAT
+TRJAM           ldx ARMY
+                lda TICK
+                clc
+                adc #$02
+                sta EXEC,X
+A60             jmp Y06
+COMBAT          jsr $4ED8
+                lda VICTRY
+                beq A60
+                bne Z94
+DOMOVE          ldx ARMY
+                stx CORPS
+                lda CorpsY,X
+                sta CHUNKY
+                sta LAT
+                lda CorpsX,X
+                sta CHUNKX
+                sta LONG
+                jsr CHKZOC
+                lda ACCHI
+                sta LAT
+                lda ACCLO
+                sta LONG
+                lda ZOC
+                cmp #$02
+                bcc Z94
+                jsr CHKZOC
+                lda ZOC
+                cmp #$02
+                bcs TRJAM
+Z94             jsr SWITCH
+                ldx CORPS
+                lda LAT
+                sta CHUNKY
+                sta CorpsY,X
+                lda LONG
+                sta CHUNKX
+                sta CorpsX,X
+                jsr SWITCH
+                ldx ARMY
+                lda #$FF
+                sta EXEC,X
+                dec HowManyOrders,X
+                beq Y06
+                lsr WHORDH,X
+                ror WhatOrders,X
+                lsr WHORDH,X
+                ror WhatOrders,X
+                ldy #$03
+LOOPH           lda CorpsX,X
+                cmp MOSCX,Y
+                bne A18
+                lda CorpsY,X
+                cmp MOSCY,Y
+                bne A18
+                lda #$FF
+                cpx #$37
+                bcc A19
+                lda #$00
+A19             sta MOSCOW,Y
+A18             dey
+                bpl LOOPH
 
-                JSR DINGO
-                JSR STALL
-Y06             LDX ARMY
-                DEX
-                BEQ Y07
-                JMP LOOP32
-Y07             INC TICK
-                LDA TICK
-                CMP #$20
-                BEQ Y08
-                JMP LOOP33
+                jsr DINGO
+                jsr STALL
+Y06             ldx ARMY
+                dex
+                beq Y07
+                jmp LOOP32
+Y07             inc TICK
+                lda TICK
+                cmp #$20
+                beq Y08
+                jmp LOOP33
 
 ;   end of movement phase
-Y08             JMP NEWTRN
+Y08             jmp NEWTRN
 
 ;--------------------------------------
 ;--------------------------------------
@@ -592,16 +592,16 @@ MOSCOW          .byte 0,0,0,0
 ;--------------------------------------
                 * = $7200
 ;--------------------------------------
-STALL           LDA #$00
-LOOP79          PHA
-                PLA
-                PHA
-                PLA
-                PHA
-                PLA
-                ADC #$01
-                BNE LOOP79
-                RTS
+STALL           lda #$00
+LOOP79          pha
+                pla
+                pha
+                pla
+                pha
+                pla
+                adc #$01
+                bne LOOP79
+                rts
 
 ;
 ;this is the debugging routine
@@ -610,32 +610,32 @@ LOOP79          PHA
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ; added for binary compatibility
-                JMP $6E9A
+                jmp $6E9A
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 ;--------------------------------------
 ;--------------------------------------
                 * = $7210
 ;--------------------------------------
-                LDA #$00
-                STA $D01D
-                STA $D00D
-                STA $D00E
-                STA $D00F
-                LDA #$22
-                STA $22F
-                LDA #$20
-                STA $230
-                LDA #$BC
-                STA $231
-                LDA #$40
-                STA NMIEN
-                LDA #$0A
-                STA $2C5
-                LDA #$00
-                STA $5FFF
-                STA $2C8
-                BRK
+                lda #$00
+                sta $D01D
+                sta $D00D
+                sta $D00E
+                sta $D00F
+                lda #$22
+                sta $22F
+                lda #$20
+                sta $230
+                lda #$BC
+                sta $231
+                lda #$40
+                sta NMIEN
+                lda #$0A
+                sta $2C5
+                lda #$00
+                sta $5FFF
+                sta $2C8
+                brk
 
 
 ;
@@ -647,196 +647,196 @@ LOOP79          PHA
                 * = $7240
 ;--------------------------------------
 
-TERR            JSR TERRB
-                BEQ LOOKUP
-                RTS
-TERRB           LDA #$00
-                STA MAPPTR+1
-                STA UNITNO
-                LDA #$27
-                SEC
-                SBC LAT
-                ASL A
-                ROL MAPPTR+1
-                ASL A
-                ROL MAPPTR+1
-                ASL A
-                ROL MAPPTR+1
-                ASL A
-                ROL MAPPTR+1
-                STA TLO
-                LDY MAPPTR+1
-                STY THI
-                ASL A
-                ROL MAPPTR+1
-                CLC
-                ADC TLO
-                STA MAPPTR
-                LDA MAPPTR+1
-                ADC THI
-                ADC #$65
-                STA MAPPTR+1
-                LDA #46
-                SEC
-                SBC LONG
-                TAY
-                LDA (MAPPTR),Y
-                STA TRNCOD
-                AND #$3F
-                CMP #$3D
-                BEQ A80
-                CMP #$3E
-A80             RTS
+TERR            jsr TERRB
+                beq LOOKUP
+                rts
+TERRB           lda #$00
+                sta MAPPTR+1
+                sta UNITNO
+                lda #$27
+                sec
+                sbc LAT
+                asl A
+                rol MAPPTR+1
+                asl A
+                rol MAPPTR+1
+                asl A
+                rol MAPPTR+1
+                asl A
+                rol MAPPTR+1
+                sta TLO
+                ldy MAPPTR+1
+                sty THI
+                asl A
+                rol MAPPTR+1
+                clc
+                adc TLO
+                sta MAPPTR
+                lda MAPPTR+1
+                adc THI
+                adc #$65
+                sta MAPPTR+1
+                lda #46
+                sec
+                sbc LONG
+                tay
+                lda (MAPPTR),Y
+                sta TRNCOD
+                and #$3F
+                cmp #$3D
+                beq A80
+                cmp #$3E
+A80             rts
 
-LOOKUP          LDA TRNCOD
-                STA UNTCOD
-                AND #$C0
-                LDX #$9E
-                CMP #$40
-                BNE X98
-                LDX #$37
-X98             LDA LAT
-LOOP30          CMP CorpsY,X
-                BEQ MIGHTB
-X97             DEX
-                BNE LOOP30
-                LDA #$FF
-                STA TXTWDW+128
-                BMI MATCH
-MIGHTB          LDA LONG
-                CMP CorpsX,X
-                BNE X99
-                LDA CombatStrength,X
-                BEQ X99
-                LDA ArrivalTurn,X
-                BMI X99
-                CMP TURN
-                BCC MATCH
-                BEQ MATCH
-X99             LDA LAT
-                JMP X97
-MATCH           STX UNITNO
-                LDA SWAP,X
-                STA TRNCOD
-                RTS
+LOOKUP          lda TRNCOD
+                sta UNTCOD
+                and #$C0
+                ldx #$9E
+                cmp #$40
+                bne X98
+                ldx #$37
+X98             lda LAT
+LOOP30          cmp CorpsY,X
+                beq MIGHTB
+X97             dex
+                bne LOOP30
+                lda #$FF
+                sta TXTWDW+128
+                bmi MATCH
+MIGHTB          lda LONG
+                cmp CorpsX,X
+                bne X99
+                lda CombatStrength,X
+                beq X99
+                lda ArrivalTurn,X
+                bmi X99
+                cmp TURN
+                bcc MATCH
+                beq MATCH
+X99             lda LAT
+                jmp X97
+MATCH           stx UNITNO
+                lda SWAP,X
+                sta TRNCOD
+                rts
 
 ;   determines execution time of next move
-DINGO           LDX ARMY
-                LDA HowManyOrders,X
-                BNE Y00
-                LDA #$FF
-                STA EXEC,X
-                RTS
-Y00             LDA CorpsX,X
-                STA LONG
-                LDA CorpsY,X
-                STA LAT
-                JSR TERR
-                LDA UNTCOD
-                STA UNTCD1
-                LDX ARMY
-                LDA WhatOrders,X
-                EOR #$02
-                AND #$03
-                TAY
-                LDA CorpsX,X
-                CLC
-                ADC XADD,Y
-                STA LONG
-                LDA CorpsY,X
-                CLC
-                ADC YADD,Y
-                STA LAT
-                JSR TERR
-                JSR TERRTY
-                LDA UNTCD1
-                AND #$3F
-                LDX #$00
-                CMP #$3D
-                BEQ Y01                 ; infantry
-                LDX #$0A                ; armor
-Y01             TXA
-                LDX MONTH
-                CLC
-                ADC SSNCOD-1,X          ; add season index
-                ADC TRNTYP              ; add terrain index
-                TAX
-                LDA TRNTAB,X            ; get net delay
-                CLC
-                ADC TICK
-                LDX ARMY
-                STA EXEC,X
-                LDA TRNTYP
-                CMP #$07
-                BCC Y02
-                LDY #$15
-LOOP35          LDA LAT
-                CMP BHY1,Y
-                BNE Y03
-                LDA LONG
-                CMP BHX1,Y
-                BNE Y03
-                LDX ARMY
-                LDA CorpsX,X
-                CMP BHX2,Y
-                BNE Y03
-                LDA CorpsY,X
-                CMP BHY2,Y
-                BNE Y03
-                LDA #$FF
-                STA EXEC,X
-                RTS
-Y03             DEY
-                BPL LOOP35
-Y02             RTS
+DINGO           ldx ARMY
+                lda HowManyOrders,X
+                bne Y00
+                lda #$FF
+                sta EXEC,X
+                rts
+Y00             lda CorpsX,X
+                sta LONG
+                lda CorpsY,X
+                sta LAT
+                jsr TERR
+                lda UNTCOD
+                sta UNTCD1
+                ldx ARMY
+                lda WhatOrders,X
+                eor #$02
+                and #$03
+                tay
+                lda CorpsX,X
+                clc
+                adc XADD,Y
+                sta LONG
+                lda CorpsY,X
+                clc
+                adc YADD,Y
+                sta LAT
+                jsr TERR
+                jsr TERRTY
+                lda UNTCD1
+                and #$3F
+                ldx #$00
+                cmp #$3D
+                beq Y01                 ; infantry
+                ldx #$0A                ; armor
+Y01             txa
+                ldx MONTH
+                clc
+                adc SSNCOD-1,X          ; add season index
+                adc TRNTYP              ; add terrain index
+                tax
+                lda TRNTAB,X            ; get net delay
+                clc
+                adc TICK
+                ldx ARMY
+                sta EXEC,X
+                lda TRNTYP
+                cmp #$07
+                bcc Y02
+                ldy #$15
+LOOP35          lda LAT
+                cmp BHY1,Y
+                bne Y03
+                lda LONG
+                cmp BHX1,Y
+                bne Y03
+                ldx ARMY
+                lda CorpsX,X
+                cmp BHX2,Y
+                bne Y03
+                lda CorpsY,X
+                cmp BHY2,Y
+                bne Y03
+                lda #$FF
+                sta EXEC,X
+                rts
+Y03             dey
+                bpl LOOP35
+Y02             rts
 
 ;
 ;this subroutine determines the type of terrain
 ;in a square
 ;
-TERRTY          LDY #$00
-                LDA TRNCOD
-                BEQ DONE
-                CMP #$7F                ; border?
-                BNE Y04
-                LDY #$09
-                BNE DONE
-Y04             INY
-                CMP #$07                ; mountain?
-                BCC DONE
-                INY
-                CMP #$4B                ; city?
-                BCC DONE
-                INY
-                CMP #$4F                ; frozen swamp?
-                BCC DONE
-                INY
-                CMP #$69                ; frozen river?
-                BCC DONE
-                INY
-                CMP #$8F                ; swamp?
-                BCC DONE
-                INY
-                CMP #$A4                ; river?
-                BCC DONE
-                LDX LAT
-                CPX #$0E
-                BCC NEXT
-                CMP #$A9
-                BCC DONE
-NEXT            INY
-                CMP #$BA                ; coastline?
-                BCC DONE
-                CPX #$0E
-                BCC NEXT2
-                CMP #$BB
-                BCC DONE
-NEXT2           INY
-                CMP #$BD                ; estuary?
-                BCC DONE
-                INY
-DONE            STY TRNTYP
-                RTS
+TERRTY          ldy #$00
+                lda TRNCOD
+                beq DONE
+                cmp #$7F                ; border?
+                bne Y04
+                ldy #$09
+                bne DONE
+Y04             iny
+                cmp #$07                ; mountain?
+                bcc DONE
+                iny
+                cmp #$4B                ; city?
+                bcc DONE
+                iny
+                cmp #$4F                ; frozen swamp?
+                bcc DONE
+                iny
+                cmp #$69                ; frozen river?
+                bcc DONE
+                iny
+                cmp #$8F                ; swamp?
+                bcc DONE
+                iny
+                cmp #$A4                ; river?
+                bcc DONE
+                ldx LAT
+                cpx #$0E
+                bcc NEXT
+                cmp #$A9
+                bcc DONE
+NEXT            iny
+                cmp #$BA                ; coastline?
+                bcc DONE
+                cpx #$0E
+                bcc NEXT2
+                cmp #$BB
+                bcc DONE
+NEXT2           iny
+                cmp #$BD                ; estuary?
+                bcc DONE
+                iny
+DONE            sty TRNTYP
+                rts
 
 ;--------------------------------------
 ;--------------------------------------
@@ -852,24 +852,24 @@ MOSCY           .byte 28,36,0,15
 ;--------------------------------------
 ;--------------------------------------
 
-TXTMSG          ASL A
-                ASL A
-                ASL A
-                ASL A
-                ASL A
-                TAX
-                LDY #$69
-LOOP19          LDA TxtTbl,X
-                SEC
-                SBC #$20
-                STA TXTWDW,Y
-                INY
-                INX
-                TXA
-                AND #$1F
-                BNE LOOP19
-                RTS
+TXTMSG          asl A
+                asl A
+                asl A
+                asl A
+                asl A
+                tax
+                ldy #$69
+LOOP19          lda TxtTbl,X
+                sec
+                sbc #$20
+                sta TXTWDW,Y
+                iny
+                inx
+                txa
+                and #$1F
+                bne LOOP19
+                rts
 
                 .fill 3,$00     ; added for compatibility
 
-            .END
+            .end

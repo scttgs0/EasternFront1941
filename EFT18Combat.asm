@@ -94,164 +94,164 @@ EXEC            .fill 159               ; execution times
 ;--------------------------------------
 
 ;   combat routine
-                LDA #$00
-                STA VICTRY              ; clear victory flag
-                LDX ARMY
-                CPX #$2A                ;Finns can't attack
-                BEQ A10
-                CPX #$2B
-                BNE A11
-A10             RTS
-A11             LDY UNITNO
-                STY DEFNDR
-                LDX DEFNDR              ; make combat graphics
-                LDA SWAP,X
-                PHA
-                LDA #$FF                ; solid red square
-                CPX #$37                ; Russian unit?
-                BCS B1
-                LDA #$7F                ; make it white for Germans
-B1              STA SWAP,X
-                STX CORPS
-                LDA CorpsX,X
-                STA CHUNKX
-                LDA CorpsY,X
-                STA CHUNKY
-                JSR SWITCH
-                LDY #$08
-                LDX #$8F
-LOOP78          STX AUDC1
-                STY AUDF1
-                JSR STALL
-                TYA
-                CLC
-                ADC #$08
-                TAY
-                DEX
-                CPX #$7F
-                BNE LOOP78
+                lda #$00
+                sta VICTRY              ; clear victory flag
+                ldx ARMY
+                cpx #$2A                ;Finns can't attack
+                beq A10
+                cpx #$2B
+                bne A11
+A10             rts
+A11             ldy UNITNO
+                sty DEFNDR
+                ldx DEFNDR              ; make combat graphics
+                lda SWAP,X
+                pha
+                lda #$FF                ; solid red square
+                cpx #$37                ; Russian unit?
+                bcs B1
+                lda #$7F                ; make it white for Germans
+B1              sta SWAP,X
+                stx CORPS
+                lda CorpsX,X
+                sta CHUNKX
+                lda CorpsY,X
+                sta CHUNKY
+                jsr SWITCH
+                ldy #$08
+                ldx #$8F
+LOOP78          stx AUDC1
+                sty AUDF1
+                jsr STALL
+                tya
+                clc
+                adc #$08
+                tay
+                dex
+                cpx #$7F
+                bne LOOP78
 
 ;   replace original unit character
-                JSR SWITCH
-                LDX DEFNDR
-                PLA
-                STA SWAP,X
+                jsr SWITCH
+                ldx DEFNDR
+                pla
+                sta SWAP,X
 
 
-                JSR TERRTY              ; terrain in defender's square
-                LDX DEFNC,Y             ; defensive bonus factor
-                LDA CombatStrength,Y    ; defender's strength
-                LSR A
-Y15             DEX                     ; adjust for terrain
-                BEQ Y16
-                ROL A
-                BCC Y15
-                LDA #$FF
+                jsr TERRTY              ; terrain in defender's square
+                ldx DEFNC,Y             ; defensive bonus factor
+                lda CombatStrength,Y    ; defender's strength
+                lsr A
+Y15             dex                     ; adjust for terrain
+                beq Y16
+                rol A
+                bcc Y15
+                lda #$FF
 
 ;   adjust for defender's motion
-Y16             LDX HowManyOrders,Y
-                BEQ DOBATL
-                LSR A
+Y16             ldx HowManyOrders,Y
+                beq DOBATL
+                lsr A
 
 ;   evaluate defender's strike
-DOBATL          CMP RANDOM
-                BCC ATAKR
-                LDX ARMY
-                DEC MusterStrength,X
-                LDA CombatStrength,X
-                SBC #$05
-                STA CombatStrength,X
-                BEQ Z28
-                BCS Y24
-Z28             JMP DEAD                ; attacker dies
-Y24             JSR BRKCHK              ; attacker lives; does he break?
+DOBATL          cmp RANDOM
+                bcc ATAKR
+                ldx ARMY
+                dec MusterStrength,X
+                lda CombatStrength,X
+                sbc #$05
+                sta CombatStrength,X
+                beq Z28
+                bcs Y24
+Z28             jmp DEAD                ; attacker dies
+Y24             jsr BRKCHK              ; attacker lives; does he break?
 
 ;   evaluate attacker's strike
-ATAKR           LDX ARMY
-                LDA CorpsX,X
-                STA LONG
-                LDA CorpsY,X
-                STA LAT
-                JSR TERR
-                JSR TERRTY
-                LDA OFFNC,Y
-                TAY
-                LDX ARMY
-                LDA CombatStrength,X
-                DEY
-                BEQ Y19
-                LSR A                   ; river attack penalty
-Y19             CMP RANDOM
-                BCC A20
-                LDX DEFNDR              ; attacker strikes defender
-                DEC MusterStrength,X
-                LDA CombatStrength,X
-                SBC #$05
-                STA CombatStrength,X
-                BEQ Z29
-                BCS Y25
-Z29             JSR DEAD                ; defender dies
-A20             JMP ENDCOM
-Y25             JSR BRKCHK              ; does defender break?
-                BCC A20
-                LDY ARMY
-                LDA WhatOrders,Y
-                AND #$03
-                TAY                     ; first retreat priority : away from attacker
-                JSR RETRET
-                BCC VICCOM              ; defender died
-                BEQ Y27                 ; defender may retreat
-                LDY #$01                ; second priority: east/west
-                CPX #$37
-                BCS Y28
-                LDY #$03
-Y28             JSR RETRET
-                BCC VICCOM
-                BEQ Y27
-                LDY #$02                ; third priority: north
-                JSR RETRET
-                BCC VICCOM
-                BEQ Y27
-                LDY #$00                ; fourth priority: south
-                JSR RETRET
-                BCC VICCOM
-                BEQ Y27
-                LDY #$03                ; last priority: west/east
-                CPX #$37
-                BCS Y26
-                LDY #$01
-Y26             JSR RETRET
-                BCC VICCOM
-                BNE ENDCOM
-Y27             STX CORPS               ; retreat the defender
-                LDA CorpsX,X
-                STA CHUNKX
-                LDA CorpsY,X
-                STA CHUNKY
-                JSR SWITCH
-                LDX CORPS
-                LDA LAT
-                STA CorpsY,X
-                STA CHUNKY
-                LDA LONG
-                STA CorpsX,X
-                STA CHUNKX
-                JSR SWITCH
-VICCOM          LDX ARMY
-                STX CORPS
-                LDA CorpsX,X
-                STA CHUNKX
-                LDA CorpsY,X
-                STA CHUNKY
-                LDA ACCLO               ;defender's coordinates
-                STA LONG
-                LDA ACCHI
-                STA LAT
-                LDA #$FF
-                STA VICTRY
-ENDCOM          LDX ARMY
-                INC EXEC,X
-                RTS
+ATAKR           ldx ARMY
+                lda CorpsX,X
+                sta LONG
+                lda CorpsY,X
+                sta LAT
+                jsr TERR
+                jsr TERRTY
+                lda OFFNC,Y
+                tay
+                ldx ARMY
+                lda CombatStrength,X
+                dey
+                beq Y19
+                lsr A                   ; river attack penalty
+Y19             cmp RANDOM
+                bcc A20
+                ldx DEFNDR              ; attacker strikes defender
+                dec MusterStrength,X
+                lda CombatStrength,X
+                sbc #$05
+                sta CombatStrength,X
+                beq Z29
+                bcs Y25
+Z29             jsr DEAD                ; defender dies
+A20             jmp ENDCOM
+Y25             jsr BRKCHK              ; does defender break?
+                bcc A20
+                ldy ARMY
+                lda WhatOrders,Y
+                and #$03
+                tay                     ; first retreat priority : away from attacker
+                jsr RETRET
+                bcc VICCOM              ; defender died
+                beq Y27                 ; defender may retreat
+                ldy #$01                ; second priority: east/west
+                cpx #$37
+                bcs Y28
+                ldy #$03
+Y28             jsr RETRET
+                bcc VICCOM
+                beq Y27
+                ldy #$02                ; third priority: north
+                jsr RETRET
+                bcc VICCOM
+                beq Y27
+                ldy #$00                ; fourth priority: south
+                jsr RETRET
+                bcc VICCOM
+                beq Y27
+                ldy #$03                ; last priority: west/east
+                cpx #$37
+                bcs Y26
+                ldy #$01
+Y26             jsr RETRET
+                bcc VICCOM
+                bne ENDCOM
+Y27             stx CORPS               ; retreat the defender
+                lda CorpsX,X
+                sta CHUNKX
+                lda CorpsY,X
+                sta CHUNKY
+                jsr SWITCH
+                ldx CORPS
+                lda LAT
+                sta CorpsY,X
+                sta CHUNKY
+                lda LONG
+                sta CorpsX,X
+                sta CHUNKX
+                jsr SWITCH
+VICCOM          ldx ARMY
+                stx CORPS
+                lda CorpsX,X
+                sta CHUNKX
+                lda CorpsY,X
+                sta CHUNKY
+                lda ACCLO               ;defender's coordinates
+                sta LONG
+                lda ACCHI
+                sta LAT
+                lda #$FF
+                sta VICTRY
+ENDCOM          ldx ARMY
+                inc EXEC,X
+                rts
 
 ;
 ;Subroutines for combat
@@ -259,239 +259,239 @@ ENDCOM          LDX ARMY
 ;output: C bit set if defender lives, clear if dies
 ;Z bit set if retreat open, clear if blocked
 ;
-RETRET          LDA CorpsX,X
-                CLC
-                ADC XINC,Y
-                STA LONG
-                LDA CorpsY,X
-                CLC
-                ADC YINC,Y
-                STA LAT
-                JSR TERR                ; examine terrain
-                JSR TERRTY
-                LDX DEFNDR
-                LDA UNITNO              ; anybody in this square?
-                BNE Y22
-                LDA TRNTYP              ; no
+RETRET          lda CorpsX,X
+                clc
+                adc XINC,Y
+                sta LONG
+                lda CorpsY,X
+                clc
+                adc YINC,Y
+                sta LAT
+                jsr TERR                ; examine terrain
+                jsr TERRTY
+                ldx DEFNDR
+                lda UNITNO              ; anybody in this square?
+                bne Y22
+                lda TRNTYP              ; no
 
 ;   check for bad ocean crossings
-                CMP #$07                ; coastline?
-                BCC Y41
-                CMP #$09
-                BEQ Y22
-                LDY #$15
-LOOP42          LDA LAT
-                CMP BHY1,Y
-                BNE Y43
-                LDA LONG
-                CMP BHX1,Y
-                BNE Y43
-                LDA CorpsX,X
-                CMP BHX2,Y
-                BNE Y43
-                LDA CorpsY,X
-                CMP BHY2,Y
-                BEQ Y22
-Y43             DEY
-                BPL LOOP42
+                cmp #$07                ; coastline?
+                bcc Y41
+                cmp #$09
+                beq Y22
+                ldy #$15
+LOOP42          lda LAT
+                cmp BHY1,Y
+                bne Y43
+                lda LONG
+                cmp BHX1,Y
+                bne Y43
+                lda CorpsX,X
+                cmp BHX2,Y
+                bne Y43
+                lda CorpsY,X
+                cmp BHY2,Y
+                beq Y22
+Y43             dey
+                bpl LOOP42
 
 ;   any blocking ZOC's?
-Y41             JSR CHKZOC
-                LDX DEFNDR
-                LDA ZOC
-                CMP #$02
-                BCS Y22                 ; no retreat into ZOC
-                LDA #$00                ; retreat is possible
-                SEC
-                RTS
-Y22             LDA CombatStrength,X            ; retreat not possible,extract penalty
-                SEC
-                SBC #$05
-                STA CombatStrength,X
-                BEQ Z27
-                BCS Y23
-Z27             JSR DEAD
-                CLC
-Y23             LDA #$FF
-                RTS
+Y41             jsr CHKZOC
+                ldx DEFNDR
+                lda ZOC
+                cmp #$02
+                bcs Y22                 ; no retreat into ZOC
+                lda #$00                ; retreat is possible
+                sec
+                rts
+Y22             lda CombatStrength,X            ; retreat not possible,extract penalty
+                sec
+                sbc #$05
+                sta CombatStrength,X
+                beq Z27
+                bcs Y23
+Z27             jsr DEAD
+                clc
+Y23             lda #$FF
+                rts
 
 ;   supply evaluation routine
-                LDA ArrivalTurn,X
-                CMP TURN
-                BEQ Z86
-                BCC Z86
-                RTS
-Z86             LDA #$18
-                CPX #$37
-                BCS A13
-                LDA #$18
-                LDY EARTH
-                CPY #$02                ; mud?
-                BEQ A12
-                CPY #$0A                ; snow?
-                BNE A13
-                LDA CorpsX,X            ; this discourages gung-ho corps
-                ASL A                   ; double distance
-                ASL A
-                ADC #$4A
-                CMP RANDOM
-                BCC A12
-                LDA #$10                ; harder to get supplies in winter
-A13             STA ACCLO
-                LDY #$01                ; Russians go east
-                CPX #$37
-                BCS Z80
-                LDY #$03                ; Germans go west
-Z80             STY HOMEDR
-                LDA CorpsX,X
-                STA LONG
-                LDA CorpsY,X
-                STA LAT
-                LDA #$00
-                STA RFR
-LOOP91          LDA LONG
-                STA SQX
-                LDA LAT
-                STA SQY
-LOOP90          LDA SQX
-                CLC
-                ADC XINC,Y
-                STA LONG
-                LDA SQY
-                CLC
-                ADC YINC,Y
-                STA LAT
-                JSR CHKZOC
-                CPX #$37
-                BCC A80
-                JSR TERRB
-                LDA TRNCOD
-                CMP #$BF
-                BEQ A77
-A80             LDA ZOC
-                CMP #$02
-                BCC Z81
-                INC RFR
-A77             INC RFR
-                LDA RFR
-                CMP ACCLO
-                BCC Z84
-A12             LSR CombatStrength,X
-                BNE A50
-                JMP DEAD
-A50             RTS
-Z84             LDA RANDOM
-                AND #$02
-                TAY
-                JMP LOOP90
-Z81             LDY HOMEDR
-                LDA LONG
-                CPY #$01
-                BNE Z85
-                CMP #$FF
-                BNE LOOP91
-                INC MusterStrength,X    ; Russian replacements
-                INC MusterStrength,X
-                RTS
-Z85             CMP #$2E
-                BNE LOOP91
-                RTS
+                lda ArrivalTurn,X
+                cmp TURN
+                beq Z86
+                bcc Z86
+                rts
+Z86             lda #$18
+                cpx #$37
+                bcs A13
+                lda #$18
+                ldy EARTH
+                cpy #$02                ; mud?
+                beq A12
+                cpy #$0A                ; snow?
+                bne A13
+                lda CorpsX,X            ; this discourages gung-ho corps
+                asl A                   ; double distance
+                asl A
+                adc #$4A
+                cmp RANDOM
+                bcc A12
+                lda #$10                ; harder to get supplies in winter
+A13             sta ACCLO
+                ldy #$01                ; Russians go east
+                cpx #$37
+                bcs Z80
+                ldy #$03                ; Germans go west
+Z80             sty HOMEDR
+                lda CorpsX,X
+                sta LONG
+                lda CorpsY,X
+                sta LAT
+                lda #$00
+                sta RFR
+LOOP91          lda LONG
+                sta SQX
+                lda LAT
+                sta SQY
+LOOP90          lda SQX
+                clc
+                adc XINC,Y
+                sta LONG
+                lda SQY
+                clc
+                adc YINC,Y
+                sta LAT
+                jsr CHKZOC
+                cpx #$37
+                bcc A80
+                jsr TERRB
+                lda TRNCOD
+                cmp #$BF
+                beq A77
+A80             lda ZOC
+                cmp #$02
+                bcc Z81
+                inc RFR
+A77             inc RFR
+                lda RFR
+                cmp ACCLO
+                bcc Z84
+A12             lsr CombatStrength,X
+                bne A50
+                jmp DEAD
+A50             rts
+Z84             lda RANDOM
+                and #$02
+                tay
+                jmp LOOP90
+Z81             ldy HOMEDR
+                lda LONG
+                cpy #$01
+                bne Z85
+                cmp #$FF
+                bne LOOP91
+                inc MusterStrength,X    ; Russian replacements
+                inc MusterStrength,X
+                rts
+Z85             cmp #$2E
+                bne LOOP91
+                rts
 
 ;   routine to check for zone of control
-CHKZOC          LDA #$00
-                STA ZOC
-                LDA #$40
-                CPX #$37
-                BCS A70
-                LDA #$C0
-A70             STA TEMPR
-                JSR TERRB
-                BNE A74
-                LDA TRNCOD
-                AND #$C0
-                CMP TEMPR
-                BEQ A71
-                LDA CorpsX,X
-                CMP LONG
-                BNE A79
-                LDA CorpsY,X
-                CMP LAT
-                BEQ A74
-A79             RTS
-A71             LDA #$02
-                STA ZOC
-                RTS
-A74             LDX #$07
-LOOPQ           LDY JSTP+16,X
-                LDA LONG
-                CLC
-                ADC XINC,Y
-                STA LONG
-                LDA LAT
-                CLC
-                ADC YINC,Y
-                STA LAT
-                JSR TERRB
-                BNE A75
-                LDA TRNCOD
-                AND #$C0
-                CMP TEMPR
-                BNE A75
-                TXA
-                AND #$01
-                CLC
-                ADC #$01
-                ADC ZOC
-                STA ZOC
-A75             DEX
-                BPL LOOPQ
-                DEC LAT
-                DEC LONG
-                LDX ARMY
-                RTS
+CHKZOC          lda #$00
+                sta ZOC
+                lda #$40
+                cpx #$37
+                bcs A70
+                lda #$C0
+A70             sta TEMPR
+                jsr TERRB
+                bne A74
+                lda TRNCOD
+                and #$C0
+                cmp TEMPR
+                beq A71
+                lda CorpsX,X
+                cmp LONG
+                bne A79
+                lda CorpsY,X
+                cmp LAT
+                beq A74
+A79             rts
+A71             lda #$02
+                sta ZOC
+                rts
+A74             ldx #$07
+LOOPQ           ldy JSTP+16,X
+                lda LONG
+                clc
+                adc XINC,Y
+                sta LONG
+                lda LAT
+                clc
+                adc YINC,Y
+                sta LAT
+                jsr TERRB
+                bne A75
+                lda TRNCOD
+                and #$C0
+                cmp TEMPR
+                bne A75
+                txa
+                and #$01
+                clc
+                adc #$01
+                adc ZOC
+                sta ZOC
+A75             dex
+                bpl LOOPQ
+                dec LAT
+                dec LONG
+                ldx ARMY
+                rts
 
 
-DEAD            LDA #$00
-                STA MusterStrength,X
-                STA CombatStrength,X
-                STA HowManyOrders,X
-                LDA #$FF
-                STA EXEC,X
-                STA ArrivalTurn,X
-                STX CORPS
-                LDA CorpsX,X
-                STA CHUNKX
-                LDA CorpsY,X
-                STA CHUNKY
-                JSR SWITCH
-                RTS
+DEAD            lda #$00
+                sta MusterStrength,X
+                sta CombatStrength,X
+                sta HowManyOrders,X
+                lda #$FF
+                sta EXEC,X
+                sta ArrivalTurn,X
+                stx CORPS
+                lda CorpsX,X
+                sta CHUNKX
+                lda CorpsY,X
+                sta CHUNKY
+                jsr SWITCH
+                rts
 
 ;
 ;Subroutine BRKCHK evaluates whether a unit under attack breaks
 ;
-BRKCHK          CPX #$37
-                BCS WEAKLG
-                LDA CorpType,X
-                AND #$F0
-                BNE WEAKLG
-                LDA MusterStrength,X
-                LSR A
-                JMP Y40
-WEAKLG          LDA MusterStrength,X
-                LSR A
-                LSR A
-                LSR A
-                STA TEMPR
-                LDA MusterStrength,X
-                SEC
-                SBC TEMPR
-Y40             CMP CombatStrength,X
-                BCC A30
-                LDA #$FF
-                STA EXEC,X
-                LDA #$00
-                STA HowManyOrders,X
-A30             RTS
+BRKCHK          cpx #$37
+                bcs WEAKLG
+                lda CorpType,X
+                and #$F0
+                bne WEAKLG
+                lda MusterStrength,X
+                lsr A
+                jmp Y40
+WEAKLG          lda MusterStrength,X
+                lsr A
+                lsr A
+                lsr A
+                sta TEMPR
+                lda MusterStrength,X
+                sec
+                sbc TEMPR
+Y40             cmp CombatStrength,X
+                bcc A30
+                lda #$FF
+                sta EXEC,X
+                lda #$00
+                sta HowManyOrders,X
+A30             rts
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ;   added for binary compatibility
@@ -503,54 +503,54 @@ A30             RTS
 ;
 ;Subroutine BRKCHK2 evaluates whether a unit under attack breaks
 ;
-BRKCHK2         CPX #$47
-                BCS WEAKLG2
-                LDA CorpType,X
-                AND #$F0
-                BNE WEAKLG2
-                LDA MusterStrength,X
-                LSR A
-                JMP Y40_2
-WEAKLG2         LDA MusterStrength,X
-                LSR A
-                LSR A
-                LSR A
-                STA TEMPR
-                LDA MusterStrength,X
-                SEC
-                SBC TEMPR
-Y40_2           CMP CombatStrength,X
+BRKCHK2         cpx #$47
+                bcs WEAKLG2
+                lda CorpType,X
+                and #$F0
+                bne WEAKLG2
+                lda MusterStrength,X
+                lsr A
+                jmp Y40_2
+WEAKLG2         lda MusterStrength,X
+                lsr A
+                lsr A
+                lsr A
+                sta TEMPR
+                lda MusterStrength,X
+                sec
+                sbc TEMPR
+Y40_2           cmp CombatStrength,X
                 bcs A30_2
-                LDA #$FF
-                STA EXEC,X
-                LDA #$00
-                STA HowManyOrders,X
-A30_2           RTS
+                lda #$FF
+                sta EXEC,X
+                lda #$00
+                sta HowManyOrders,X
+A30_2           rts
 
                 .fill 41,$00
 
 ;
 ;Subroutine BRKCHK3 evaluates whether a unit under attack breaks
 ;
-BRKCHK4         CPX #$47
-                BCS WEAKLG3
-                LDA CorpType,X
-                AND #$F0
-                BNE WEAKLG3
-                LDA MusterStrength,X
-                LSR A
-                JMP Y40_3
-WEAKLG3         LDA MusterStrength,X
-                LSR A
-                LSR A
-                LSR A
-                STA TEMPR
-                LDA MusterStrength,X
-                SEC
-                SBC TEMPR
-Y40_3           CMP CombatStrength,X
-                RTS
+BRKCHK4         cpx #$47
+                bcs WEAKLG3
+                lda CorpType,X
+                and #$F0
+                bne WEAKLG3
+                lda MusterStrength,X
+                lsr A
+                jmp Y40_3
+WEAKLG3         lda MusterStrength,X
+                lsr A
+                lsr A
+                lsr A
+                sta TEMPR
+                lda MusterStrength,X
+                sec
+                sbc TEMPR
+Y40_3           cmp CombatStrength,X
+                rts
 
                 .fill 3,$00
 
-            .END
+            .end

@@ -98,792 +98,792 @@ EXEC            .fill 159               ; execution times
 ;--------------------------------------
 
 ;   initialization loop
-                LDX #$01
-                STA TEMPR
-                STA TOTRS
-                STA TOTGS
-                LDY #$9E
-LOOP80          LDA ArrivalTurn,Y
-                CMP TURN
-                BCS Z50
-                LDA TEMPR
-                CLC
-                ADC CombatStrength,Y
-                STA TEMPR
-                BCC Z50
-                INC TOTGS,X
-Z50             DEY
-                CPY #$37
-                BCS LOOP80
-                LDX #$00
-                CPY #$00
-                BNE LOOP80
+                ldx #$01
+                sta TEMPR
+                sta TOTRS
+                sta TOTGS
+                ldy #$9E
+LOOP80          lda ArrivalTurn,Y
+                cmp TURN
+                bcs Z50
+                lda TEMPR
+                clc
+                adc CombatStrength,Y
+                sta TEMPR
+                bcc Z50
+                inc TOTGS,X
+Z50             dey
+                cpy #$37
+                bcs LOOP80
+                ldx #$00
+                cpy #$00
+                bne LOOP80
 
 ;   shift values 4 places right
-                LDA TOTRS
-                STA TEMPR
-                LDA TOTGS
-                LDX #$04
-LOOP81          ASL A
-                BCC Z51
-                ROR A
-LOOP82          LSR TEMPR
-                DEX
-                BNE LOOP82
-                BEQ Z52
-Z51             DEX
-                BNE LOOP81
+                lda TOTRS
+                sta TEMPR
+                lda TOTGS
+                ldx #$04
+LOOP81          asl A
+                bcc Z51
+                ror A
+LOOP82          lsr TEMPR
+                dex
+                bne LOOP82
+                beq Z52
+Z51             dex
+                bne LOOP81
 
 ;   calculate overall force ratio
-Z52             LDY #$FF
-                LDX TEMPR
-                BEQ Z53
-                SEC
-LOOP83          INY
-                SBC TEMPR
-                BCS LOOP83
-Z53             STY OFR
+Z52             ldy #$FF
+                ldx TEMPR
+                beq Z53
+                sec
+LOOP83          iny
+                sbc TEMPR
+                bcs LOOP83
+Z53             sty OFR
 
 ;   calculate individual force ratios
-                LDX #$9E
-LOOP50          STX ARMY
-                LDA ArrivalTurn,X
-                CMP TURN
-                BCS Y44
-                JSR CALIFR
-                LDA CorpsX,X
-                STA OBJX-55,X
-                LDA CorpsY,X
-                STA OBJY-55,X
-Y44             DEX
-                CPX #$37
-                BCS LOOP50
+                ldx #$9E
+LOOP50          stx ARMY
+                lda ArrivalTurn,X
+                cmp TURN
+                bcs Y44
+                jsr CALIFR
+                lda CorpsX,X
+                sta OBJX-55,X
+                lda CorpsY,X
+                sta OBJY-55,X
+Y44             dex
+                cpx #$37
+                bcs LOOP50
 
 ;   here begins the main loop
-MLOOP           LDX #$9E                ; outer loop for entire Russian army
-LOOP51          STX ARMY                ; inner loop for individual armies
-                LDA ArrivalTurn,X
-                CMP TURN
-                BCC Z26
-Z54             JMP TOGSCN
-Z26             LDA CorpType,X
-                CMP #$04
-                BEQ Z54
-                LDA OFR                 ; is army near the front?
-                LSR A
-                CMP IFR-55,X
-                BNE Y51                 ; yes
-                STA BVAL                ; no, treat as reinforcement
+MLOOP           ldx #$9E                ; outer loop for entire Russian army
+LOOP51          stx ARMY                ; inner loop for individual armies
+                lda ArrivalTurn,X
+                cmp TURN
+                bcc Z26
+Z54             jmp TOGSCN
+Z26             lda CorpType,X
+                cmp #$04
+                beq Z54
+                lda OFR                 ; is army near the front?
+                lsr A
+                cmp IFR-55,X
+                bne Y51                 ; yes
+                sta BVAL                ; no, treat as reinforcement
 
 ;   find nearby beleaguered army
-                LDY #$9E
-LOOP52          LDA ArrivalTurn,Y
-                CMP TURN
-                BCS Y54
-                LDA CorpsX,Y
-                SEC
-                SBC CorpsX,X
-                JSR INVERT
-                STA TEMPR
-                LDA CorpsY,Y
-                SEC
-                SBC CorpsY,X
-                JSR INVERT
-                CLC
-                ADC TEMPR
-                LSR A
-                LSR A
-                LSR A
-                BCS Y54
-                STA TEMPR
-                LDA IFR-55,Y
-                SEC
-                SBC TEMPR
-                BCC Y54                 ; no good using nearby armies
-                CMP BVAL
-                BCC Y54
-                STA BVAL
-                STY BONE
-Y54             DEY
-                CPY #$37
-                BCS LOOP52
-                LDY BONE                ; beleagueredest army
-                LDA CorpsX,Y
-                STA OBJX-55,X
-                LDA CorpsY,Y
-                STA OBJY-55,X
-                JMP TOGSCN
+                ldy #$9E
+LOOP52          lda ArrivalTurn,Y
+                cmp TURN
+                bcs Y54
+                lda CorpsX,Y
+                sec
+                sbc CorpsX,X
+                jsr INVERT
+                sta TEMPR
+                lda CorpsY,Y
+                sec
+                sbc CorpsY,X
+                jsr INVERT
+                clc
+                adc TEMPR
+                lsr A
+                lsr A
+                lsr A
+                bcs Y54
+                sta TEMPR
+                lda IFR-55,Y
+                sec
+                sbc TEMPR
+                bcc Y54                 ; no good using nearby armies
+                cmp BVAL
+                bcc Y54
+                sta BVAL
+                sty BONE
+Y54             dey
+                cpy #$37
+                bcs LOOP52
+                ldy BONE                ; beleagueredest army
+                lda CorpsX,Y
+                sta OBJX-55,X
+                lda CorpsY,Y
+                sta OBJY-55,X
+                jmp TOGSCN
 
 ;   front line armies
-Y51             LDA #$FF
-                STA DIR                 ; a direction of $FF means 'stay put'
-                STA BONE
-                LDA #$00
-                STA BVAL
+Y51             lda #$FF
+                sta DIR                 ; a direction of $FF means 'stay put'
+                sta BONE
+                lda #$00
+                sta BVAL
 
 ;   ad hoc logic for surrounded people
-                LDA IFRE-55,X
-                CMP #$10
-                BCS Z55
-                LDA MusterStrength,X
-                LSR A
-                CMP CombatStrength,X            ; out of supply?
-                BCC DRLOOP
-Z55             LDA CorpsX,X            ; head due east!
-                SEC
-                SBC #$05
-                BCS Z96
-                LDA #$00
-Z96             STA OBJX-55,X
-                JMP TOGSCN
-DRLOOP          LDA OBJX-55,X
-                LDY DIR
-                BMI Y55
-                CLC
-                ADC XINC,Y
-Y55             STA TARGX
-                LDA OBJY-55,X
-                LDY DIR
-                BMI Y56
-                CLC
-                ADC YINC,Y
-Y56             STA TARGY
-                LDA #$00
-                STA SQVAL
-                LDA DIR
-                BMI Y57
-                STA WhatOrders,X
-                JSR Y00
-                LDY ARMY
-                LDA EXEC,Y              ; is square accessible?
-                BPL Y57                 ; yes
-                JMP EVALSQ              ; no, skip this square
+                lda IFRE-55,X
+                cmp #$10
+                bcs Z55
+                lda MusterStrength,X
+                lsr A
+                cmp CombatStrength,X            ; out of supply?
+                bcc DRLOOP
+Z55             lda CorpsX,X            ; head due east!
+                sec
+                sbc #$05
+                bcs Z96
+                lda #$00
+Z96             sta OBJX-55,X
+                jmp TOGSCN
+DRLOOP          lda OBJX-55,X
+                ldy DIR
+                bmi Y55
+                clc
+                adc XINC,Y
+Y55             sta TARGX
+                lda OBJY-55,X
+                ldy DIR
+                bmi Y56
+                clc
+                adc YINC,Y
+Y56             sta TARGY
+                lda #$00
+                sta SQVAL
+                lda DIR
+                bmi Y57
+                sta WhatOrders,X
+                jsr Y00
+                ldy ARMY
+                lda EXEC,Y              ; is square accessible?
+                bpl Y57                 ; yes
+                jmp EVALSQ              ; no, skip this square
 
 ;   fill in the direct line array
-Y57             LDA #$00
-                STA LINCOD
-                LDA TARGX
-                STA SQX
-                LDA TARGY
-                STA SQY
-                LDY #$17
-LOOP56          STY JCNT
-                LDA JSTP,Y
-                TAY
-                LDA SQX
-                CLC
-                ADC XINC,Y
-                STA SQX
-                LDA SQY
-                CLC
-                ADC YINC,Y
-                STA SQY
+Y57             lda #$00
+                sta LINCOD
+                lda TARGX
+                sta SQX
+                lda TARGY
+                sta SQY
+                ldy #$17
+LOOP56          sty JCNT
+                lda JSTP,Y
+                tay
+                lda SQX
+                clc
+                adc XINC,Y
+                sta SQX
+                lda SQY
+                clc
+                adc YINC,Y
+                sta SQY
 
-                LDX #$9E
-LOOP55          LDA ArrivalTurn,X
-                CMP TURN
-                BEQ Z25
-                BCS Y58
-Z25             LDA OBJX-55,X
-                CMP SQX
-                BNE Y58
-                LDA OBJY-55,X
-                CMP SQY
-                BNE Y58
-                CPX ARMY
-                BEQ Y31
-                LDA MusterStrength,X
-                BNE Y59
-Y58             DEX
-                CPX #$37
-                BCS LOOP55
-Y31             LDA #$00
-Y59             LDY JCNT
-                LDX NDX,Y
-                STA LINARR,X
-                DEY
-                BPL LOOP56
+                ldx #$9E
+LOOP55          lda ArrivalTurn,X
+                cmp TURN
+                beq Z25
+                bcs Y58
+Z25             lda OBJX-55,X
+                cmp SQX
+                bne Y58
+                lda OBJY-55,X
+                cmp SQY
+                bne Y58
+                cpx ARMY
+                beq Y31
+                lda MusterStrength,X
+                bne Y59
+Y58             dex
+                cpx #$37
+                bcs LOOP55
+Y31             lda #$00
+Y59             ldy JCNT
+                ldx NDX,Y
+                sta LINARR,X
+                dey
+                bpl LOOP56
 
-                LDX ARMY
-                LDA MusterStrength,X
-                STA LINARR+12
-                LDA #$00
-                STA ACCLO
-                STA ACCHI
-                STA SECDIR
+                ldx ARMY
+                lda MusterStrength,X
+                sta LINARR+12
+                lda #$00
+                sta ACCLO
+                sta ACCHI
+                sta SECDIR
 
 ;   build LV array
-Y88             LDX #$00
-                STX POTATO
-Y92             LDY #$00
-Y90             LDA LINARR,X
-                BNE Y89
-                INX
-                INY
-                CPY #$05
-                BNE Y90
-Y89             LDX POTATO
-                TYA
-                STA LV,X
-                INX
-                STX POTATO
-                CPX #$01
-                BNE Y91
-                LDX #$05
-                BNE Y92
-Y91             CPX #$02
-                BNE Y93
-                LDX #$0A
-                BNE Y92
+Y88             ldx #$00
+                stx POTATO
+Y92             ldy #$00
+Y90             lda LINARR,X
+                bne Y89
+                inx
+                iny
+                cpy #$05
+                bne Y90
+Y89             ldx POTATO
+                tya
+                sta LV,X
+                inx
+                stx POTATO
+                cpx #$01
+                bne Y91
+                ldx #$05
+                bne Y92
+Y91             cpx #$02
+                bne Y93
+                ldx #$0A
+                bne Y92
 
-Y93             CPX #$03
-                BNE Z40
-                LDX #$0F
-                BNE Y92
-Z40             CPX #$04
-                BNE Z41
-                LDX #$14
-                BNE Y92
+Y93             cpx #$03
+                bne Z40
+                ldx #$0F
+                bne Y92
+Z40             cpx #$04
+                bne Z41
+                ldx #$14
+                bne Y92
 
-Z41             LDA #$00
-                LDY #$04
-LOOP76          LDX LV,Y
-                CPX #$05
-                BEQ Z42
-                CLC
-                ADC #$28
-Z42             DEY
-                BPL LOOP76
+Z41             lda #$00
+                ldy #$04
+LOOP76          ldx LV,Y
+                cpx #$05
+                beq Z42
+                clc
+                adc #$28
+Z42             dey
+                bpl LOOP76
 
 ;   add bonus if central column is otherwise empty
-                LDY LINARR+10
-                BNE Y95
-                LDY LINARR+11
-                BNE Y95
-                LDY LINARR+13
-                BNE Y95
-                LDY LINARR+14
-                BNE Y95
-                CLC
-                ADC #$30
-Y95             STA LPTS
+                ldy LINARR+10
+                bne Y95
+                ldy LINARR+11
+                bne Y95
+                ldy LINARR+13
+                bne Y95
+                ldy LINARR+14
+                bne Y95
+                clc
+                adc #$30
+Y95             sta LPTS
 
 ;   evaluate blocking penalty
-                LDX #$00
-LOOP72          LDA LV,X
-                CMP #$04
-                BCS Y96
-                STA TEMPR
-                STX TEMPZ
-                TXA
-                ASL A
-                ASL A
-                ADC TEMPZ
-                ADC TEMPR
-                TAY
-                INY
-                LDA LINARR,Y
-                BEQ Y96
-                LDA LPTS
-                SEC
-                SBC #$20
-                BCS A91
-                LDA #$00
-A91             STA LPTS
-Y96             INX
-                CPX #$05
-                BNE LOOP72
+                ldx #$00
+LOOP72          lda LV,X
+                cmp #$04
+                bcs Y96
+                sta TEMPR
+                stx TEMPZ
+                txa
+                asl A
+                asl A
+                adc TEMPZ
+                adc TEMPR
+                tay
+                iny
+                lda LINARR,Y
+                beq Y96
+                lda LPTS
+                sec
+                sbc #$20
+                bcs A91
+                lda #$00
+A91             sta LPTS
+Y96             inx
+                cpx #$05
+                bne LOOP72
 
 ;   evaluate vulnerability to penetrations
-                LDY #$00
-LOOP54          STY OCOLUM
-                LDX #$00
-LOOP73          STX COLUM
-                CPX OCOLUM
-                BEQ NXCLM
-                LDA LV,X
-                SEC
-                SBC LV,Y
-                BEQ NXCLM
-                BMI NXCLM
-                TAX
-                LDA #$01
-LOOP74          ASL A
-                DEX
-                BNE LOOP74
-                STA TEMPR
-                LDA LPTS
-                SEC
-                SBC TEMPR
-                BCS Y32
-                LDA #$00
-Y32             STA LPTS
-NXCLM           LDX COLUM
-                INX
-                CPX #$05
-                BNE LOOP73
-                INY
-                CPY #$05
-                BNE LOOP54
+                ldy #$00
+LOOP54          sty OCOLUM
+                ldx #$00
+LOOP73          stx COLUM
+                cpx OCOLUM
+                beq NXCLM
+                lda LV,X
+                sec
+                sbc LV,Y
+                beq NXCLM
+                bmi NXCLM
+                tax
+                lda #$01
+LOOP74          asl A
+                dex
+                bne LOOP74
+                sta TEMPR
+                lda LPTS
+                sec
+                sbc TEMPR
+                bcs Y32
+                lda #$00
+Y32             sta LPTS
+NXCLM           ldx COLUM
+                inx
+                cpx #$05
+                bne LOOP73
+                iny
+                cpy #$05
+                bne LOOP54
 
 ;   get overall line value weighted by danger vector
-                LDX ARMY
-                LDY SECDIR
-                BNE Z18
-                LDA IFRN-55,X
-                JMP Z20
-Z18             CPY #$01
-                BNE Z19
-                LDA IFRE-55,X
-                JMP Z20
-Z19             CPY #$02
-                BNE Z17
-                LDA IFRS-55,X
-                JMP Z20
-Z17             LDA IFRW-55,X
-Z20             STA TEMPR
-                LDX LPTS
-                BEQ Z49
-                LDA ACCLO
-                CLC
-LOOP75          ADC TEMPR
-                BCC Y34
-                INC ACCHI
-                CLC
-                BNE Y34
-                LDA #$FF
-                STA ACCHI
-Y34             DEX
-                BNE LOOP75
+                ldx ARMY
+                ldy SECDIR
+                bne Z18
+                lda IFRN-55,X
+                jmp Z20
+Z18             cpy #$01
+                bne Z19
+                lda IFRE-55,X
+                jmp Z20
+Z19             cpy #$02
+                bne Z17
+                lda IFRS-55,X
+                jmp Z20
+Z17             lda IFRW-55,X
+Z20             sta TEMPR
+                ldx LPTS
+                beq Z49
+                lda ACCLO
+                clc
+LOOP75          adc TEMPR
+                bcc Y34
+                inc ACCHI
+                clc
+                bne Y34
+                lda #$FF
+                sta ACCHI
+Y34             dex
+                bne LOOP75
 
 ;   next secondary direction
-Z49             INY
-                CPY #$04
-                BEQ Y35
-                STY SECDIR
+Z49             iny
+                cpy #$04
+                beq Y35
+                sty SECDIR
 
 ;   rotate array
-                LDX #$18
-LOOP70          LDA LINARR,X
-                STA BAKARR,X
-                DEX
-                BPL LOOP70
-                LDX #$18
-LOOP71          LDY ROTARR,X
-                LDA BAKARR,X
-                STA LINARR,Y
-                DEX
-                BPL LOOP71
-                JMP Y88
+                ldx #$18
+LOOP70          lda LINARR,X
+                sta BAKARR,X
+                dex
+                bpl LOOP70
+                ldx #$18
+LOOP71          ldy ROTARR,X
+                lda BAKARR,X
+                sta LINARR,Y
+                dex
+                bpl LOOP71
+                jmp Y88
 
 
-Y35             LDA ACCHI
-                STA SQVAL
+Y35             lda ACCHI
+                sta SQVAL
 
 ;   get range to closest German into NBVAL
-Y65             LDY #$36
-                LDA #$FF
-                STA NBVAL
-LOOP59          LDA ArrivalTurn,Y
-                CMP TURN
-                BEQ Z45
-                BCS Y68
-Z45             LDA CorpsX,Y
-                SEC
-                SBC TARGX
-                JSR INVERT
-                STA TEMPR
-                LDA CorpsY,Y
-                SEC
-                SBC TARGY
-                JSR INVERT
-                CLC
-                ADC TEMPR
-                CMP NBVAL
-                BCS Y68
-                STA NBVAL
-Y68             DEY
-                BPL LOOP59
+Y65             ldy #$36
+                lda #$FF
+                sta NBVAL
+LOOP59          lda ArrivalTurn,Y
+                cmp TURN
+                beq Z45
+                bcs Y68
+Z45             lda CorpsX,Y
+                sec
+                sbc TARGX
+                jsr INVERT
+                sta TEMPR
+                lda CorpsY,Y
+                sec
+                sbc TARGY
+                jsr INVERT
+                clc
+                adc TEMPR
+                cmp NBVAL
+                bcs Y68
+                sta NBVAL
+Y68             dey
+                bpl LOOP59
 
 ;   determine whether to use offensive or defensive strategy
-                LDX ARMY
-                LDA IFR-55,X
-                STA TEMPR
-                LDA #$0F
-                SEC
-                SBC TEMPR
-                BCC A40
-                ASL A                   ;OK, let's fool the routine
-                STA TEMPR
-                LDA #$09
-                SEC
-                SBC NBVAL               ; I know that NBVAL<9 for all front line units
-                STA NBVAL
+                ldx ARMY
+                lda IFR-55,X
+                sta TEMPR
+                lda #$0F
+                sec
+                sbc TEMPR
+                bcc A40
+                asl A                   ;OK, let's fool the routine
+                sta TEMPR
+                lda #$09
+                sec
+                sbc NBVAL               ; I know that NBVAL<9 for all front line units
+                sta NBVAL
 
 ;   add NBVAL*IFR to SQVAL with defensive bonus
-A40             LDY NBVAL
-                BNE Z24                 ; this square occupied by a German?
-                STY SQVAL               ; yes, do not enter!!!
-                JMP EVALSQ
-Z24             LDY TRNTYP
-                LDA DEFNC,Y
-                CLC
-                ADC NBVAL
-                TAY
-                LDA #$00
-                CLC
-LOOP60          ADC TEMPR
-                BCC Y69
-Z22             LDA #$FF
-                BMI Y71
-Y69             DEY
-                BNE LOOP60
+A40             ldy NBVAL
+                bne Z24                 ; this square occupied by a German?
+                sty SQVAL               ; yes, do not enter!!!
+                jmp EVALSQ
+Z24             ldy TRNTYP
+                lda DEFNC,Y
+                clc
+                adc NBVAL
+                tay
+                lda #$00
+                clc
+LOOP60          adc TEMPR
+                bcc Y69
+Z22             lda #$FF
+                bmi Y71
+Y69             dey
+                bne LOOP60
 
-Y71             CLC
-                ADC SQVAL
-                BCC X00
-                LDA #$FF
-X00             STA SQVAL
+Y71             clc
+                adc SQVAL
+                bcc X00
+                lda #$FF
+X00             sta SQVAL
 
 ;   extract penalty if somebody else has dibs on this square
-                LDY #$9E
-LOOP58          LDA OBJX-55,Y
-                CMP TARGX
-                BNE Y63
-                LDA OBJY-55,Y
-                CMP TARGY
-                BNE Y63
-                CPY ARMY
-                BEQ Y63
-                LDA ArrivalTurn,Y
-                CMP TURN
-                BEQ Z44
-                BCS Y63
-Z44             LDA SQVAL
-                SBC #$20
-                STA SQVAL
-                JMP EVALSQ
-Y63             DEY
-                CPY #$37
-                BCS LOOP58
+                ldy #$9E
+LOOP58          lda OBJX-55,Y
+                cmp TARGX
+                bne Y63
+                lda OBJY-55,Y
+                cmp TARGY
+                bne Y63
+                cpy ARMY
+                beq Y63
+                lda ArrivalTurn,Y
+                cmp TURN
+                beq Z44
+                bcs Y63
+Z44             lda SQVAL
+                sbc #$20
+                sta SQVAL
+                jmp EVALSQ
+Y63             dey
+                cpy #$37
+                bcs LOOP58
 
 ;   extract distance penalty
-Y60             LDA CorpsX,X
-                SEC
-                SBC TARGX
-                JSR INVERT
-                STA TEMPR
-                LDA CorpsY,X
-                SEC
-                SBC TARGY
-                JSR INVERT
-                CLC
-                ADC TEMPR
-                CMP #$07
-                BCC Z48
-                LDA #$00
-                STA SQVAL               ; this square is too far away
-                BEQ EVALSQ
+Y60             lda CorpsX,X
+                sec
+                sbc TARGX
+                jsr INVERT
+                sta TEMPR
+                lda CorpsY,X
+                sec
+                sbc TARGY
+                jsr INVERT
+                clc
+                adc TEMPR
+                cmp #$07
+                bcc Z48
+                lda #$00
+                sta SQVAL               ; this square is too far away
+                beq EVALSQ
 
-Z48             TAX
-                LDA #$01
-LOOP77          ASL A
-                DEX
-                BPL LOOP77
-                STA TEMPR
-                LDA SQVAL
-                SEC
-                SBC TEMPR
-                STA SQVAL
-                BCS EVALSQ
-                LDA #$00
-                STA SQVAL
+Z48             tax
+                lda #$01
+LOOP77          asl A
+                dex
+                bpl LOOP77
+                sta TEMPR
+                lda SQVAL
+                sec
+                sbc TEMPR
+                sta SQVAL
+                bcs EVALSQ
+                lda #$00
+                sta SQVAL
 
 ;   evaluate this square
-EVALSQ          LDY DIR
-                LDX ARMY
-                LDA SQVAL
-                CMP BVAL
-                BCC Y72
-                STA BVAL
-                STY BONE
-Y72             INY
-                CPY #$04
-                BEQ Y73
-                STY DIR
-                JMP DRLOOP
+EVALSQ          ldy DIR
+                ldx ARMY
+                lda SQVAL
+                cmp BVAL
+                bcc Y72
+                sta BVAL
+                sty BONE
+Y72             iny
+                cpy #$04
+                beq Y73
+                sty DIR
+                jmp DRLOOP
 
-Y73             LDA OBJX-55,X
-                LDY BONE
-                BMI Y74
-                CLC
-                ADC XINC,Y
-Y74             STA OBJX-55,X
-                LDA OBJY-55,X
-                LDY BONE
-                BMI Y75
-                CLC
-                ADC YINC,Y
-Y75             STA OBJY-55,X
+Y73             lda OBJX-55,X
+                ldy BONE
+                bmi Y74
+                clc
+                adc XINC,Y
+Y74             sta OBJX-55,X
+                lda OBJY-55,X
+                ldy BONE
+                bmi Y75
+                clc
+                adc YINC,Y
+Y75             sta OBJY-55,X
 
 
-TOGSCN          LDA TRIG0
-                BEQ A30                 ; ignore game console if red button is down
-                LDA #$08
-                STA CONSOL
-                LDA CONSOL
-                AND #$01
-                BEQ WRAPUP
-A30             DEX
-                CPX #$37
-                BCC Y76
-                JMP LOOP51
-Y76             JMP MLOOP
+TOGSCN          lda TRIG0
+                beq A30                 ; ignore game console if red button is down
+                lda #$08
+                sta CONSOL
+                lda CONSOL
+                and #$01
+                beq WRAPUP
+A30             dex
+                cpx #$37
+                bcc Y76
+                jmp LOOP51
+Y76             jmp MLOOP
 
-WRAPUP          LDX #$9E
-LOOP62          STX ARMY
-                LDA ArrivalTurn,X
-                CMP TURN
-                BCC Y78
-                JMP Y77
-Y78             LDA OBJX-55,X
-                LDY #$03
-                SEC
-                SBC CorpsX,X
-                BPL Y79
-                LDY #$01
-                JSR INVERT+2
-Y79             STY HDIR
-                STA HRNGE
-                LDY #$00
-                LDA OBJY-55,X
-                SEC
-                SBC CorpsY,X
-                BPL Y80
-                LDY #$02
-                JSR INVERT+2
-Y80             STY VDIR
-                STA VRNGE
-                CMP HRNGE
-                BCC Y81
-                STA LRNGE
-                LDA HRNGE
-                STA SRNGE
-                LDA HDIR
-                STA SDIR
-                STY LDIR
-                JMP Y82
-Y81             STA SRNGE
-                STY SDIR
-                LDA HRNGE
-                STA LRNGE
-                LDY HDIR
-                STY LDIR
-Y82             LDA #$00
-                STA RCNT
-                STA RORD1
-                STA RORD2
-                LDA LRNGE
-                CLC
-                ADC SRNGE
-                STA RANGE
-                BEQ Y86
-                LDA LRNGE
-                LSR A
-                STA CHRIS
+WRAPUP          ldx #$9E
+LOOP62          stx ARMY
+                lda ArrivalTurn,X
+                cmp TURN
+                bcc Y78
+                jmp Y77
+Y78             lda OBJX-55,X
+                ldy #$03
+                sec
+                sbc CorpsX,X
+                bpl Y79
+                ldy #$01
+                jsr INVERT+2
+Y79             sty HDIR
+                sta HRNGE
+                ldy #$00
+                lda OBJY-55,X
+                sec
+                sbc CorpsY,X
+                bpl Y80
+                ldy #$02
+                jsr INVERT+2
+Y80             sty VDIR
+                sta VRNGE
+                cmp HRNGE
+                bcc Y81
+                sta LRNGE
+                lda HRNGE
+                sta SRNGE
+                lda HDIR
+                sta SDIR
+                sty LDIR
+                jmp Y82
+Y81             sta SRNGE
+                sty SDIR
+                lda HRNGE
+                sta LRNGE
+                ldy HDIR
+                sty LDIR
+Y82             lda #$00
+                sta RCNT
+                sta RORD1
+                sta RORD2
+                lda LRNGE
+                clc
+                adc SRNGE
+                sta RANGE
+                beq Y86
+                lda LRNGE
+                lsr A
+                sta CHRIS
 
-LOOP61          LDA CHRIS
-                CLC
-                ADC SRNGE
-                STA CHRIS
-                SEC
-                SBC RANGE
-                BCS OVRFLO
-                LDA LDIR
-                BCC STIP
-OVRFLO          STA CHRIS
-                LDA SDIR
-STIP            STA DIR
-                LDA RCNT
-                AND #$03
-                TAY
-                STA TEMPR
-                LDA RCNT
-                LSR A
-                LSR A
-                TAX
-                LDA DIR
-Y85             DEY
-                BMI Y84
-                ASL A
-                ASL A
-                JMP Y85
+LOOP61          lda CHRIS
+                clc
+                adc SRNGE
+                sta CHRIS
+                sec
+                sbc RANGE
+                bcs OVRFLO
+                lda LDIR
+                bcc STIP
+OVRFLO          sta CHRIS
+                lda SDIR
+STIP            sta DIR
+                lda RCNT
+                and #$03
+                tay
+                sta TEMPR
+                lda RCNT
+                lsr A
+                lsr A
+                tax
+                lda DIR
+Y85             dey
+                bmi Y84
+                asl A
+                asl A
+                jmp Y85
 
-Y84             LDY TEMPR
-                EOR RORD1,X
-                AND MASKO,Y
-                EOR RORD1,X
-                STA RORD1,X
-                LDX RCNT
-                INX
-                STX RCNT
-                CPX #$08
-                BCS Y86
-                CPX RANGE
-                BCC LOOP61
-Y86             LDX ARMY
-                LDA RORD1
-                STA WhatOrders,X
-                LDA RORD2
-                STA WHORDH,X
-                LDA RCNT
-                STA HowManyOrders,X
+Y84             ldy TEMPR
+                eor RORD1,X
+                and MASKO,Y
+                eor RORD1,X
+                sta RORD1,X
+                ldx RCNT
+                inx
+                stx RCNT
+                cpx #$08
+                bcs Y86
+                cpx RANGE
+                bcc LOOP61
+Y86             ldx ARMY
+                lda RORD1
+                sta WhatOrders,X
+                lda RORD2
+                sta WHORDH,X
+                lda RCNT
+                sta HowManyOrders,X
 
-Y77             DEX
-                CPX #$37
-                BCC Y87
-                JMP LOOP62
-Y87             RTS
+Y77             dex
+                cpx #$37
+                bcc Y87
+                jmp LOOP62
+Y87             rts
 
 ;
 ;Subroutine CALIFR determines individual force ratios
 ;in all four directions
 ;
-CALIFR          LDY #$00                ; initialize vectors
-                STY IFR0
-                STY IFR1
-                STY IFR2
-                STY IFR3
-                STY IFRHI
-                INY
-                STY RFR
-                LDA CorpsX,X
-                STA XLOC
-                LDA CorpsY,X
-                STA YLOC
-                LDY #$9E
-LOOP53          LDA ArrivalTurn,Y
-                CMP TURN
-                BCS Z07
-                LDA CorpsY,Y
-                SEC
-                SBC YLOC
-                STA TEMPY               ; save signed vector
-                JSR INVERT
-                STA TEMPR
-                LDA CorpsX,Y
-                SEC
-                SBC XLOC
-                STA TEMPX
-                JSR INVERT
-                CLC
-                ADC TEMPR
-Z21             CMP #$09                ;no point in checking if he's too far
-Z07             BCS Y48
-                LSR A
-                STA TEMPR               ; this is half of range to unit
+CALIFR          ldy #$00                ; initialize vectors
+                sty IFR0
+                sty IFR1
+                sty IFR2
+                sty IFR3
+                sty IFRHI
+                iny
+                sty RFR
+                lda CorpsX,X
+                sta XLOC
+                lda CorpsY,X
+                sta YLOC
+                ldy #$9E
+LOOP53          lda ArrivalTurn,Y
+                cmp TURN
+                bcs Z07
+                lda CorpsY,Y
+                sec
+                sbc YLOC
+                sta TEMPY               ; save signed vector
+                jsr INVERT
+                sta TEMPR
+                lda CorpsX,Y
+                sec
+                sbc XLOC
+                sta TEMPX
+                jsr INVERT
+                clc
+                adc TEMPR
+Z21             cmp #$09                ;no point in checking if he's too far
+Z07             bcs Y48
+                lsr A
+                sta TEMPR               ; this is half of range to unit
 
 ;   select which IFR gets this German
-                LDA TEMPX
-                BPL Z00
-                LDA TEMPY
-                BPL Z01
-                LDX #$02
-                CMP TEMPX
-                BCS Z02
-                LDX #$01
-                BCC Z02
-Z00             LDA TEMPY
-                BPL Z03
-                JSR INVERT+2
-                LDX #$02
-                CMP TEMPX
-                BCS Z02
-                LDX #$03
-                BCC Z02
-Z03             LDX #$00
-                CMP TEMPX
-                BCS Z02
-                LDX #$03
-                BCC Z02
-Z01             LDA TEMPX
-                JSR INVERT+2
-                LDX #$01
-                CMP TEMPY
-                BCS Z02
-                LDX #$00
-Z02             LDA CombatStrength,Y
-                LSR A
-                LSR A
-                LSR A
-                LSR A
-Z11             CPY #$37
-                BCC Z12
-                CLC
-                ADC RFR
-                BCC Z13
-                LDA #$FF
-Z13             STA RFR
-                JMP Y48
-Z12             CLC
-                ADC IFR0,X
-                BCC Z05
-                LDA #$FF
-Z05             STA IFR0,X
-Y48             DEY
-                BEQ Z06
-                JMP LOOP53
+                lda TEMPX
+                bpl Z00
+                lda TEMPY
+                bpl Z01
+                ldx #$02
+                cmp TEMPX
+                bcs Z02
+                ldx #$01
+                bcc Z02
+Z00             lda TEMPY
+                bpl Z03
+                jsr INVERT+2
+                ldx #$02
+                cmp TEMPX
+                bcs Z02
+                ldx #$03
+                bcc Z02
+Z03             ldx #$00
+                cmp TEMPX
+                bcs Z02
+                ldx #$03
+                bcc Z02
+Z01             lda TEMPX
+                jsr INVERT+2
+                ldx #$01
+                cmp TEMPY
+                bcs Z02
+                ldx #$00
+Z02             lda CombatStrength,Y
+                lsr A
+                lsr A
+                lsr A
+                lsr A
+Z11             cpy #$37
+                bcc Z12
+                clc
+                adc RFR
+                bcc Z13
+                lda #$FF
+Z13             sta RFR
+                jmp Y48
+Z12             clc
+                adc IFR0,X
+                bcc Z05
+                lda #$FF
+Z05             sta IFR0,X
+Y48             dey
+                beq Z06
+                jmp LOOP53
 
-Z06             LDX #$03
-                LDA #$00
-Y37             CLC
-                ADC IFR0,X
-                BCC Y36
-                LDA #$FF
-Y36             DEX
-                BPL Y37
+Z06             ldx #$03
+                lda #$00
+Y37             clc
+                adc IFR0,X
+                bcc Y36
+                lda #$FF
+Y36             dex
+                bpl Y37
 
 
-                ASL A
-                ROL IFRHI
-                ASL A
-                ROL IFRHI
-                ASL A
-                ROL IFRHI
-                ASL A
-                ROL IFRHI
-                LDX #$00
-                SEC
-Z16             SBC RFR
-                BCS Z14
-                DEC IFRHI
-                SEC
-                BMI Z15
-Z14             INX
-                JMP Z16
-Z15             TXA
-                LDX ARMY
-                CLC
-                ADC OFR                 ; remember strategic situation
-                ROR A                   ; average strategic with tactical
-                STA IFR-55,X
+                asl A
+                rol IFRHI
+                asl A
+                rol IFRHI
+                asl A
+                rol IFRHI
+                asl A
+                rol IFRHI
+                ldx #$00
+                sec
+Z16             sbc RFR
+                bcs Z14
+                dec IFRHI
+                sec
+                bmi Z15
+Z14             inx
+                jmp Z16
+Z15             txa
+                ldx ARMY
+                clc
+                adc OFR                 ; remember strategic situation
+                ror A                   ; average strategic with tactical
+                sta IFR-55,X
 
 ;   keep a record of danger vector
-                LDA IFR0
-                STA IFRN-55,X
-                LDA IFR1
-                STA IFRE-55,X
-                LDA IFR2
-                STA IFRS-55,X
-                LDA IFR3
-                STA IFRW-55,X
-                RTS
+                lda IFR0
+                sta IFRN-55,X
+                lda IFR1
+                sta IFRE-55,X
+                lda IFR2
+                sta IFRS-55,X
+                lda IFR3
+                sta IFRW-55,X
+                rts
 
-INVERT          BPL Z46
-                EOR #$FF
-                CLC
-                ADC #$01
-Z46             RTS
+INVERT          bpl Z46
+                eor #$FF
+                clc
+                adc #$01
+Z46             rts
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ;   added for binary compatibility
@@ -951,4 +951,4 @@ IFRW            .byte $a2,$00,$38,$ed,$92,$06,$b0,$06
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-            .END
+            .end

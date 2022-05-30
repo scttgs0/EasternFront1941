@@ -390,4 +390,4 @@ BHY2            .byte 36,36,36,33,37,37,3,6,7,7
 ;   Turn at which the next order will be executed
 EXEC            .fill 159,$00
 
-            .END
+            .end
