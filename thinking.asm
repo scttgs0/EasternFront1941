@@ -635,8 +635,8 @@ Y74             sta OBJX-55,X
                 adc YINC,Y
 Y75             sta OBJY-55,X
 
-
-TOGSCN          lda TRIG0  ; TODO:platform    ; joystick-0 button
+TOGSCN          lda JOYSTICK0           ; read joystick0 button
+                and #$10
                 beq A30                 ; ignore game console if red button is down
 
                 lda #$08

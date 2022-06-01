@@ -18,15 +18,16 @@ PLYR2           .fill 128               ; maltese cross
                 * = $7400               ; deferred vertical blank interrupt
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-;   added for binary compatibility
-                ;lda TRIG1               ; check for break button  ; TODO:platform      ; joystick-1 button
-                lda #$FF
+;   debug entry
+                ;lda JOYSTICK1          ; read joystick1 button (check for break button)
+                ;and #$10
+                lda #$FF                ; force break to be ignored
                 nop
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
                 bne Z30                 ; no, check next
+;   end debug entry
 
+;   start debug mode
                 ldy #$3E                ; reset 60 Hertz vector
                 ldx #$E9
                 lda #7
@@ -40,7 +41,8 @@ PLYR2           .fill 128               ; maltese cross
 Z30             lda HANDCP
                 beq A31
 
-                lda TRIG0  ; TODO:platform
+                lda JOYSTICK0           ; read joystick0 button
+                and #$10
                 beq A31
 
                 lda #$08
@@ -64,7 +66,8 @@ A22             sta MusterStrength,X
                 dex
                 bne LOOPJ
 
-A31             lda TRIG0               ; button status  ; TODO:platform    ; joystick-0 button
+A31             lda JOYSTICK0           ; read joystick0 button
+                and #$10
                 ora BUTMSK              ; button allowed?
                 beq X17
 
@@ -98,8 +101,7 @@ LOOP8           sta TXTWDW+8,X          ; clear text window
 
                 jmp ENDISR
 
-X17             ;sta ATRACT              ; button is pressed
-                lda STICK0  ; TODO:platform     ; joystick0 read
+X17             lda JOYSTICK0           ; button is pressed - joystick0 read
                 and #$0F
                 eor #$0F
                 beq X20                 ; joystick active?
@@ -479,7 +481,8 @@ X67             inc DBTIMR
 
 X68             lda #$00
                 sta DBTIMR              ; reset debounce timer
-                ldx STICK0  ; TODO:platform     ; joystick0 read
+                ldx JOYSTICK0           ; joystick0 read
+                and #$0F
                 lda STKTAB,X
                 bpl X69
 
@@ -586,7 +589,7 @@ LOOP28          lda ERRMSG,X
 ;NO BUTTON PRESSED ROUTINE
 ;
 NOBUT           sta DBTIMR
-                lda STICK0  ; TODO:platform     ; joystick0 read
+                lda JOYSTICK0           ; joystick0 read
                 and #$0F
                 eor #$0F
                 bne SCROLL
@@ -602,11 +605,8 @@ NOBUT           sta DBTIMR
 
 EXITI           jmp ENDISR
 
-SCROLL          ;lda #$00
-                ;sta ATRACT
-
 ;   acceleration feature of cursor
-                lda TIMSCL
+SCROLL          lda TIMSCL
                 cmp RTCLOK  ; TODO:platform
                 bne EXITI
 
@@ -625,7 +625,8 @@ X21             clc
                 sta OFFLO
                 sta OFFHI               ; zero the offset
 
-                lda STICK0              ; joystick0 read  ; TODO:platform
+                lda JOYSTICK0           ; joystick0 read
+                and #$0F
                 pha                     ; save it on stack for other bit checks
                 and #$08                ; joystick left?
                 bne CHKRT               ; no, move on
