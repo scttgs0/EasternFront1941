@@ -40,6 +40,8 @@ B1              sta SWAP,X
                 sta CHUNKY
                 jsr SWITCH
 
+                .setbank $AF
+
                 ldy #$08
                 ldx #$8F
 LOOP78          stx SID_CTRL1           ; TODO: no distortion; max volume
@@ -53,6 +55,8 @@ LOOP78          stx SID_CTRL1           ; TODO: no distortion; max volume
                 dex
                 cpx #$7F
                 bne LOOP78
+
+                .setbank $00
 
 ;   replace original unit character
                 jsr SWITCH
