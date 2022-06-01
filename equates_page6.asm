@@ -2,6 +2,7 @@
 ;--------------------------------------
                 * = $0600
 ;--------------------------------------
+
 ;   first come locations used by the interrupt service routine
 XPOSL           .byte ?         ; [$00]   Horizontal position of
 YPOSL           .byte ?                 ; Vertical position of

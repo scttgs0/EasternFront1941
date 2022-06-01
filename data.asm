@@ -263,10 +263,11 @@ XADD            .byte 0,1,0,$FF         ; offsets for moving arrow
 YADD            .byte $FF,0,1,0
 
 ;   Monthly color used for trees
-TreeColors      .byte 0,$12,$12,$12,$D2,$D8
-                .byte $D6,$C4,$D4,$C2,$12,$12,$12
+TreeColors      .byte $00
+                .byte $12,$12,$12,$D2,$D8,$D6
+                .byte $C4,$D4,$C2,$12,$12,$12
 
-;   maltese cross shape
+;   maltese cross stamp
 MLTKRZ          .byte %00100100         ; ..#..#..
                 .byte %00100100         ; ..#..#..
                 .byte %11100111         ; ###..###
@@ -287,12 +288,42 @@ MLTKRZ          .byte %00100100         ; ..#..#..
 ;
 ;   The display list goes here; it is 49 bytes long.
 ;
-                .byte $70,$70,$70,$C6,$E0,$64,$90,$90,$F7
-                .byte $FE,$64,$F7,$2E,$65,$F7,$5E,$65
-                .byte $F7,$8E,$65,$F7,$BE,$65,$F7,$EE
-                .byte $65,$F7,$1E,$66,$F7,$4E,$66,$F7
-                .byte $7E,$66,$57,$AE,$66,$90,$C2,$50
-                .byte $64,$02,$90,$02,$90,$41,$00,$64
+DisplayList     .byte AEMPTY8,AEMPTY8,AEMPTY8
+                .byte $06+ADLI+ALMS                 ; big text
+                    .addr L64E0
+                .byte AEMPTY0+ADLI+AHSCR            ; blank line
+                .byte AEMPTY0+ADLI+AHSCR            ; blank line
+
+                .byte $07+ADLI+ALMS+AHSCR+AVSCR     ; 9 map lines
+                    .addr MAPWDW
+                .byte $07+ADLI+ALMS+AHSCR+AVSCR
+                    .addr $652E
+                .byte $07+ADLI+ALMS+AHSCR+AVSCR
+                    .addr $655E
+                .byte $07+ADLI+ALMS+AHSCR+AVSCR
+                    .addr $658E
+                .byte $07+ADLI+ALMS+AHSCR+AVSCR
+                    .addr $65BE
+                .byte $07+ADLI+ALMS+AHSCR+AVSCR
+                    .addr $65EE
+                .byte $07+ADLI+ALMS+AHSCR+AVSCR
+                    .addr $661E
+                .byte $07+ADLI+ALMS+AHSCR+AVSCR
+                    .addr $664E
+                .byte $07+ADLI+ALMS+AHSCR+AVSCR
+                    .addr $667E
+                .byte $07+ALMS+AHSCR                ; extra map line to accommodate fine scroll
+                    .addr $66AE
+
+                .byte AEMPTY0+ADLI+AHSCR    ; blank line
+                .byte $02+ADLI+ALMS         ; text
+                    .addr TXTWDW
+                .byte $02                   ; text
+                .byte AEMPTY0+ADLI+AHSCR    ; blank line
+                .byte $02                   ; text
+                .byte AEMPTY0+ADLI+AHSCR    ; blank line
+                .byte AVB+AJMP
+                    .addr DisplayList
 
 ArrowTbl        .byte %00010000         ; ...#....
                 .byte %00111000         ; ..###...
@@ -326,7 +357,7 @@ ArrowTbl        .byte %00010000         ; ...#....
                 .byte %01000000         ; .#......
                 .byte %11111111         ; ########
                 .byte %01000000         ; .#......
-                .byte %00100000         ; ..#.....
+                .byte %00100000         ; ..#.....      ; BUG: overflows into text buffer
                 .byte %00010000         ; ...#....
                 .byte %00000000         ; ........
 
@@ -335,14 +366,10 @@ ArrowTbl        .byte %00010000         ; ...#....
 ;--------------------------------------
                 * = $6450
 ;--------------------------------------
-;This next area is reserved for the text window
-
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-;   added for binary compatibility
 
             .enc "atari-screen"
 
-                .text '    '
+TXTWDW          .text '    '
                 .text '            EASTERN FRONT 1941          '
                 .text '    '
 
@@ -354,22 +381,20 @@ ArrowTbl        .byte %00010000         ; ...#....
                 .text '                                        '
                 .text '    '
 
-                .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+L64E0           .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00   ; top text
                 .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
                 .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 
             .enc "none"
 
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 ;--------------------------------------
 ;--------------------------------------
-MAPWDW          * = $64FF               ; BUG: differs from all other files
+MAPWDW          * = $64FF
 ;--------------------------------------
 
                 .include "MAP.asm"
 
-TXTWDW
 
 ;   Decoding for joystick
 STKTAB          .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,1
