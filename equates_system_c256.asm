@@ -157,3 +157,21 @@ JOYSTICK0               = $AF_E800      ; (R) Joystick 0
                                         ;          /  |  \
                                         ;      1001   |   0101
                                         ;           1101
+
+LUTBkColor      = 0
+LUTPfColor0     = 1
+LUTPfColor1     = 2
+LUTPfColor2     = 3
+LUTPfColor3     = 4
+LUTPfColor4     = 5
+LUTPfColor5     = 6
+LUTPfColor6     = 7
+LUTPfColor7     = 8
+LUTSprColor0    = 9
+LUTSprColor1    = 10
+LUTSprColor2    = 11
+LUTSprColor3    = 12
+LUTSprColor4    = 13
+LUTSprColor5    = 14
+LUTSprColor6    = 15
+LUTSprColor7    = 16

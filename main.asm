@@ -19,7 +19,7 @@ START           ldx #$08
 _next1          lda ZPVAL,X             ; initialize page zero values
                 sta DLSTPT,X
                 lda COLTAB,X            ; initialize sprite and playfield colors
-                sta PCOLR0,X  ; TODO:platform     ; P/M-0+ color
+                sta LUTSprColor0,X      ; TODO: Sprite-0+ color
                 dex
                 bpl _next1
 

@@ -77,7 +77,7 @@ A31             lda JOYSTICK0           ; read joystick0 button
                 jmp NOBUT
 
 X23             lda #$58                ; button just released
-                sta PCOLR0  ; TODO:platform     ; P/M-0 color
+                sta LUTSprColor0        ; TODO: Sprite-0 color
                 lda #$00
                 sta BUTFLG
                 sta KRZFLG
@@ -338,7 +338,7 @@ MATCH_          lda #$00
                 sta HITFLG              ; note match
                 sta KEYCHAR             ; last key pressed
                 lda #$5C
-                sta PCOLR0              ; light up cursor  ; TODO:platform     ; P/M-0 color
+                sta LUTSprColor0        ; TODO: Sprite-0 color - light up cursor
 
 ;   display unit specs
                 stx CORPS
@@ -1072,7 +1072,7 @@ DLISRV          pha
                 ;and DRKMSK  ; TODO:platform
                 sta WSYNC  ; TODO:platform
                 stx CHBASE  ; TODO:platform     ; charset = $6200
-                sta COLPF0  ; TODO:platform     ; playfield-0 color
+                sta LUTPfColor0         ; TODO: playfield-0 color
                 jmp DLIOUT
 
 OVER1           cmp #$0F
@@ -1086,8 +1086,8 @@ OVER1           cmp #$0F
                 ;eor COLRSH  ; TODO:platform
                 ;and DRKMSK  ; TODO:platform
                 sta WSYNC  ; TODO:platform
-                stx COLPF2  ; TODO:platform     ; playfield-2 color
-                sta COLPF1  ; TODO:platform     ; playfield-1 color
+                stx LUTPfColor2         ; TODO: playfield-2 color
+                sta LUTPfColor1         ; TODO: playfield-1 color
                 jmp DLIOUT
 
 OVER6           cmp #$01
@@ -1101,8 +1101,8 @@ OVER6           cmp #$01
                 ;eor COLRSH  ; TODO:platform
                 ;and DRKMSK  ; TODO:platform
                 sta WSYNC  ; TODO:platform
-                sta COLBAK  ; TODO:platform     ; background color
-                stx COLPF0  ; TODO:platform     ; playfield-0 color
+                sta LUTBkColor          ; TODO: background color
+                stx LUTPfColor0         ; TODO: playfield-0 color
                 lda #$60
                 sta CHBASE  ; TODO:platform     ; charset = $6000
                 jmp DLIOUT
@@ -1114,7 +1114,7 @@ OVER2           cmp #$03
                 ;eor COLRSH  ; TODO:platform
                 ;and DRKMSK  ; TODO:platform
                 sta WSYNC  ; TODO:platform
-                sta COLBAK  ; TODO:platform     ; background color
+                sta LUTBkColor          ; TODO: background color
                 jmp DLIOUT
 
 OVER3           cmp #$0D
@@ -1125,7 +1125,7 @@ OVER3           cmp #$0D
                 ;eor COLRSH  ; TODO:platform
                 ;and DRKMSK  ; TODO:platform
                 sta WSYNC  ; TODO:platform
-                sta COLPF2  ; TODO:platform     ; playfield-2 color
+                sta LUTPfColor2         ; TODO: playfield-2 color
                 stx CHBASE  ; TODO:platform     ; charset = standard OS charset
                 jmp DLIOUT
 
@@ -1136,7 +1136,7 @@ OVER4           cmp #$0E
                 ;eor COLRSH  ; TODO:platform
                 ;and DRKMSK  ; TODO:platform
                 sta WSYNC  ; TODO:platform
-                sta COLBAK  ; TODO:platform     ; background color
+                sta LUTBkColor          ; TODO: background color
                 jmp DLIOUT
 
 OVER5           cmp #$10
@@ -1148,7 +1148,7 @@ OVER5           cmp #$10
                 pha                     ; some extra delay
                 pla
                 nop
-                sta COLBAK  ; TODO:platform     ; background color
+                sta LUTBkColor          ; TODO: background color
 
 DLIOUT          pla
                 tax

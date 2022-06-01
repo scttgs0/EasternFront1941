@@ -10,7 +10,6 @@ RTCLOK          = $14                   ; jiffy clock
 
 ;   OS registers
 SDLSTL          = $0230                 ; [word] Existing OS pointer to display list
-PCOLR0          = $02C0
 
 ;--------------------------------------
 
@@ -19,10 +18,6 @@ HPOSP0          = $D000
 HPOSP1          = $D001
 HPOSP2          = $D002
 SIZEP0          = $D008
-COLPF0          = $D016
-COLPF1          = $D017
-COLPF2          = $D018
-COLBAK          = $D01A
 ;GRACTL          = $D01D
 
 ;--------------------------------------
