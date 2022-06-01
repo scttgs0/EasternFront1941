@@ -17,7 +17,6 @@ SDLSTL          = $0230                 ; [word] Existing OS pointer to display 
 HPOSP0          = $D000
 HPOSP1          = $D001
 HPOSP2          = $D002
-SIZEP0          = $D008
 ;GRACTL          = $D01D
 
 ;--------------------------------------

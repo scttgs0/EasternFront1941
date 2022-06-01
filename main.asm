@@ -59,7 +59,6 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 sta HPOSP0  ; TODO:platform     ; P/M-0 x-position
                 lda #$01
                 sta HANDCP
-                ;sta SIZEP0  ; TODO:platform     ; P/M-0 double-width
 
                 ldx #$33                ; generate cursor stamp
                 lda #$FF
