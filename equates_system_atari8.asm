@@ -9,7 +9,6 @@ SDLSTL          = $0230                 ; [word] Existing OS pointer to display 
 
 ;   ANTIC registers
 WSYNC           = $D40A
-NMIEN           = $D40E
 
 ;   ANTIC instructions
 AJMP            = $0001

@@ -89,7 +89,7 @@ LOOP2           sta PLYR0,X
                 lda #$7B
                 sta $0201
                 lda #$C0
-                sta NMIEN               ; Turn interrupts on  ; TODO:platform ; [DLI+VBI]
+                ;sta NMIEN               ; Turn interrupts on  ; TODO:platform ; [DLI+VBI]
 
 NEWTRN          inc TURN
 
@@ -630,7 +630,7 @@ LOOP79          pha
                 lda #$BC
                 sta $231
                 lda #$40
-                sta NMIEN  ; TODO:platform  [VBI]
+                ;sta NMIEN               ; TODO:platform  [VBI]
                 lda #$0A
                 sta $2C5
                 lda #$00
