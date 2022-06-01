@@ -53,16 +53,13 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 sta PMBASE  ; TODO:platform
 
 ;   here follow various initializations
-                lda #$2F
-                sta SDMCTL  ; TODO:platform [instruction-fetch, 1-line P/M, wide-playfield, P/M-DMA]
-                lda #$03
-                sta GRACTL  ; TODO:platform [P/M-enable, no latch]
+                ;lda #$03
+                ;sta GRACTL  ; TODO:platform [P/M-enable, no latch]
                 lda #$78
                 sta HPOSP0  ; TODO:platform     ; P/M-0 x-position
                 lda #$01
                 sta HANDCP
-                sta GPRIOR  ; TODO:platform [priority list: P/M, Playfield, Background]
-                sta SIZEP0  ; TODO:platform     ; P/M-0 double-width
+                ;sta SIZEP0  ; TODO:platform     ; P/M-0 double-width
 
                 ldx #$33                ; generate cursor stamp
                 lda #$FF
