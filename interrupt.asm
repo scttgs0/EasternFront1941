@@ -81,7 +81,7 @@ X23             lda #$58                ; button just released
                 lda #$00
                 sta BUTFLG
                 sta KRZFLG
-                sta AUDC1  ; TODO:platform  ; no distortion; no volume
+                sta SID_CTRL1           ; TODO: no distortion; no volume
                 ldx #$52
 LOOP8           sta TXTWDW+8,X          ; clear text window
                 dex
@@ -90,7 +90,7 @@ LOOP8           sta TXTWDW+8,X          ; clear text window
                 lda #$08
                 sta DELAY
                 clc
-                adc RTCLOK  ; TODO:platform
+                adc JIFFYCLOCK          ; TODO:
                 sta TIMSCL
                 jsr SWITCH
 
@@ -109,7 +109,7 @@ X17             lda JOYSTICK0           ; button is pressed - joystick0 read
                 jmp ORDERS              ; yes
 
 X20             sta DBTIMR              ; no, set debounce
-                sta AUDC1  ; TODO:platform  ; distortion/volume
+                sta SID_CTRL1           ; TODO: distortion/volume
                 sta STKFLG
                 lda BUTFLG
                 bne BUTHLD              ; is this the first button pass
@@ -145,7 +145,7 @@ X63             lda KEYCHAR             ; last key pressed
                 sta STEPX
                 lda BASEY
                 sta STEPY
-X80             lda RTCLOK  ; TODO:platform
+X80             lda JIFFYCLOCK          ; TODO:
                 and #$03
                 beq X54                 ; time to move arrow?
 
@@ -201,7 +201,7 @@ X43             inx
                 bne X55
 
                 lda STEPX               ; position arrow
-                sta HPOSP1  ; TODO:platform     ; P/M-1 x-position
+                sta SP01_X_POS          ; Sprite-1 x-position
 
 ;   now step arrow
                 ldx ARRNDX
@@ -249,7 +249,7 @@ X44             iny
                 sec
                 sbc #$01
                 sta KRZX
-                sta HPOSP2  ; TODO:platform     ; P/M-2 x-position
+                sta SP02_X_POS          ; Sprite-2 x-position
                 jsr CLRP1               ; clear arrow
 
                 lda BASEX               ; reset arrow's coords
@@ -494,9 +494,9 @@ X68             lda #$00
 X69             tay
                 sta STICKI
                 lda BEEPTB,Y
-                sta AUDF1               ; "BEEP!"  ; TODO:platform  ; AUDIO Freq
+                sta SID_FREQ1           ; TODO: "BEEP!"
                 lda #$A8
-                sta AUDC1  ; TODO:platform  ; distortion-5; half volume
+                sta SID_CTRL1           ; TODO: distortion-5; half volume
                 lda #$FF
                 sta STKFLG
 
@@ -549,7 +549,7 @@ X70             ldy TEMPI
                 adc YOFF,X
                 sta KRZY
 DSPKRZ          lda KRZX                ; display it
-                sta HPOSP2  ; TODO:platform     ; P/M-2 x-position
+                sta SP02_X_POS          ; Sprite-2 x-position
                 ldy KRZY
                 ldx #$00
 LOOP26          lda MLTKRZ,X
@@ -579,9 +579,9 @@ LOOP28          lda ERRMSG,X
                 bne LOOP28
 
                 lda #$68
-                sta AUDC1  ; TODO:platform  ; distortion-3; half volume
+                sta SID_CTRL1           ; TODO: distortion-3; half volume
                 lda #$50
-                sta AUDF1               ; "HONK!"  ; TODO:platform  ; AUDIO Freq
+                sta SID_FREQ1           ; TODO: "HONK!"
                 lda #$FF
                 sta ERRFLG
                 bmi EXITI
@@ -595,12 +595,12 @@ NOBUT           sta DBTIMR
                 eor #$0F
                 bne SCROLL
 
-                sta AUDC1  ; TODO:platform      ; no distortion; volume set based on joystick movement
+                sta SID_CTRL1           ; TODO: no distortion; volume set based on joystick movement
                 sta STKFLG
                 lda #$08
                 sta DELAY
                 clc
-                adc RTCLOK  ; TODO:platform
+                adc JIFFYCLOCK          ; TODO:
                 sta TIMSCL
                 jsr ERRCLR
 
@@ -608,7 +608,7 @@ EXITI           jmp ENDISR
 
 ;   acceleration feature of cursor
 SCROLL          lda TIMSCL
-                cmp RTCLOK  ; TODO:platform
+                cmp JIFFYCLOCK          ; TODO:
                 bne EXITI
 
                 lda DELAY
@@ -619,7 +619,7 @@ SCROLL          lda TIMSCL
                 sbc #$01
                 sta DELAY
 X21             clc
-                adc RTCLOK  ; TODO:platform
+                adc JIFFYCLOCK          ; TODO:
                 sta TIMSCL
 
                 lda #$00
@@ -651,7 +651,7 @@ X14             lda SHPOS0
                 clc
                 adc #$01
                 sta SHPOS0
-                sta HPOSP0  ; TODO:platform     ; P/M-0 x-position
+                sta SP00_X_POS          ; Sprite-0 x-position
                 bne CHKUP
 
 X1              lda XPOSL
@@ -692,7 +692,7 @@ X15             lda SHPOS0
                 sec
                 sbc #$01
                 sta SHPOS0
-                sta HPOSP0  ; TODO:platform     ; P/M-0 x-position
+                sta SP00_X_POS          ; Sprite-0 x-position
                 bne CHKUP
 
 X2              lda XPOSL

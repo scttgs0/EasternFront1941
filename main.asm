@@ -54,9 +54,9 @@ _next3          lda MusterStrength,X    ; combat = muster strength
 
 ;   here follow various initializations
                 ;lda #$03
-                ;sta GRACTL  ; TODO:platform [P/M-enable, no latch]
+                ;sta GRACTL             ; TODO:platform [P/M-enable, no latch]
                 lda #$78
-                sta HPOSP0  ; TODO:platform     ; P/M-0 x-position
+                sta SP00_X_POS          ; Sprite-0 x-position
                 lda #$01
                 sta HANDCP
 

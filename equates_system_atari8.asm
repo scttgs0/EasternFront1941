@@ -2,28 +2,8 @@
 ; System Equates for Atari
 ;---------------------------------------
 
-RTCLOK          = $14                   ; jiffy clock
-;DRKMSK          = $4E
-;COLRSH          = $4F
-
-;--------------------------------------
-
 ;   OS registers
 SDLSTL          = $0230                 ; [word] Existing OS pointer to display list
-
-;--------------------------------------
-
-;   GTIA registers
-HPOSP0          = $D000
-HPOSP1          = $D001
-HPOSP2          = $D002
-;GRACTL          = $D01D
-
-;--------------------------------------
-
-;   POKEY registers
-AUDF1           = $D200
-AUDC1           = $D201
 
 ;--------------------------------------
 

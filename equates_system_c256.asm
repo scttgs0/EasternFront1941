@@ -76,7 +76,7 @@ C256F_MODEL_MINOR       = $AF_070C
 
 ;---------------------------------------
 
-SPRITE_CTRL             = $AF_0C00
+SPRITE00_CTRL           = $AF_0C00
 scEnable            = $01
 
 scLUT0              = $00
@@ -96,9 +96,19 @@ scDEPTH4            = $40
 scDEPTH5            = $50
 scDEPTH6            = $60
 
-;SP_ADDR                 = $AF_0C01      ; [long]
-;SP_X_POS                = $AF_0C04      ; [word]
-;SP_Y_POS                = $AF_0C06      ; [word]
+SP00_ADDR               = $AF_0C01      ; [long]
+SP00_X_POS              = $AF_0C04      ; [word]
+SP00_Y_POS              = $AF_0C06      ; [word]
+
+SP01_CTRL               = $AF_0C08
+SP01_ADDR               = $AF_0C09
+SP01_X_POS              = $AF_0C0C
+SP01_Y_POS              = $AF_0C0E
+
+SP02_CTRL               = $AF_0C10
+SP02_ADDR               = $AF_0C11
+SP02_X_POS              = $AF_0C14
+SP02_Y_POS              = $AF_0C16
 
 ;---------------------------------------
 

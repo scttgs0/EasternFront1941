@@ -42,8 +42,8 @@ B1              sta SWAP,X
 
                 ldy #$08
                 ldx #$8F
-LOOP78          stx AUDC1  ; TODO:platform  ; no distortion; max volume
-                sty AUDF1  ; TODO:platform  ; AUDIO Freq
+LOOP78          stx SID_CTRL1           ; TODO: no distortion; max volume
+                sty SID_FREQ1           ; TODO: AUDIO Freq
                 jsr STALL
 
                 tya

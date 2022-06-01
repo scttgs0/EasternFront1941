@@ -108,3 +108,4 @@ TEMPQ           .byte ?
 LLIM            .byte ?
 VICTRY          .byte ?
 IFR             .byte ?         ; [$98]
+JIFFYCLOCK      .byte ?
