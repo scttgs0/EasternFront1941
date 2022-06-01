@@ -288,42 +288,42 @@ MLTKRZ          .byte %00100100         ; ..#..#..
 ;
 ;   The display list goes here; it is 49 bytes long.
 ;
-DisplayList     .byte AEMPTY8,AEMPTY8,AEMPTY8
-                .byte $06+ADLI+ALMS                 ; big text
-                    .addr L64E0
-                .byte AEMPTY0+ADLI+AHSCR            ; blank line
-                .byte AEMPTY0+ADLI+AHSCR            ; blank line
+DisplayList     ;.byte AEMPTY8,AEMPTY8,AEMPTY8
+                ;.byte $06+ADLI+ALMS                 ; big text
+                ;    .addr L64E0
+                ;.byte AEMPTY0+ADLI+AHSCR            ; blank line
+                ;.byte AEMPTY0+ADLI+AHSCR            ; blank line
 
-                .byte $07+ADLI+ALMS+AHSCR+AVSCR     ; 9 map lines
-                    .addr MAPWDW
-                .byte $07+ADLI+ALMS+AHSCR+AVSCR
-                    .addr $652E
-                .byte $07+ADLI+ALMS+AHSCR+AVSCR
-                    .addr $655E
-                .byte $07+ADLI+ALMS+AHSCR+AVSCR
-                    .addr $658E
-                .byte $07+ADLI+ALMS+AHSCR+AVSCR
-                    .addr $65BE
-                .byte $07+ADLI+ALMS+AHSCR+AVSCR
-                    .addr $65EE
-                .byte $07+ADLI+ALMS+AHSCR+AVSCR
-                    .addr $661E
-                .byte $07+ADLI+ALMS+AHSCR+AVSCR
-                    .addr $664E
-                .byte $07+ADLI+ALMS+AHSCR+AVSCR
-                    .addr $667E
-                .byte $07+ALMS+AHSCR                ; extra map line to accommodate fine scroll
-                    .addr $66AE
+                ;.byte $07+ADLI+ALMS+AHSCR+AVSCR     ; 9 map lines
+                ;    .addr MAPWDW
+                ;.byte $07+ADLI+ALMS+AHSCR+AVSCR
+                ;    .addr $652E
+                ;.byte $07+ADLI+ALMS+AHSCR+AVSCR
+                ;    .addr $655E
+                ;.byte $07+ADLI+ALMS+AHSCR+AVSCR
+                ;    .addr $658E
+                ;.byte $07+ADLI+ALMS+AHSCR+AVSCR
+                ;    .addr $65BE
+                ;.byte $07+ADLI+ALMS+AHSCR+AVSCR
+                ;    .addr $65EE
+                ;.byte $07+ADLI+ALMS+AHSCR+AVSCR
+                ;    .addr $661E
+                ;.byte $07+ADLI+ALMS+AHSCR+AVSCR
+                ;    .addr $664E
+                ;.byte $07+ADLI+ALMS+AHSCR+AVSCR
+                ;    .addr $667E
+                ;.byte $07+ALMS+AHSCR                ; extra map line to accommodate fine scroll
+                ;    .addr $66AE
 
-                .byte AEMPTY0+ADLI+AHSCR    ; blank line
-                .byte $02+ADLI+ALMS         ; text
-                    .addr TXTWDW
-                .byte $02                   ; text
-                .byte AEMPTY0+ADLI+AHSCR    ; blank line
-                .byte $02                   ; text
-                .byte AEMPTY0+ADLI+AHSCR    ; blank line
-                .byte AVB+AJMP
-                    .addr DisplayList
+                ;.byte AEMPTY0+ADLI+AHSCR    ; blank line
+                ;.byte $02+ADLI+ALMS         ; text
+                ;    .addr TXTWDW
+                ;.byte $02                   ; text
+                ;.byte AEMPTY0+ADLI+AHSCR    ; blank line
+                ;.byte $02                   ; text
+                ;.byte AEMPTY0+ADLI+AHSCR    ; blank line
+                ;.byte AVB+AJMP
+                ;    .addr DisplayList
 
 ArrowTbl        .byte %00010000         ; ...#....
                 .byte %00111000         ; ..###...

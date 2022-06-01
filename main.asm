@@ -30,11 +30,11 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 bpl _next2
 
                 lda #$00                ; enable display list & scroll
-                sta SDLSTL  ; TODO:platform ; start addr of DLIST
+                ;sta SDLSTL             ; TODO:platform ; start addr of DLIST
                 sta TILE0_WINDOW_X_POS  ; fine scroll
                 sta TILE0_WINDOW_Y_POS
-                lda DLSTPT+1            ; DLIST instructions
-                sta SDLSTL+1  ; TODO:platform ; start addr of DLIST
+                ;lda DLSTPT+1            ; DLIST instructions
+                ;sta SDLSTL+1           ; TODO:platform ; start addr of DLIST
 
                 ldx #$00
 _next3          lda MusterStrength,X    ; combat = muster strength
@@ -82,7 +82,7 @@ LOOP2           sta PLYR0,X
                 ldy #$00
                 ldx #$74
                 lda #$07
-                jsr SETVBV  ; TODO:platform ; = $7400
+                ;jsr SETVBV              ; TODO:platform ; = $7400
 
                 lda #$00                ; This is DLI vector (low byte)
                 sta $0200

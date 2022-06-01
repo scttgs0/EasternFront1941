@@ -6,7 +6,6 @@
 
                 .cpu "65816"
 
-                .include "equates_system_atari8.asm"
                 .include "equates_system_c256.asm"
                 .include "equates_directpage.asm"
                 .include "equates_page6.asm"

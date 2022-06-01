@@ -33,7 +33,7 @@ PLYR2           .fill 128               ; maltese cross
                 ldy #$3E                ; reset 60 Hertz vector
                 ldx #$E9
                 lda #7
-                jsr SETVBV  ; TODO:platform ; restore VBLANK EXIT routine
+                ;jsr SETVBV              ; TODO:platform ; restore VBLANK EXIT routine
 
                 pla                     ; reset stack
                 pla
@@ -872,7 +872,7 @@ X41             sta TEMPI
 X40             sta CNT1
                 lda #$00
                 sta CNT2
-                jmp XITVBV              ; exit vertical blank routine  ; TODO:platform
+                ;jmp XITVBV              ; exit vertical blank routine  ; TODO:platform
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ; added for binary compatibility
@@ -1070,9 +1070,9 @@ DLISRV          pha
 
                 ldx #$62                ; map DLI
                 lda #$28
-                ;eor COLRSH  ; TODO:platform
-                ;and DRKMSK  ; TODO:platform
-                sta WSYNC  ; TODO:platform
+                ;eor COLRSH             ; TODO:platform
+                ;and DRKMSK             ; TODO:platform
+                ;sta WSYNC              ; TODO:platform
                 ;stx CHBASE             ; TODO: convert to tiles     ; charset = $6200
                 sta LUTPfColor0         ; TODO: playfield-0 color
                 jmp DLIOUT
@@ -1081,13 +1081,13 @@ OVER1           cmp #$0F
                 bne OVER6
 
                 lda #$3A
-                ;eor COLRSH  ; TODO:platform
-                ;and DRKMSK  ; TODO:platform
+                ;eor COLRSH             ; TODO:platform
+                ;and DRKMSK             ; TODO:platform
                 tax
                 lda #$00
-                ;eor COLRSH  ; TODO:platform
-                ;and DRKMSK  ; TODO:platform
-                sta WSYNC  ; TODO:platform
+                ;eor COLRSH             ; TODO:platform
+                ;and DRKMSK             ; TODO:platform
+                ;sta WSYNC              ; TODO:platform
                 stx LUTPfColor2         ; TODO: playfield-2 color
                 sta LUTPfColor1         ; TODO: playfield-1 color
                 jmp DLIOUT
@@ -1096,13 +1096,13 @@ OVER6           cmp #$01
                 bne OVER2
 
                 lda TRCOLR              ; green tree color
-                ;eor COLRSH  ; TODO:platform
-                ;and DRKMSK  ; TODO:platform
+                ;eor COLRSH             ; TODO:platform
+                ;and DRKMSK             ; TODO:platform
                 tax
                 lda #$1A                ; yellow band at top of map
-                ;eor COLRSH  ; TODO:platform
-                ;and DRKMSK  ; TODO:platform
-                sta WSYNC  ; TODO:platform
+                ;eor COLRSH             ; TODO:platform
+                ;and DRKMSK             ; TODO:platform
+                ;sta WSYNC              ; TODO:platform
                 sta LUTBkColor          ; TODO: background color
                 stx LUTPfColor0         ; TODO: playfield-0 color
 
@@ -1115,9 +1115,9 @@ OVER2           cmp #$03
                 bne OVER3
 
                 lda EARTH               ; top of map
-                ;eor COLRSH  ; TODO:platform
-                ;and DRKMSK  ; TODO:platform
-                sta WSYNC  ; TODO:platform
+                ;eor COLRSH             ; TODO:platform
+                ;and DRKMSK             ; TODO:platform
+                ;sta WSYNC              ; TODO:platform
                 sta LUTBkColor          ; TODO: background color
                 jmp DLIOUT
 
@@ -1126,9 +1126,9 @@ OVER3           cmp #$0D
 
                 ;ldx #$E0                ; bottom of map
                 lda #$22
-                ;eor COLRSH  ; TODO:platform
-                ;and DRKMSK  ; TODO:platform
-                sta WSYNC  ; TODO:platform
+                ;eor COLRSH             ; TODO:platform
+                ;and DRKMSK             ; TODO:platform
+                ;sta WSYNC              ; TODO:platform
                 sta LUTPfColor2         ; TODO: playfield-2 color
                 ;stx CHBASE             ; TODO: convert to tiles     ; charset = standard OS charset
                 jmp DLIOUT
@@ -1137,9 +1137,9 @@ OVER4           cmp #$0E
                 bne OVER5
 
                 lda #$8A                ; bright blue strip
-                ;eor COLRSH  ; TODO:platform
-                ;and DRKMSK  ; TODO:platform
-                sta WSYNC  ; TODO:platform
+                ;eor COLRSH             ; TODO:platform
+                ;and DRKMSK             ; TODO:platform
+                ;sta WSYNC              ; TODO:platform
                 sta LUTBkColor          ; TODO: background color
                 jmp DLIOUT
 
