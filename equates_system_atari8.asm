@@ -34,8 +34,6 @@ AUDC1           = $D201
 ;--------------------------------------
 
 ;   ANTIC registers
-HSCROL          = $D404
-VSCROL          = $D405
 PMBASE          = $D407
 CHBASE          = $D409
 WSYNC           = $D40A

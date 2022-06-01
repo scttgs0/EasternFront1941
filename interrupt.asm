@@ -659,7 +659,7 @@ X1              lda XPOSL
                 sbc #$01
                 sta XPOSL
                 and #$07
-                sta HSCROL              ; fine scroll  ; TODO:platform
+                sta TILE0_WINDOW_X_POS  ; fine scroll
                 cmp #$07                ; scroll overflow?
                 bne CHKUP               ; no, move on
 
@@ -700,7 +700,7 @@ X2              lda XPOSL
                 adc #$01
                 sta XPOSL
 X4              and #$07
-                sta HSCROL              ; fine scroll  ; TODO:platform
+                sta TILE0_WINDOW_X_POS  ; fine scroll
                 bne CHKUP               ; scroll overflow? if not, move on
 
                 dec OFFLO               ; yes, set up offset for character scroll
@@ -751,7 +751,7 @@ X6              lda YPOSL
                 dec YPOSH
 X7              sta YPOSL
                 and #$0F
-                sta VSCROL              ; fine scroll  ; TODO:platform
+                sta TILE0_WINDOW_Y_POS  ; fine scroll
                 cmp #$0F
                 bne CHKDN               ; scroll overflow? If not, amble on
 
@@ -813,7 +813,7 @@ X8              lda YPOSL
 
                 inc YPOSH
 X9              and #$0F
-                sta VSCROL              ; fine scroll  ; TODO:platform
+                sta TILE0_WINDOW_Y_POS  ; fine scroll
                 bne CHGDL               ; no, move on
 
                 lda OFFLO               ; yes, mark offset

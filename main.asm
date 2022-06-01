@@ -31,8 +31,8 @@ _next2          lda PSXVAL,X            ; initialize page six values
 
                 lda #$00                ; enable display list & scroll
                 sta SDLSTL  ; TODO:platform ; start addr of DLIST
-                sta HSCROL  ; TODO:platform
-                sta VSCROL  ; TODO:platform
+                sta TILE0_WINDOW_X_POS  ; fine scroll
+                sta TILE0_WINDOW_Y_POS
                 lda DLSTPT+1            ; DLIST instructions
                 sta SDLSTL+1  ; TODO:platform ; start addr of DLIST
 
