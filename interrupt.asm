@@ -9,9 +9,11 @@
 ;--------------------------------------
                 * = $5200
 ;--------------------------------------
+;   PMBASE = $5000; Sprites occupy $5200:$53FF
 PLYR0           .fill 128               ; cursor
 PLYR1           .fill 128               ; movement arrow
 PLYR2           .fill 128               ; maltese cross
+;unused         .fill 128
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -736,7 +738,7 @@ X18             dex
                 clc
                 adc #$12
                 sta TEMPI
-LOOP4           lda PLYR0,X
+LOOP4           lda PLYR0,X             ; move cursor up one line
                 sta PLYR0-1,X
                 inx
                 cpx TEMPI
@@ -798,7 +800,7 @@ X19             inx
                 dex
                 stx TEMPI
                 tax
-LOOP5           lda PLYR0-1,X
+LOOP5           lda PLYR0-1,X           ; move cursor down one line
                 sta PLYR0,X
                 dex
                 cpx TEMPI

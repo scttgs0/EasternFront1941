@@ -49,8 +49,8 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 bne _next3
 
 ;   set up player window
-                lda #$50
-                sta PMBASE  ; TODO:platform
+                ;lda #$50
+                ;sta PMBASE             ; TODO:platform
 
 ;   here follow various initializations
                 ;lda #$03
