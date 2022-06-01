@@ -1073,7 +1073,7 @@ DLISRV          pha
                 ;eor COLRSH  ; TODO:platform
                 ;and DRKMSK  ; TODO:platform
                 sta WSYNC  ; TODO:platform
-                stx CHBASE  ; TODO:platform     ; charset = $6200
+                ;stx CHBASE             ; TODO: convert to tiles     ; charset = $6200
                 sta LUTPfColor0         ; TODO: playfield-0 color
                 jmp DLIOUT
 
@@ -1105,8 +1105,10 @@ OVER6           cmp #$01
                 sta WSYNC  ; TODO:platform
                 sta LUTBkColor          ; TODO: background color
                 stx LUTPfColor0         ; TODO: playfield-0 color
-                lda #$60
-                sta CHBASE  ; TODO:platform     ; charset = $6000
+
+                ;lda #$60
+                ;sta CHBASE             ; TODO: convert to tiles     ; charset = $6000
+
                 jmp DLIOUT
 
 OVER2           cmp #$03
@@ -1122,13 +1124,13 @@ OVER2           cmp #$03
 OVER3           cmp #$0D
                 bne OVER4
 
-                ldx #$E0                ; bottom of map
+                ;ldx #$E0                ; bottom of map
                 lda #$22
                 ;eor COLRSH  ; TODO:platform
                 ;and DRKMSK  ; TODO:platform
                 sta WSYNC  ; TODO:platform
                 sta LUTPfColor2         ; TODO: playfield-2 color
-                stx CHBASE  ; TODO:platform     ; charset = standard OS charset
+                ;stx CHBASE             ; TODO: convert to tiles     ; charset = standard OS charset
                 jmp DLIOUT
 
 OVER4           cmp #$0E

@@ -8,7 +8,6 @@ SDLSTL          = $0230                 ; [word] Existing OS pointer to display 
 ;--------------------------------------
 
 ;   ANTIC registers
-CHBASE          = $D409
 WSYNC           = $D40A
 NMIEN           = $D40E
 
