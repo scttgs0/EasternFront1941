@@ -10,6 +10,7 @@
                 .include "equates_system_c256.asm"
                 .include "equates_directpage.asm"
                 .include "equates_page6.asm"
+                .include "macros_65816.asm"
 
                 .enc "atari-screen"
                 .cdef " Z", $00
@@ -17,13 +18,17 @@
 
 ;======================================
 ;======================================
-                * = INIT-16
+                * = INIT-40
 ;======================================
                 .text "PGX"
                 .byte $01
                 .dword BOOT
 
-BOOT            jml START
+BOOT            clc
+                xce
+                .setdp $0060
+                .setbank $00
+                jml START
 
 ;--------------------------------------
 
