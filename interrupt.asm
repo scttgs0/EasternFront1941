@@ -123,7 +123,7 @@ X61             lda HITFLG
 
                 jmp ENDISR              ; no
 
-X63             lda CH_  ; TODO:platform        ; last key pressed
+X63             lda KEYCHAR             ; last key pressed
                 cmp #$21
                 bne X80                 ; space bar pressed?
 
@@ -132,8 +132,8 @@ X63             lda CH_  ; TODO:platform        ; last key pressed
                 bcs X80
 
                 lda #$00
-                sta CH_  ; TODO:platform        ; last key pressed
-                sta HowManyOrders,X            ; clear out orders
+                sta KEYCHAR             ; last key pressed
+                sta HowManyOrders,X     ; clear out orders
                 sta HOWMNY
                 sta STPCNT
                 lda #$01
@@ -336,7 +336,7 @@ X35             lda CHUNKY
 ;   match obtained
 MATCH_          lda #$00
                 sta HITFLG              ; note match
-                sta CH_  ; TODO:platform        ; last key pressed
+                sta KEYCHAR             ; last key pressed
                 lda #$5C
                 sta PCOLR0              ; light up cursor  ; TODO:platform     ; P/M-0 color
 
@@ -481,8 +481,9 @@ X67             inc DBTIMR
 
 X68             lda #$00
                 sta DBTIMR              ; reset debounce timer
-                ldx JOYSTICK0           ; joystick0 read
+                lda JOYSTICK0           ; joystick0 read
                 and #$0F
+                tax
                 lda STKTAB,X
                 bpl X69
 

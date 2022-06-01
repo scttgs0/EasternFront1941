@@ -11,7 +11,6 @@ RTCLOK          = $14                   ; jiffy clock
 ;   OS registers
 SDLSTL          = $0230                 ; [word] Existing OS pointer to display list
 PCOLR0          = $02C0
-CH_             = $02FC
 
 ;--------------------------------------
 
@@ -25,7 +24,6 @@ COLPF1          = $D017
 COLPF2          = $D018
 COLBAK          = $D01A
 ;GRACTL          = $D01D
-CONSOL          = $D01F
 
 ;--------------------------------------
 

@@ -39,4 +39,8 @@ LAT             .byte ?
 LONG            .byte ?
 RFR             .byte ?
 TRNTYP          .byte ?
-SQVAL           .byte ?         ; [$CE]
+SQVAL           .byte ?
+KEYCHAR         .byte ?         ; last key pressed
+    ; TODO: Keyboard Interrupt Handler
+CONSOL          .byte ?         ; [$D0] state of OPTION,SELECT,START
+    ; TODO: Keyboard Interrupt Handler
