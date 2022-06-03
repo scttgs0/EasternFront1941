@@ -142,8 +142,8 @@ TEMPZ           .byte ?         ; [B0]
 ACCLO           .byte ?
 ACCHI           .byte ?
 TURN            .byte ?
-LAT             .byte ?
-LONG            .byte ?
+LATITUDE        .byte ?
+LONGITUDE       .byte ?
 RFR             .byte ?
 TRNTYP          .byte ?
 SQVAL           .byte ?         ; [B8]

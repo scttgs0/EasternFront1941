@@ -265,10 +265,10 @@ X94             cmp #$27
 X93             sta ICELAT
                 lda #$01
                 sta CHUNKX
-                sta LONG
+                sta LONGITUDE
                 lda OLDLAT
                 sta CHUNKY
-                sta LAT
+                sta LATITUDE
 
 LOOP40          jsr TERR
 
@@ -296,13 +296,13 @@ DOTCH           ora SEASN1
 X86             sta (MAPPTR),Y
 NOTCH           inc CHUNKX
                 lda CHUNKX
-                sta LONG
+                sta LONGITUDE
                 cmp #46
                 bne LOOP40
 
                 lda #$00
                 sta CHUNKX
-                sta LONG
+                sta LONGITUDE
                 lda CHUNKY
                 cmp ICELAT
                 beq ENDSSN
@@ -310,7 +310,7 @@ NOTCH           inc CHUNKX
                 sec
                 sbc SEASN3
                 sta CHUNKY
-                sta LAT
+                sta LATITUDE
                 jmp LOOP40
 
 ENDSSN          ldx #$9E                ; any reinforcements?
@@ -320,10 +320,10 @@ LOOP14          lda ArrivalTurn,X
 
                 lda CorpsX,X
                 sta CHUNKX
-                sta LONG
+                sta LONGITUDE
                 lda CorpsY,X
                 sta CHUNKY
-                sta LAT
+                sta LATITUDE
                 stx CORPS
                 jsr TERRB
                 beq SORRY
@@ -331,7 +331,7 @@ LOOP14          lda ArrivalTurn,X
                 cpx #$37
                 bcs A51
 
-                lda #$0A
+                lda #$0A                ; asterisk character
                 sta TXTWDW+36
 A51             jsr SWITCH
 
@@ -491,12 +491,12 @@ Y30             lda EXEC,X
                 lda CorpsX,X
                 clc
                 adc XINC,Y
-                sta LONG
+                sta LONGITUDE
                 sta ACCLO
                 lda CorpsY,X
                 clc
                 adc YINC,Y
-                sta LAT
+                sta LATITUDE
                 sta ACCHI
                 jsr TERR
 
@@ -532,16 +532,16 @@ DOMOVE          ldx ARMY
                 stx CORPS
                 lda CorpsY,X
                 sta CHUNKY
-                sta LAT
+                sta LATITUDE
                 lda CorpsX,X
                 sta CHUNKX
-                sta LONG
+                sta LONGITUDE
                 jsr CHKZOC
 
                 lda ACCHI
-                sta LAT
+                sta LATITUDE
                 lda ACCLO
-                sta LONG
+                sta LONGITUDE
                 lda ZOC
                 cmp #$02
                 bcc Z94
@@ -555,10 +555,10 @@ DOMOVE          ldx ARMY
 Z94             jsr SWITCH
 
                 ldx CORPS
-                lda LAT
+                lda LATITUDE
                 sta CHUNKY
                 sta CorpsY,X
-                lda LONG
+                lda LONGITUDE
                 sta CHUNKX
                 sta CorpsX,X
                 jsr SWITCH
@@ -688,7 +688,7 @@ TERRB           lda #$00
                 sta UNITNO
                 lda #$27
                 sec
-                sbc LAT
+                sbc LATITUDE
                 asl A
                 rol MAPPTR+1
                 asl A
@@ -711,7 +711,7 @@ TERRB           lda #$00
                 sta MAPPTR+1
                 lda #46
                 sec
-                sbc LONG
+                sbc LONGITUDE
                 tay
                 lda (MAPPTR),Y
                 sta TRNCOD
@@ -731,7 +731,7 @@ LOOKUP          lda TRNCOD
                 bne X98
 
                 ldx #$37
-X98             lda LAT
+X98             lda LATITUDE
 LOOP30          cmp CorpsY,X
                 beq MIGHTB
 
@@ -742,7 +742,7 @@ X97             dex
                 sta TXTWDW+128
                 bmi MATCH
 
-MIGHTB          lda LONG
+MIGHTB          lda LONGITUDE
                 cmp CorpsX,X
                 bne X99
 
@@ -756,7 +756,7 @@ MIGHTB          lda LONG
                 bcc MATCH
                 beq MATCH
 
-X99             lda LAT
+X99             lda LATITUDE
                 jmp X97
 
 MATCH           stx UNITNO
@@ -774,9 +774,9 @@ DINGO           ldx ARMY
                 rts
 
 Y00             lda CorpsX,X
-                sta LONG
+                sta LONGITUDE
                 lda CorpsY,X
-                sta LAT
+                sta LATITUDE
                 jsr TERR
 
                 lda UNTCOD
@@ -789,11 +789,11 @@ Y00             lda CorpsX,X
                 lda CorpsX,X
                 clc
                 adc XADD,Y
-                sta LONG
+                sta LONGITUDE
                 lda CorpsY,X
                 clc
                 adc YADD,Y
-                sta LAT
+                sta LATITUDE
                 jsr TERR
                 jsr TERRTY
 
@@ -820,11 +820,11 @@ Y01             txa
                 bcc Y02
 
                 ldy #$15
-LOOP35          lda LAT
+LOOP35          lda LATITUDE
                 cmp BHY1,Y
                 bne Y03
 
-                lda LONG
+                lda LONGITUDE
                 cmp BHX1,Y
                 bne Y03
 
@@ -884,7 +884,7 @@ Y04             iny
                 cmp #$A4                ; river?
                 bcc DONE
 
-                ldx LAT
+                ldx LATITUDE
                 cpx #$0E
                 bcc NEXT
 

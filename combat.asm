@@ -105,9 +105,9 @@ Y24             jsr BRKCHK              ; attacker lives; does he break?
 ;   evaluate attacker's strike
 ATAKR           ldx ARMY
                 lda CorpsX,X
-                sta LONG
+                sta LONGITUDE
                 lda CorpsY,X
-                sta LAT
+                sta LATITUDE
                 jsr TERR
                 jsr TERRTY
 
@@ -183,10 +183,10 @@ Y27             stx CORPS               ; retreat the defender
                 jsr SWITCH
 
                 ldx CORPS
-                lda LAT
+                lda LATITUDE
                 sta CorpsY,X
                 sta CHUNKY
-                lda LONG
+                lda LONGITUDE
                 sta CorpsX,X
                 sta CHUNKX
                 jsr SWITCH
@@ -198,9 +198,9 @@ VICCOM          ldx ARMY
                 lda CorpsY,X
                 sta CHUNKY
                 lda ACCLO               ;defender's coordinates
-                sta LONG
+                sta LONGITUDE
                 lda ACCHI
-                sta LAT
+                sta LATITUDE
                 lda #$FF
                 sta VICTRY
 ENDCOM          ldx ARMY
@@ -216,11 +216,11 @@ ENDCOM          ldx ARMY
 RETRET          lda CorpsX,X
                 clc
                 adc XINC,Y
-                sta LONG
+                sta LONGITUDE
                 lda CorpsY,X
                 clc
                 adc YINC,Y
-                sta LAT
+                sta LATITUDE
                 jsr TERR                ; examine terrain
                 jsr TERRTY
 
@@ -238,11 +238,11 @@ RETRET          lda CorpsX,X
                 beq Y22
 
                 ldy #$15
-LOOP42          lda LAT
+LOOP42          lda LATITUDE
                 cmp BHY1,Y
                 bne Y43
 
-                lda LONG
+                lda LONGITUDE
                 cmp BHX1,Y
                 bne Y43
 
@@ -287,7 +287,6 @@ Y23             lda #$FF
 LOGSTC          lda ArrivalTurn,X
                 cmp TURN
                 beq Z86
-
                 bcc Z86
 
                 rts
@@ -320,23 +319,23 @@ A13             sta ACCLO
                 ldy #$03                ; Germans go west
 Z80             sty HOMEDR
                 lda CorpsX,X
-                sta LONG
+                sta LONGITUDE
                 lda CorpsY,X
-                sta LAT
+                sta LATITUDE
                 lda #$00
                 sta RFR
-LOOP91          lda LONG
+LOOP91          lda LONGITUDE
                 sta SQX
-                lda LAT
+                lda LATITUDE
                 sta SQY
 LOOP90          lda SQX
                 clc
                 adc XINC,Y
-                sta LONG
+                sta LONGITUDE
                 lda SQY
                 clc
                 adc YINC,Y
-                sta LAT
+                sta LATITUDE
                 jsr CHKZOC
 
                 cpx #$37
@@ -371,7 +370,7 @@ Z84             lda SID_RANDOM
                 jmp LOOP90
 
 Z81             ldy HOMEDR
-                lda LONG
+                lda LONGITUDE
                 cpy #$01
                 bne Z85
 
@@ -405,11 +404,11 @@ A70             sta TEMPR
                 beq A71
 
                 lda CorpsX,X
-                cmp LONG
+                cmp LONGITUDE
                 bne A79
 
                 lda CorpsY,X
-                cmp LAT
+                cmp LATITUDE
                 beq A74
 
 A79             rts
@@ -420,14 +419,14 @@ A71             lda #$02
 
 A74             ldx #$07
 LOOPQ           ldy JSTP+16,X
-                lda LONG
+                lda LONGITUDE
                 clc
                 adc XINC,Y
-                sta LONG
-                lda LAT
+                sta LONGITUDE
+                lda LATITUDE
                 clc
                 adc YINC,Y
-                sta LAT
+                sta LATITUDE
                 jsr TERRB
                 bne A75
 
@@ -445,8 +444,8 @@ LOOPQ           ldy JSTP+16,X
 A75             dex
                 bpl LOOPQ
 
-                dec LAT
-                dec LONG
+                dec LATITUDE
+                dec LONGITUDE
                 ldx ARMY
                 rts
 
