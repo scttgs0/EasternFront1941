@@ -1,22 +1,22 @@
 BkColor         .dword $00000000
-PfColor0        .dword $00000040
-PfColor1        .dword $00000061
-PfColor2        .dword $00000081
-PfColor3        .dword $000000a1
-PfColor4        .dword $000000c2
+PfColor0        .dword $00267420    ; tree
+PfColor1        .dword $0073716f    ; city
+PfColor2        .dword $00202d78    ; river
+PfColor3        .dword $00757420    ; mountain
+PfColor4        .dword $00462075    ; swamp
 PfColor5        .dword $00300400
 PfColor6        .dword $000000e2
 PfColor7        .dword $00400000
-SprColor0       .dword $000000ff
-SprColor1       .dword $00101010
-SprColor2       .dword $00400040
+SprColor0       .dword $009b4884    ; cursor
+SprColor1       .dword $008aca61    ; arrow
+SprColor2       .dword $00ebd77e    ; maltese cross
 SprColor3       .dword $00610000
 SprColor4       .dword $00480800
 SprColor5       .dword $00002000
 SprColor6       .dword $00002020
 SprColor7       .dword $00201c00
-                .dword $00610061
-                .dword $00810000
+GrmnUnit        .dword $00205a78
+RssnUnit        .dword $00742526
                 .dword $00202020
                 .dword $00a10000
                 .dword $00810081
