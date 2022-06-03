@@ -29,15 +29,45 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 dex
                 bpl _next2
 
-                .frsGraphics mcGraphicsOn|mcTileMapOn,mcVideoMode640
+                lda #$00
+                sta X_POS
+                sta Y_POS
+
+                .frsGraphics mcGraphicsOn|mcBitmapOn|mcTileMapOn,mcVideoMode640
                 .frsMouse_off
                 .frsBorder_off
 
+                jsr InitBitmaps
+                jsr InitLUT
+                jsr InitTiles
+                jsr InitMap
+
+;---
+;                 .m16i16
+; _reset          lda #$00
+; _nextXPos       inc A
+;                 cmp #384               ;1024-640
+;                 beq _reset
+; _setPos         sta TILE0_WINDOW_X_POS
+;                 sta TILE0_WINDOW_Y_POS
+
+;                 ;ldy #$04
+; _again          ldx #$800
+; _wait           inx
+;                 bne _wait
+
+;                 ;dey
+;                 ;bne _again
+
+;                 bra _nextXPos
+;---
+
                 lda #$00                ; enable display list & scroll
-                ;sta SDLSTL             ; TODO:platform ; start addr of DLIST
                 sta TILE0_WINDOW_X_POS  ; fine scroll
                 sta TILE0_WINDOW_Y_POS
-                ;lda DLSTPT+1            ; DLIST instructions
+
+                ;sta SDLSTL             ; TODO:platform ; start addr of DLIST
+                ;lda DLSTPT+1           ; DLIST instructions
                 ;sta SDLSTL+1           ; TODO:platform ; start addr of DLIST
 
                 ldx #$00
@@ -889,6 +919,7 @@ ZPVAL           .word $6400             ; display list address
                 .word $0230             ; cursor y
 
 PSXVAL          .byte $E0               ; position x
+                ;.byte $00
                 .word $0000             ; position y
                 .byte $33               ; screen cursor y
                 .byte $78               ; player 0 position

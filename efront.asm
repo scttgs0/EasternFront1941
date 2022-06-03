@@ -39,15 +39,16 @@ BOOT            clc
                 .include "data.asm"
                 .include "main.asm"
                 .include "interrupt.asm"
+                .include "platform_c256.asm"
 
 ;--------------------------------------
 ;--------------------------------------
 
-; palette         .binary "tiles.pal"
-; palette_end
+palette         .include "pal.asm"
+palette_end
 
-;                 * = $03_0000
-; tiles           .binary "tiles.raw"
+                * = $03_0000
+tiles           .include "TILESB.asm"
 
 ;                 * = $04_0000
 ; worldmap        .binary "world.map"

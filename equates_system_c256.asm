@@ -28,12 +28,40 @@ BORDER_Y_SIZE           = $AF_0009      ; Values: 0 - 32 (Default: 32)
 
 ;---------------------------------------
 
+BITMAP0_CTRL            = $AF_0100
+bmcEnable           = $01
+BITMAP0_START_ADDR      = $AF_0101
+
+;---------------------------------------
+
 TILE0_CTRL              = $AF_0200
+tcEnable            = $01
 TILE0_START_ADDR        = $AF_0201
 TILE0_X_SIZE            = $AF_0204
 TILE0_Y_SIZE            = $AF_0206
 TILE0_WINDOW_X_POS      = $AF_0208
 TILE0_WINDOW_Y_POS      = $AF_020A
+
+TILE1_CTRL              = $AF_020C
+TILE1_START_ADDR        = $AF_020D
+TILE1_X_SIZE            = $AF_0210
+TILE1_Y_SIZE            = $AF_0212
+TILE1_WINDOW_X_POS      = $AF_0214
+TILE1_WINDOW_Y_POS      = $AF_0216
+
+TILE2_CTRL              = $AF_0218
+TILE2_START_ADDR        = $AF_0219
+TILE2_X_SIZE            = $AF_021C
+TILE2_Y_SIZE            = $AF_021E
+TILE2_WINDOW_X_POS      = $AF_0220
+TILE2_WINDOW_Y_POS      = $AF_0222
+
+TILE3_CTRL              = $AF_0224
+TILE3_START_ADDR        = $AF_0225
+TILE3_X_SIZE            = $AF_0228
+TILE3_Y_SIZE            = $AF_022A
+TILE3_WINDOW_X_POS      = $AF_022C
+TILE3_WINDOW_Y_POS      = $AF_022E
 
 TILESET0_ADDR           = $AF_0280
 TILESET0_ADDR_CFG       = $AF_0283

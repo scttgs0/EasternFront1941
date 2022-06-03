@@ -149,5 +149,13 @@ TRNTYP          .byte ?
 SQVAL           .byte ?         ; [B8]
 KEYCHAR         .byte ?                 ; last key pressed
     ; TODO: Keyboard Interrupt Handler
-CONSOL          .byte ?         ; [$BA]   state of OPTION,SELECT,START
+CONSOL          .byte ?                 ; state of OPTION,SELECT,START
     ; TODO: Keyboard Interrupt Handler
+SOURCE          .dword ?       ; [BB]     Starting address for the source data (4 bytes)
+DEST            .dword ?       ; [BF]     Starting address for the destination block (4 bytes)
+SIZE            .dword ?       ; [C3]     Number of bytes to copy (4 bytes)
+blockIndex      .byte ?                 ; [0-63]
+blockRow        .word ?         ; [C8]
+ptrMap          .word ?
+X_POS           .word ?
+Y_POS           .word ?

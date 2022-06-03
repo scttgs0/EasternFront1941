@@ -656,18 +656,18 @@ X14             lda SHPOS0
                 sta SP00_X_POS          ; Sprite-0 x-position
                 bne CHKUP
 
-X1              lda XPOSL
+X1              .m16
+                lda X_POS
                 sec                     ; decrement x-coordinate
                 sbc #$01
-                sta XPOSL
-                and #$07
+                sta X_POS
                 sta TILE0_WINDOW_X_POS  ; fine scroll
-                cmp #$07                ; scroll overflow?
-                bne CHKUP               ; no, move on
+                .m8
+                bra CHKUP               ; no, move on
 
-                inc OFFLO               ; yes, mark it for offset
-                clv
-                bvc CHKUP               ; no point in checking for joystick right
+                ; inc OFFLO               ; yes, mark it for offset
+                ; clv
+                ; bvc CHKUP               ; no point in checking for joystick right
 
 CHKRT           pla                     ; get back joystick byte
                 pha                     ; save it again
@@ -697,16 +697,17 @@ X15             lda SHPOS0
                 sta SP00_X_POS          ; Sprite-0 x-position
                 bne CHKUP
 
-X2              lda XPOSL
+X2              .m16
+                lda X_POS
                 clc                     ; no, increment x-coordinate
                 adc #$01
-                sta XPOSL
-X4              and #$07
-                sta TILE0_WINDOW_X_POS  ; fine scroll
-                bne CHKUP               ; scroll overflow? if not, move on
+                sta X_POS
+X4              sta TILE0_WINDOW_X_POS  ; fine scroll
+                .m8
+                bra CHKUP               ; scroll overflow? if not, move on
 
-                dec OFFLO               ; yes, set up offset for character scroll
-                dec OFFHI
+                ;dec OFFLO               ; yes, set up offset for character scroll
+                ;dec OFFHI
 CHKUP           pla                     ; joystick up?
                 lsr A
                 pha
@@ -745,17 +746,14 @@ LOOP4           lda PLYR0,X             ; move cursor up one line
                 bne LOOP4
                 beq CHKDN
 
-X6              lda YPOSL
+X6              .m16
+                lda Y_POS
                 sec
                 sbc #$01
-                bcs X7
-
-                dec YPOSH
-X7              sta YPOSL
-                and #$0F
+X7              sta Y_POS
                 sta TILE0_WINDOW_Y_POS  ; fine scroll
-                cmp #$0F
-                bne CHKDN               ; scroll overflow? If not, amble on
+                .m8
+                bra CHKDN               ; scroll overflow? If not, amble on
 
                 lda OFFLO               ; yes, set up offset for character scroll
                 sec
@@ -807,15 +805,13 @@ LOOP5           lda PLYR0-1,X           ; move cursor down one line
                 bne LOOP5
                 beq CHGDL
 
-X8              lda YPOSL
+X8              .m16
+                lda Y_POS
                 clc                     ; no, decrement y-coordinate
                 adc #$01
-                sta YPOSL
-                bcc X9
-
-                inc YPOSH
-X9              and #$0F
-                sta TILE0_WINDOW_Y_POS  ; fine scroll
+                sta Y_POS
+X9              sta TILE0_WINDOW_Y_POS  ; fine scroll
+                .m8
                 bne CHGDL               ; no, move on
 
                 lda OFFLO               ; yes, mark offset
@@ -845,13 +841,14 @@ DLOOP           lda (DLSTPT),Y
                 cpy #$27
                 bne DLOOP
 
-ENDISR          lda YPOSH
-                lsr A
-                lda YPOSL
-                ror A
+ENDISR          .m16
+                lda Y_POS
                 lsr A
                 lsr A
                 lsr A
+                lsr A
+                lsr A
+                .m8
                 cmp #$11
                 bcs X39
 
