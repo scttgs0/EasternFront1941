@@ -10,7 +10,7 @@
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $4700
+                * = $02_4700
 ;--------------------------------------
 
 ;   initialization loop
@@ -129,7 +129,9 @@ LOOP52          lda ArrivalTurn,Y
                 bcs Y54
 
                 sta TEMPR
+                .setbank $00
                 lda IFR-55,Y
+                .setbank $02
                 sec
                 sbc TEMPR
                 bcc Y54                 ; no good using nearby armies
@@ -349,7 +351,9 @@ LOOP72          lda LV,X
                 adc TEMPR
                 tay
                 iny
+                .setbank $00
                 lda LINARR,Y
+                .setbank $02
                 beq Y96
 
                 lda LPTS
@@ -371,9 +375,11 @@ LOOP73          stx COLUM
                 cpx OCOLUM
                 beq NXCLM
 
+                .setbank $00
                 lda LV,X
                 sec
                 sbc LV,Y
+                .setbank $02
                 beq NXCLM
                 bmi NXCLM
 
@@ -455,8 +461,10 @@ LOOP70          lda LINARR,X
 
                 ldx #$18
 LOOP71          ldy ROTARR,X
+                .setbank $00
                 lda BAKARR,X
                 sta LINARR,Y
+                .setbank $02
                 dex
                 bpl LOOP71
 

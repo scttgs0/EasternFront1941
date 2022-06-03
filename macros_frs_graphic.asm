@@ -1,9 +1,9 @@
 frsGraphics     .macro
                 lda #\1
-                sta MASTER_CTRL_REG_L
+                sta MASTER_CTRL_L
 
                 lda #\2
-                sta MASTER_CTRL_REG_H
+                sta MASTER_CTRL_H
                 .endmacro
 
 frsGraphics_s   .macro
@@ -19,7 +19,7 @@ frsGraphics_s   .macro
 
 frsBorder_off   .macro
                 lda #0
-                sta BORDER_CTRL_REG
+                sta BORDER_CTRL
                 sta BORDER_X_SIZE
                 sta BORDER_Y_SIZE
                 .endmacro

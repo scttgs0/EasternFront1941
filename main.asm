@@ -12,7 +12,7 @@
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $6E00
+                * = $02_6E00
 ;--------------------------------------
 
 START           ldx #$08
@@ -28,6 +28,10 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 sta XPOSL,X
                 dex
                 bpl _next2
+
+                .frsGraphics mcGraphicsOn|mcTileMapOn,mcVideoMode640
+                .frsMouse_off
+                .frsBorder_off
 
                 lda #$00                ; enable display list & scroll
                 ;sta SDLSTL             ; TODO:platform ; start addr of DLIST
@@ -94,7 +98,7 @@ LOOP2           sta PLYR0,X
 NEWTRN          inc TURN
 
 ;   first do calendar calculations
-                lda DAY
+CalendarCalc    lda DAY
                 clc
                 adc #07
                 ldx MONTH
@@ -415,7 +419,7 @@ Z00_            lda #$00
                 sta BUTMSK
                 sta CORPS
                 jsr TXTMSG
-                jsr $4700               ; artificial intelligence routine
+                jsr INIT                ; artificial intelligence routine
 
                 lda #$01
                 sta BUTMSK
@@ -475,11 +479,11 @@ Y30             lda EXEC,X
                 lda ARMY
                 cmp #$37
                 bcs TRJAM
-                bcc COMBAT
+                bcc COMBAT_
 
 GERMAN          lda ARMY
                 cmp #$37
-                bcs COMBAT
+                bcs COMBAT_
 
 TRJAM           ldx ARMY
                 lda TICK
@@ -488,7 +492,7 @@ TRJAM           ldx ARMY
                 sta EXEC,X
 A60             jmp Y06
 
-COMBAT          jsr $4ED8
+COMBAT_         jsr COMBAT
 
                 lda VICTRY
                 beq A60
@@ -590,7 +594,7 @@ MOSCOW          .byte 0,0,0,0
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $7200
+                * = $02_7200
 ;--------------------------------------
 STALL           lda #$00
 LOOP79          pha
@@ -608,17 +612,13 @@ LOOP79          pha
 ;this is the debugging routine
 ;it can't be reached by any route any longer
 ;
-
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-; added for binary compatibility
-                jmp $6E9A
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ForceDebug      jmp CalendarCalc
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $7210
+                * = $02_7210
 ;--------------------------------------
-                lda #$00
+Break2Monitor   lda #$00
                 sta $D01D
                 sta $D00D
                 sta $D00E
@@ -645,7 +645,7 @@ LOOP79          pha
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $7240
+                * = $02_7240
 ;--------------------------------------
 
 TERR            jsr TERRB

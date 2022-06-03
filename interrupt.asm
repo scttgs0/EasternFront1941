@@ -7,7 +7,7 @@
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $5200
+                * = $02_5200
 ;--------------------------------------
 ;   PMBASE = $5000; Sprites occupy $5200:$53FF
 PLYR0           .fill 128               ; cursor
@@ -17,7 +17,7 @@ PLYR2           .fill 128               ; maltese cross
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                * = $7400               ; deferred vertical blank interrupt
+                * = $02_7400               ; deferred vertical blank interrupt
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ;   debug entry
@@ -33,12 +33,12 @@ PLYR2           .fill 128               ; maltese cross
                 ldy #$3E                ; reset 60 Hertz vector
                 ldx #$E9
                 lda #7
-                ;jsr SETVBV              ; TODO:platform ; restore VBLANK EXIT routine
+                ;jsr SETVBV             ; TODO:platform ; restore VBLANK EXIT routine
 
                 pla                     ; reset stack
                 pla
                 pla
-                jmp $7210               ; break routine
+                jmp Break2Monitor       ; break routine
 
 Z30             lda HANDCP
                 beq A31
@@ -48,8 +48,8 @@ Z30             lda HANDCP
                 beq A31
 
                 lda #$08
-                sta CONSOL  ; TODO:platform     ; reset function keys
-                lda CONSOL  ; TODO:platform     ; read function keys
+                sta CONSOL              ; TODO: reset function keys
+                lda CONSOL              ; TODO: read function keys
                 and #$04                ; OPTION key
                 bne A31
 
@@ -881,7 +881,7 @@ X40             sta CNT1
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $799C
+                * = $02_799C
 ;--------------------------------------
 JSTP            .byte 0,0,0,0,3,3,3,3
                 .byte 2,2,2,2,1,1,1,0
@@ -890,7 +890,7 @@ DEFNC           .byte 2,3,3,2,2,2,1,1,2,0
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $79C0
+                * = $02_79C0
 ;--------------------------------------
 ;
 ;SUBROUTINE DWORDS
@@ -1058,7 +1058,7 @@ OBJX            ;.fill 104
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                * = $7B00
+                * = $02_7B00
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DLISRV          pha
                 txa
@@ -1088,8 +1088,8 @@ OVER1           cmp #$0F
                 ;eor COLRSH             ; TODO:platform
                 ;and DRKMSK             ; TODO:platform
                 ;sta WSYNC              ; TODO:platform
-                stx LUTPfColor2         ; TODO: playfield-2 color
-                sta LUTPfColor1         ; TODO: playfield-1 color
+                ;stx LUTPfColor2         ; TODO: playfield-2 color
+                ;sta LUTPfColor1         ; TODO: playfield-1 color
                 jmp DLIOUT
 
 OVER6           cmp #$01
@@ -1103,8 +1103,8 @@ OVER6           cmp #$01
                 ;eor COLRSH             ; TODO:platform
                 ;and DRKMSK             ; TODO:platform
                 ;sta WSYNC              ; TODO:platform
-                sta LUTBkColor          ; TODO: background color
-                stx LUTPfColor0         ; TODO: playfield-0 color
+                ;sta LUTBkColor          ; TODO: background color
+                ;stx LUTPfColor0         ; TODO: playfield-0 color
 
                 ;lda #$60
                 ;sta CHBASE             ; TODO: convert to tiles     ; charset = $6000

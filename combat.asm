@@ -7,14 +7,14 @@
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $4ED8
+                * = $02_4ED8
 ;--------------------------------------
 
 ;   combat routine
-                lda #$00
+COMBAT          lda #$00
                 sta VICTRY              ; clear victory flag
                 ldx ARMY
-                cpx #$2A                ;Finns can't attack
+                cpx #$2A                ; Finns can't attack
                 beq A10
 
                 cpx #$2B
@@ -56,7 +56,7 @@ LOOP78          stx SID_CTRL1           ; TODO: no distortion; max volume
                 cpx #$7F
                 bne LOOP78
 
-                .setbank $00
+                .setbank $02
 
 ;   replace original unit character
                 jsr SWITCH

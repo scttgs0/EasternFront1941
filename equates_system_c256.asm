@@ -37,6 +37,8 @@ TILE0_WINDOW_Y_POS      = $AF_020A
 
 TILESET0_ADDR           = $AF_0280
 TILESET0_ADDR_CFG       = $AF_0283
+tclVertical         = $00
+tclSquare           = $08
 
 ;---------------------------------------
 

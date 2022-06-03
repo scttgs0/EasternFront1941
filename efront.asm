@@ -8,8 +8,9 @@
 
                 .include "equates_system_c256.asm"
                 .include "equates_directpage.asm"
-                .include "equates_page6.asm"
                 .include "macros_65816.asm"
+                .include "macros_frs_graphic.asm"
+                .include "macros_frs_mouse.asm"
 
                 .enc "atari-screen"
                 .cdef " Z", $00
@@ -25,8 +26,10 @@
 
 BOOT            clc
                 xce
-                .setdp $0060
-                .setbank $00
+                .m8i8
+                .setdp $0800
+                .setbank $02
+
                 jml START
 
 ;--------------------------------------
@@ -36,3 +39,15 @@ BOOT            clc
                 .include "data.asm"
                 .include "main.asm"
                 .include "interrupt.asm"
+
+;--------------------------------------
+;--------------------------------------
+
+; palette         .binary "tiles.pal"
+; palette_end
+
+;                 * = $03_0000
+; tiles           .binary "tiles.raw"
+
+;                 * = $04_0000
+; worldmap        .binary "world.map"
