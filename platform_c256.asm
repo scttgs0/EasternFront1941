@@ -2,11 +2,13 @@ VRAM            = $B00000               ; First byte of video RAM
 
 TILESET         = VRAM
 TILEMAP         = $B20000
-SPRITES         = $B21000
+TILEMAPUNITS    = $B21000
+SPRITES         = $B22000
+BITMAP          = $B30000
 
 
 ;======================================
-; Initialize the color look up tables
+; Create the lookup table (LUT)
 ;======================================
 InitLUT         .proc
                 phb
@@ -25,9 +27,7 @@ InitLUT         .proc
 
 
 ;======================================
-; Load the pixel data for the tiles
-; into video memory.
-; Set it up for tile set 0
+; Load the tiles into VRAM
 ;======================================
 InitTiles       .proc
                 phb
@@ -36,7 +36,7 @@ InitTiles       .proc
                 .m16i16
                 lda #$FFFF              ; Set the size
                 sta SIZE
-                lda #0
+                lda #$00
                 sta SIZE+2
 
                 lda #<>tiles            ; Set the source address
@@ -66,8 +66,7 @@ InitTiles       .proc
 
 
 ;======================================
-; Initialize the tile map using an
-; ASCII representation of the map.
+; Initialize the Map layer
 ;======================================
 InitMap         .proc
                 phb
@@ -87,6 +86,7 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
 
                 inx                     ; move to the next tile
                 iny
+                cpy #$7B0               ; 48x41
                 bne _nextTile
 
                 .m16
@@ -97,9 +97,9 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
                 sta TILE3_START_ADDR+2
 
                 .m16
-                lda #48                ; Set the size of the tile map to 64x41
+                lda #48                ; Set the size of the tile map
                 sta TILE3_X_SIZE
-                lda #42
+                lda #41
                 sta TILE3_Y_SIZE
 
                 lda #$00
@@ -109,12 +109,66 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
                 .m8
                 lda #tcEnable           ; Enable the tileset, LUT0
                 sta TILE3_CTRL
+
                 plp
                 plb
                 rts
                 .endproc
 
 
+;======================================
+; Initialize the Unit layer (troops)
+;======================================
+InitUnitOverlay .proc
+                phb
+                php
+
+                .setbank `MAPWDW
+
+                .m8i16
+                ldx #0
+                ldy #0
+_nextTile       lda MAPWDW,Y            ; Get the tile code
+                and #$7F
+                sta TILEMAPUNITS,X      ; save it to the tile map
+                inx                     ; Note: writes to video RAM need to be 8-bit only
+                lda #0
+                sta TILEMAPUNITS,X
+
+                inx                     ; move to the next tile
+                iny
+                bne _nextTile
+
+                .m16
+                lda #<>(TILEMAPUNITS-VRAM)   ; Set the pointer to the tile map
+                sta TILE2_START_ADDR
+                .m8
+                lda #`(TILEMAPUNITS-VRAM)
+                sta TILE2_START_ADDR+2
+
+                .m16
+                lda #48                ; Set the size of the tile map to 64x41
+                sta TILE2_X_SIZE
+                lda #44
+                sta TILE2_Y_SIZE
+
+                lda #$00
+                sta TILE2_WINDOW_X_POS
+                sta TILE2_WINDOW_Y_POS
+
+                .m8
+                lda #tcEnable           ; Enable the tileset, LUT0
+                sta TILE2_CTRL
+
+                plp
+                plb
+                rts
+                .endproc
+
+
+;======================================
+; Initialize the Sprite layer
+;======================================
 InitSprites     .proc
                 phb
                 php
@@ -122,7 +176,7 @@ InitSprites     .proc
                 .m16i16
                 lda #$1C00              ; Set the size
                 sta SIZE
-                lda #0
+                lda #$00
                 sta SIZE+2
 
                 lda #<>PLYR0            ; Set the source address
@@ -140,15 +194,17 @@ InitSprites     .proc
                 adc 1024*4
                 sta SP02_ADDR
 
-                .m8
                 lda #`(SPRITES-VRAM)
                 sta DEST+2
+
+                .m8
                 sta SP00_ADDR+2
                 sta SP01_ADDR+2
                 sta SP02_ADDR+2
 
                 jsr Copy2VRAM
 
+                .m16
                 lda #$00
                 sta SP00_X_POS
                 sta SP00_Y_POS
@@ -157,6 +213,7 @@ InitSprites     .proc
                 sta SP02_X_POS
                 sta SP02_Y_POS
 
+                .m8
                 lda #scEnable
                 sta SP00_CTRL
                 sta SP01_CTRL
@@ -168,36 +225,35 @@ InitSprites     .proc
                 .endproc
 
 
-InitBitmaps     .proc
+InitBitmap      .proc
                 phb
                 php
 
                 .m16i16
-                lda #$FFFF              ; Set the size
+                lda #$B000              ; Set the size
                 sta SIZE
-                lda #0
+                lda #$04
                 sta SIZE+2
 
-                lda #<>tiles            ; Set the source address
+                lda #<>HeaderPanel      ; Set the source address
                 sta SOURCE
-                lda #`tiles
+                lda #`HeaderPanel
                 sta SOURCE+2
 
-                lda #<>(TILESET-VRAM)   ; Set the destination address
+                lda #<>(BITMAP-VRAM)   ; Set the destination address
                 sta DEST
-                sta TILESET0_ADDR       ; And set the Vicky register
+                sta BITMAP0_START_ADDR ; And set the Vicky register
+
+                lda #`(BITMAP-VRAM)
+                sta DEST+2
 
                 .m8
-                lda #`(TILESET-VRAM)
-                sta DEST+2
-                sta TILESET0_ADDR+2
+                sta BITMAP0_START_ADDR+2
 
                 jsr Copy2VRAM
 
-                ; set tileset layout to linear-vertical (16x4096)
-                .m8
-                lda #tclVertical
-                sta TILESET0_ADDR_CFG
+                lda #bmcEnable
+                sta BITMAP0_CTRL
 
                 plp
                 plb
