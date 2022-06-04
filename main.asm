@@ -49,8 +49,8 @@ _next2          lda PSXVAL,X            ; initialize page six values
 ; _nextXPos       inc A
 ;                 cmp #384               ;1024-640
 ;                 beq _reset
-; _setPos         sta TILE0_WINDOW_X_POS
-;                 sta TILE0_WINDOW_Y_POS
+; _setPos         sta TILE3_WINDOW_X_POS
+;                 sta TILE3_WINDOW_Y_POS
 
 ;                 ;ldy #$04
 ; _again          ldx #$800
@@ -64,8 +64,8 @@ _next2          lda PSXVAL,X            ; initialize page six values
 ;---
 
                 lda #$00                ; enable display list & scroll
-                sta TILE0_WINDOW_X_POS  ; fine scroll
-                sta TILE0_WINDOW_Y_POS
+                sta TILE3_WINDOW_X_POS  ; fine scroll
+                sta TILE3_WINDOW_Y_POS
 
                 ;sta SDLSTL             ; TODO:platform ; start addr of DLIST
                 ;lda DLSTPT+1           ; DLIST instructions

@@ -91,24 +91,24 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
 
                 .m16
                 lda #<>(TILEMAP-VRAM)   ; Set the pointer to the tile map
-                sta TILE0_START_ADDR
+                sta TILE3_START_ADDR
                 .m8
                 lda #`(TILEMAP-VRAM)
-                sta TILE0_START_ADDR+2
+                sta TILE3_START_ADDR+2
 
                 .m16
                 lda #48                ; Set the size of the tile map to 64x41
-                sta TILE0_X_SIZE
+                sta TILE3_X_SIZE
                 lda #42
-                sta TILE0_Y_SIZE
+                sta TILE3_Y_SIZE
 
                 lda #$00
-                sta TILE0_WINDOW_X_POS
-                sta TILE0_WINDOW_Y_POS
+                sta TILE3_WINDOW_X_POS
+                sta TILE3_WINDOW_Y_POS
 
                 .m8
                 lda #tcEnable           ; Enable the tileset, LUT0
-                sta TILE0_CTRL
+                sta TILE3_CTRL
                 plp
                 plb
                 rts

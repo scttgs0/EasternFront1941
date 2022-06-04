@@ -651,7 +651,7 @@ X1              .m16
                 sec                     ; decrement x-coordinate
                 sbc #$01
                 sta X_POS
-                sta TILE0_WINDOW_X_POS  ; fine scroll
+                sta TILE3_WINDOW_X_POS  ; fine scroll
                 .m8
                 bra CHKUP               ; no, move on
 
@@ -692,7 +692,7 @@ X2              .m16
                 clc                     ; no, increment x-coordinate
                 adc #$01
                 sta X_POS
-X4              sta TILE0_WINDOW_X_POS  ; fine scroll
+X4              sta TILE3_WINDOW_X_POS  ; fine scroll
                 .m8
                 bra CHKUP               ; scroll overflow? if not, move on
 
@@ -741,7 +741,7 @@ X6              .m16
                 sec
                 sbc #$01
 X7              sta Y_POS
-                sta TILE0_WINDOW_Y_POS  ; fine scroll
+                sta TILE3_WINDOW_Y_POS  ; fine scroll
                 .m8
                 bra CHKDN               ; scroll overflow? If not, amble on
 
@@ -800,7 +800,7 @@ X8              .m16
                 clc                     ; no, decrement y-coordinate
                 adc #$01
                 sta Y_POS
-X9              sta TILE0_WINDOW_Y_POS  ; fine scroll
+X9              sta TILE3_WINDOW_Y_POS  ; fine scroll
                 .m8
                 bne CHGDL               ; no, move on
 
