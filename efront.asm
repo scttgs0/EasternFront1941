@@ -48,4 +48,4 @@ palette         .include "pal.asm"
 palette_end
 
                 * = $03_0000
-tiles           .include "TILESB.asm"
+tiles           .include "TILES.asm"
