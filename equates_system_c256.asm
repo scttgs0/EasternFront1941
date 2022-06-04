@@ -106,7 +106,7 @@ C256F_MODEL_MINOR       = $AF_070C
 
 ;---------------------------------------
 
-SPRITE00_CTRL           = $AF_0C00
+SP00_CTRL               = $AF_0C00
 scEnable            = $01
 
 scLUT0              = $00

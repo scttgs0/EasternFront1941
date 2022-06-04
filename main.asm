@@ -33,14 +33,15 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 sta X_POS
                 sta Y_POS
 
-                .frsGraphics mcGraphicsOn|mcBitmapOn|mcTileMapOn,mcVideoMode640
+                .frsGraphics mcGraphicsOn|mcTileMapOn|mcSpriteOn,mcVideoMode640     ;|mcBitmapOn
                 .frsMouse_off
                 .frsBorder_off
 
-                jsr InitBitmaps
                 jsr InitLUT
                 jsr InitTiles
                 jsr InitMap
+                jsr InitSprites
+                jsr InitBitmaps
 
 ;---
 ;                 .m16i16
@@ -89,28 +90,41 @@ _next3          lda MusterStrength,X    ; combat = muster strength
 ;   here follow various initializations
                 ;lda #$03
                 ;sta GRACTL             ; TODO:platform [P/M-enable, no latch]
-                lda #$78
+                lda #12*$10-8   ; 12
                 sta SP00_X_POS          ; Sprite-0 x-position
+                lda #7*$10-8    ; 7
+                sta SP00_Y_POS          ; Sprite-0 y-position
+
+                lda #12*$10-8 
+                sta SP01_X_POS
+                lda #8*$10-8  
+                sta SP01_Y_POS
+
+                lda #12*$10-8 
+                sta SP02_X_POS
+                lda #9*$10-8  
+                sta SP02_Y_POS
+
                 lda #$01
                 sta HANDCP
 
-                ldx #$33                ; generate cursor stamp
-                lda #$FF
-                sta PLYR0,X
-                inx
-                sta PLYR0,X
-                inx
-                lda #$81
-LOOP2           sta PLYR0,X
-                inx
-                cpx #$3F
-                bne LOOP2
+;                 ldx #$33                ; generate cursor stamp
+;                 lda #$FF
+;                 sta PLYR0,X
+;                 inx
+;                 sta PLYR0,X
+;                 inx
+;                 lda #$81
+; LOOP2           sta PLYR0,X
+;                 inx
+;                 cpx #$3F
+;                 bne LOOP2
 
-                lda #$FF
-                sta PLYR0,X
-                sta TURN
-                inx
-                sta PLYR0,X
+;                 lda #$FF
+;                 sta PLYR0,X
+;                 sta TURN
+;                 inx
+;                 sta PLYR0,X
 
 ;   enable deferred vertical blank interrupt
                 ldy #$00

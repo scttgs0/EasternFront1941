@@ -1,6 +1,8 @@
 VRAM            = $B00000               ; First byte of video RAM
-TILESET         = VRAM                  ; Address of TILESET data in video RAM
-TILEMAP         = $B20000               ; And we'll put the tile map itself right after
+
+TILESET         = VRAM
+TILEMAP         = $B20000
+SPRITES         = $B21000
 
 
 ;======================================
@@ -14,43 +16,7 @@ InitLUT         .proc
                 lda #palette_end-palette ; Copy the palette to LUT0
                 ldx #<>palette
                 ldy #<>GRPH_LUT0_PTR
-                mvn `START,`GRPH_LUT0_PTR
-
-                plp
-                plb
-                rts
-                .endproc
-
-
-InitBitmaps     .proc
-                phb
-                php
-
-                .m16i16
-                lda #$FFFF              ; Set the size
-                sta SIZE
-                lda #0
-                sta SIZE+2
-
-                lda #<>tiles            ; Set the source address
-                sta SOURCE
-                lda #`tiles
-                sta SOURCE+2
-
-                lda #<>(TILESET-VRAM)   ; Set the destination address
-                sta DEST
-                sta TILESET0_ADDR       ; And set the Vicky register
-                lda #`(TILESET-VRAM)
-                sta DEST+2
-                .m8
-                sta TILESET0_ADDR+2
-
-                jsr Copy2VRAM
-
-                ; set tileset layout to linear-vertical (16x4096)
-                .m8
-                lda #tclVertical
-                sta TILESET0_ADDR_CFG
+                mvn `palette,`GRPH_LUT0_PTR
 
                 plp
                 plb
@@ -110,13 +76,6 @@ InitMap         .proc
                 .setbank `MAPWDW
 
                 .m8i16
-                ;lda #$00
-                ;sta blockIndex
-                ;sta blockRow
-
-                ;lda #worldmap
-                ;sta ptrMap
-
                 ldx #0
                 ldy #0
 _nextTile       lda MAPWDW,Y            ; Get the tile code
@@ -125,12 +84,12 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
                 inx                     ; Note: writes to video RAM need to be 8-bit only
                 lda #0
                 sta TILEMAP,X
+
                 inx                     ; move to the next tile
- 
                 iny
                 bne _nextTile
 
-set_registers   .m16
+                .m16
                 lda #<>(TILEMAP-VRAM)   ; Set the pointer to the tile map
                 sta TILE0_START_ADDR
                 .m8
@@ -150,6 +109,96 @@ set_registers   .m16
                 .m8
                 lda #tcEnable           ; Enable the tileset, LUT0
                 sta TILE0_CTRL
+                plp
+                plb
+                rts
+                .endproc
+
+
+InitSprites     .proc
+                phb
+                php
+
+                .m16i16
+                lda #$1C00              ; Set the size
+                sta SIZE
+                lda #0
+                sta SIZE+2
+
+                lda #<>PLYR0            ; Set the source address
+                sta SOURCE
+                lda #`PLYR0
+                sta SOURCE+2
+
+                lda #<>(SPRITES-VRAM)   ; Set the destination address
+                sta DEST
+                sta SP00_ADDR           ; And set the Vicky register
+                clc
+                adc #1024
+                sta SP01_ADDR
+                clc
+                adc 1024*4
+                sta SP02_ADDR
+
+                .m8
+                lda #`(SPRITES-VRAM)
+                sta DEST+2
+                sta SP00_ADDR+2
+                sta SP01_ADDR+2
+                sta SP02_ADDR+2
+
+                jsr Copy2VRAM
+
+                lda #$00
+                sta SP00_X_POS
+                sta SP00_Y_POS
+                sta SP01_X_POS
+                sta SP01_Y_POS
+                sta SP02_X_POS
+                sta SP02_Y_POS
+
+                lda #scEnable
+                sta SP00_CTRL
+                sta SP01_CTRL
+                sta SP02_CTRL
+
+                plp
+                plb
+                rts
+                .endproc
+
+
+InitBitmaps     .proc
+                phb
+                php
+
+                .m16i16
+                lda #$FFFF              ; Set the size
+                sta SIZE
+                lda #0
+                sta SIZE+2
+
+                lda #<>tiles            ; Set the source address
+                sta SOURCE
+                lda #`tiles
+                sta SOURCE+2
+
+                lda #<>(TILESET-VRAM)   ; Set the destination address
+                sta DEST
+                sta TILESET0_ADDR       ; And set the Vicky register
+
+                .m8
+                lda #`(TILESET-VRAM)
+                sta DEST+2
+                sta TILESET0_ADDR+2
+
+                jsr Copy2VRAM
+
+                ; set tileset layout to linear-vertical (16x4096)
+                .m8
+                lda #tclVertical
+                sta TILESET0_ADDR_CFG
+
                 plp
                 plb
                 rts
