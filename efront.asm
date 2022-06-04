@@ -49,6 +49,3 @@ palette_end
 
                 * = $03_0000
 tiles           .include "TILESB.asm"
-
-;                 * = $04_0000
-; worldmap        .binary "world.map"

@@ -86,40 +86,40 @@ ArrivalTurn     .byte 255,0,255,0,0,0,0,0,0,0,0,255,255,255,255,255
                 .byte 3,3,3,6,6,4,4,4
 
 ;   various words for messages
-WordsTbl        .text "        "
-                .text "SS      "
-                .text "FINNISH "
-                .text "RUMANIAN"
-                .text "ITALIAN "
-                .text "HUNGARAN"
-                .text "MOUNTAIN"
-                .text "GUARDS  "
-                .text "INFANTRY"
-                .text "TANK    "
-                .text "CAVALRY "
-                .text "PANZER  "
-                .text "MILITIA "
-                .text "SHOCK   "
-                .text "PARATRP "
-                .text "PZRGRNDR"
-                .text "        "
-                .text "JANUARY "
-                .text "FEBRUARY"
-                .text "MARCH   "
-                .text "APRIL   "
-                .text "MAY     "
-                .text "JUNE    "
-                .text "JULY    "
-                .text "AUGUST  "
-                .text "SEPTEMBR"
-                .text "OCTOBER "
-                .text "NOVEMBER"
-                .text "DECEMBER"
-                .text "CORPS   "
-                .text "ARMY    "
-                .text "MUSTER  "
-                .text "COMBAT  "
-                .text "STRENGTH"
+WordsTbl        .text "        "    ;0
+                .text "SS      "    ;1
+                .text "FINNISH "    ;2
+                .text "RUMANIAN"    ;3
+                .text "ITALIAN "    ;4
+                .text "HUNGARAN"    ;5
+                .text "MOUNTAIN"    ;6
+                .text "GUARDS  "    ;7
+                .text "INFANTRY"    ;8
+                .text "TANK    "    ;9
+                .text "CAVALRY "    ;10
+                .text "PANZER  "    ;11
+                .text "MILITIA "    ;12
+                .text "SHOCK   "    ;13
+                .text "PARATRP "    ;14
+                .text "PZRGRNDR"    ;15
+                .text "        "    ;16
+                .text "JANUARY "    ;17
+                .text "FEBRUARY"    ;18
+                .text "MARCH   "    ;19
+                .text "APRIL   "    ;20
+                .text "MAY     "    ;21
+                .text "JUNE    "    ;22
+                .text "JULY    "    ;23
+                .text "AUGUST  "    ;24
+                .text "SEPTEMBR"    ;25
+                .text "OCTOBER "    ;26
+                .text "NOVEMBER"    ;27
+                .text "DECEMBER"    ;28
+                .text "CORPS   "    ;29
+                .text "ARMY    "    ;30
+                .text "MUSTER  "    ;31
+                .text "COMBAT  "    ;32
+                .text "STRENGTH"    ;33
 
 ;   codes for unit types
 CorpType        .byte 0,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0
@@ -649,5 +649,14 @@ PLYR2           .byte $00,$00,$00,$00,$00,$00,$00,$00, $00,$00,$00,$00,$00,$00,$
                 .byte $00,$00,$00,$00,$00,$00,$00,$00, $00,$00,$00,$00,$00,$00,$00,$00, $00,$00,$00,$00,$00,$00,$00,$00, $00,$00,$00,$00,$00,$00,$00,$00
                 .byte $00,$00,$00,$00,$00,$00,$00,$00, $00,$00,$00,$00,$00,$00,$00,$00, $00,$00,$00,$00,$00,$00,$00,$00, $00,$00,$00,$00,$00,$00,$00,$00
                 .byte $00,$00,$00,$00,$00,$00,$00,$00, $00,$00,$00,$00,$00,$00,$00,$00, $00,$00,$00,$00,$00,$00,$00,$00, $00,$00,$00,$00,$00,$00,$00,$00
+
+
+;--------------------------------------
+;--------------------------------------
+                * = $04_0000
+;--------------------------------------
+HeaderPanel     .binary "images/header.raw"
+                .fill $34800,$00
+FooterPanel     .binary "images/footer.raw"
 
             .end

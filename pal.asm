@@ -118,3 +118,10 @@ RssnUnit        .dword $00742526
                 .dword $00ffffc2
                 .dword $00ffffe2
                 .dword $00ffffff
+HeaderPrimary   .dword $00001f07    ; [$78]
+HeaderAccent    .dword $00899b29    ; [$79]
+FooterPrimary   .dword $00331f00    ; [$7A]
+FooterSecondary .dword $00b47e51    ; [$7B]
+FooterTertiary  .dword $00115300    ; [$7C]
+FooterAccentA   .dword $00827ae7    ; [$7D]
+FooterAccentB   .dword $00041600    ; [$7E]

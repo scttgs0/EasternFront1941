@@ -33,21 +33,23 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 sta X_POS
                 sta Y_POS
 
-                .frsGraphics mcGraphicsOn|mcTileMapOn|mcSpriteOn,mcVideoMode640     ;|mcBitmapOn
+                .frsGraphics mcGraphicsOn|mcBitmapOn|mcTileMapOn|mcSpriteOn,mcVideoMode640
                 .frsMouse_off
                 .frsBorder_off
 
                 jsr InitLUT
                 jsr InitTiles
                 jsr InitMap
+                ;jsr InitUnitOverlay
                 jsr InitSprites
-                jsr InitBitmaps
+                jsr InitBitmap
+
 
 ;---
-;                 .m16i16
+;                .m16i16
 ; _reset          lda #$00
 ; _nextXPos       inc A
-;                 cmp #384               ;1024-640
+;                 cmp #160                ;768-640
 ;                 beq _reset
 ; _setPos         sta TILE3_WINDOW_X_POS
 ;                 sta TILE3_WINDOW_Y_POS
@@ -63,6 +65,7 @@ _next2          lda PSXVAL,X            ; initialize page six values
 ;                 bra _nextXPos
 ;---
 
+                .m16i16
                 lda #$00                ; enable display list & scroll
                 sta TILE3_WINDOW_X_POS  ; fine scroll
                 sta TILE3_WINDOW_Y_POS
@@ -71,6 +74,7 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 ;lda DLSTPT+1           ; DLIST instructions
                 ;sta SDLSTL+1           ; TODO:platform ; start addr of DLIST
 
+                .m8i8
                 ldx #$00
 _next3          lda MusterStrength,X    ; combat = muster strength
                 sta CombatStrength,X
@@ -104,6 +108,8 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 sta SP02_X_POS
                 lda #9*$10-8  
                 sta SP02_Y_POS
+
+endless         bra endless
 
                 lda #$01
                 sta HANDCP
