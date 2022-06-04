@@ -70,10 +70,6 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 sta TILE3_WINDOW_X_POS  ; fine scroll
                 sta TILE3_WINDOW_Y_POS
 
-                ;sta SDLSTL             ; TODO:platform ; start addr of DLIST
-                ;lda DLSTPT+1           ; DLIST instructions
-                ;sta SDLSTL+1           ; TODO:platform ; start addr of DLIST
-
                 .m8i8
                 ldx #$00
 _next3          lda MusterStrength,X    ; combat = muster strength
@@ -87,16 +83,10 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 cpx #$A0
                 bne _next3
 
-;   set up player window
-                ;lda #$50
-                ;sta PMBASE             ; TODO:platform
-
 ;   here follow various initializations
-                ;lda #$03
-                ;sta GRACTL             ; TODO:platform [P/M-enable, no latch]
                 lda #12*$10-8   ; 12
                 sta SP00_X_POS          ; Sprite-0 x-position
-                lda #7*$10-8    ; 7
+                lda #8*$10-8    ; 8
                 sta SP00_Y_POS          ; Sprite-0 y-position
 
                 lda #12*$10-8 

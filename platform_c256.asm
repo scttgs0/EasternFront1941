@@ -2,8 +2,8 @@ VRAM            = $B00000               ; First byte of video RAM
 
 TILESET         = VRAM
 TILEMAP         = $B20000
-TILEMAPUNITS    = $B21000
-SPRITES         = $B22000
+TILEMAPUNITS    = $B22000
+SPRITES         = $B24000
 BITMAP          = $B30000
 
 
@@ -86,7 +86,7 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
 
                 inx                     ; move to the next tile
                 iny
-                cpy #$7B0               ; 48x41
+                cpy #$840               ; 48x44
                 bne _nextTile
 
                 .m16
@@ -99,7 +99,7 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
                 .m16
                 lda #48                ; Set the size of the tile map
                 sta TILE3_X_SIZE
-                lda #41
+                lda #44
                 sta TILE3_Y_SIZE
 
                 lda #$00
@@ -137,6 +137,7 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
 
                 inx                     ; move to the next tile
                 iny
+                cpy #$840               ; 48x44
                 bne _nextTile
 
                 .m16
