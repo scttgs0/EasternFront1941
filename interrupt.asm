@@ -5,123 +5,127 @@
 ;===================================================================
 
 
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                * = $02_7400               ; deferred vertical blank interrupt
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;--------------------------------------
+;--------------------------------------
+                * = $02_7400
+;--------------------------------------
 
+
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Deferred vertical blank interrupt
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;   debug entry
-                ;lda JOYSTICK1          ; read joystick1 button (check for break button)
+DVBI            ;lda JOYSTICK1          ; read joystick1 button (check for break button)
                 ;and #$10
                 lda #$FF                ; force break to be ignored
                 nop
+                bne _1                  ; no, check next
 
-                bne Z30                 ; no, check next
 ;   end debug entry
 
 ;   start debug mode
-                ldy #$3E                ; reset 60 Hertz vector
-                ldx #$E9
-                lda #7
+                ;ldy #$3E               ; reset 60 Hertz vector
+                ;ldx #$E9
+                ;lda #7
                 ;jsr SETVBV             ; TODO:platform ; restore VBLANK EXIT routine
 
-                pla                     ; reset stack
-                pla
-                pla
-                jmp Break2Monitor       ; break routine
+                ;pla                    ; reset stack
+                ;pla
+                ;pla
+                ;jmp Break2Monitor      ; break routine
 
-Z30             lda HANDCP
-                beq A31
+_1              lda HANDICAP
+                beq _3                  ; skip when handicap
 
                 lda JOYSTICK0           ; read joystick0 button
                 and #$10
-                beq A31
+                beq _3                  ; skip when button is pressed
 
                 lda #$08
                 sta CONSOL              ; TODO: reset function keys
                 lda CONSOL              ; TODO: read function keys
                 and #$04                ; OPTION key
-                bne A31
+                bne _3
 
-                sta HANDCP
+                sta HANDICAP
                 lda #$30
                 sta $7B7A               ; my trademark
                 ldx #$36
-LOOPJ           lda MusterStrength,X
+_next1          lda MusterStrength,X
                 sta TEMPI
                 lsr A
                 adc TEMPI
-                bcc A22
+                bcc _2
 
                 lda #$FF
-A22             sta MusterStrength,X
+_2              sta MusterStrength,X
                 dex
-                bne LOOPJ
+                bne _next1
 
-A31             lda JOYSTICK0           ; read joystick0 button
+_3             lda JOYSTICK0            ; read joystick0 button
                 and #$10
                 ora BUTMSK              ; button allowed?
-                beq X17
+                beq _5
 
                 lda BUTFLG              ; no button now; previous status
-                bne X23
+                bne _4
 
-                jmp NOBUT
+                jmp NoButton
 
-X23             lda #$58                ; button just released
+_4              lda #$58                ; button just released
                 sta LUTSprColor0        ; TODO: Sprite-0 color
                 lda #$00
                 sta BUTFLG
                 sta KRZFLG
                 sta SID_CTRL1           ; TODO: no distortion; no volume
                 ldx #$52
-LOOP8           sta TXTWDW+8,X          ; clear text window
+_next2          sta TXTWDW+8,X          ; clear text window
                 dex
-                bpl LOOP8
+                bpl _next2
 
                 lda #$08
                 sta DELAY
                 clc
                 adc JIFFYCLOCK          ; TODO:
                 sta TIMSCL
-                jsr SWITCH
+                jsr SwitchCorps
 
                 lda #$00
                 sta CORPS
-                jsr CLRP1
-                jsr CLRP2
+                jsr ClearArrow
+                jsr ClearMaltakreuze
 
                 jmp ENDISR
 
-X17             lda JOYSTICK0           ; button is pressed - joystick0 read
+_5              lda JOYSTICK0           ; button is pressed - joystick0 read
                 and #$0F
                 eor #$0F
-                beq X20                 ; joystick active?
+                beq _6                  ; joystick active?
 
                 jmp ORDERS              ; yes
 
-X20             sta DBTIMR              ; no, set debounce
+_6              sta DBTIMR              ; no, set debounce
                 sta SID_CTRL1           ; TODO: distortion/volume
                 sta STKFLG
                 lda BUTFLG
-                bne BUTHLD              ; is this the first button pass
+                bne _7                  ; is this the first button pass
 
-                jmp FBUTPS              ; yes
+                jmp FirstBtnPass        ; yes
 
-BUTHLD          jsr ERRCLR              ; no, clear errors
+_7              jsr ERRCLR              ; no, clear errors
 
-X61             lda HITFLG
-                beq X63                 ; anybody in the window?
+                lda HITFLG
+                beq _8                  ; anybody in the window?
 
                 jmp ENDISR              ; no
 
-X63             lda KEYCHAR             ; last key pressed
+_8              lda KEYCHAR             ; last key pressed
                 cmp #$21
-                bne X80                 ; space bar pressed?
+                bne _9                  ; space bar pressed?
 
                 ldx CORPS               ; yes, check for Russian
                 cpx #$37
-                bcs X80
+                bcs _9
 
                 lda #$00
                 sta KEYCHAR             ; last key pressed
@@ -130,50 +134,50 @@ X63             lda KEYCHAR             ; last key pressed
                 sta STPCNT
                 lda #$01
                 sta ORDCNT
-                jsr CLRP1
-                jsr CLRP2
+                jsr ClearArrow
+                jsr ClearMaltakreuze
 
                 lda BASEX
                 sta STEPX
                 lda BASEY
                 sta STEPY
-X80             lda JIFFYCLOCK          ; TODO:
+_9             lda JIFFYCLOCK           ; TODO:
                 and #$03
-                beq X54                 ; time to move arrow?
+                beq _10                 ; time to move arrow?
 
                 jmp ENDISR              ; no
 
-X54             ldy HOWMNY              ; yes
-                bne X65                 ; any orders to show?
+_10             ldy HOWMNY              ; yes
+                bne _11                 ; any orders to show?
 
-                jmp PCURSE              ; no, go ahead to maltakreuze
+                jmp _printCursor        ; no, go ahead to maltakreuze
 
-X65             jsr CLRP1               ; yes, clear old arrow
+_11             jsr ClearArrow          ; yes, clear old arrow
 
                 lda ORDCNT
                 ldx #$00                ; assume first byte
                 cmp #$05
-                bcc X52                 ; second byte or first?
+                bcc _12                 ; second byte or first?
 
                 inx                     ; second byte
-X52             and #$03                ; isolate bit pair index
+_12             and #$03                ; isolate bit pair index
                 tay
                 lda BITTAB,Y            ; get mask
-X50             and ORD1,X              ; get orders
+                and ORD1,X              ; get orders
 
 ;   right justify orders
                 dey
-                bpl X51
+                bpl _13
 
                 ldy #$03
-X51             beq X53
+_13             beq _14
 
-LOOP21          lsr A
+_next3          lsr A
                 lsr A
                 dey
-                bne LOOP21
+                bne _next3
 
-X53             sta ARRNDX
+_14             sta ARRNDX
                 asl A
                 asl A
                 asl A
@@ -181,16 +185,16 @@ X53             sta ARRNDX
 ;   get arrow image and store it to player RAM
                 tax
                 ldy STEPY
-X55             lda ArrowTbl,X
+_next4          lda ArrowTbl,X
                 cpy #$80
-                bcs X43
+                bcs _15
 
                 sta PLYR1,Y
-X43             inx
+_15             inx
                 iny
                 txa
                 and #$07
-                bne X55
+                bne _next4
 
                 lda STEPX               ; position arrow
                 sta SP01_X_POS          ; Sprite-1 x-position
@@ -209,58 +213,59 @@ X43             inx
                 inc STPCNT              ; next step
                 lda STPCNT
                 and #$07
-                bne X59                 ; if not done end ISR
+                bne _XIT                ; if not done end ISR
 
                 sta STPCNT              ; end of steps
                 inc ORDCNT              ; next order
                 lda ORDCNT
                 cmp HOWMNY              ; last order?
-                bcc X59                 ; no, out
-                beq X59                 ; no, out
+                bcc _XIT                ; no, out
+                beq _XIT                ; no, out
 
                 lda #$01
-                sta ORDCNT              ;yes, reset to start of arrow's path
+                sta ORDCNT              ; yes, reset to start of arrow's path
 
 ;   display maltese cross ('maltakreuze' or KRZ)
-PCURSE          ldy STEPY
+_printCursor    ldy STEPY
                 sty KRZY
                 lda #$FF
                 sta KRZFLG
                 ldx #$00
-LOOP24          lda MLTKRZ,X
+_next5          lda MLTKRZ,X
                 cpy #$80
-                bcs X44
+                bcs _16
 
                 sta PLYR2,Y
-X44             iny
+_16             iny
                 inx
                 cpx #$08
-                bne LOOP24
+                bne _next5
 
                 lda STEPX
                 sec
                 sbc #$01
                 sta KRZX
                 sta SP02_X_POS          ; Sprite-2 x-position
-                jsr CLRP1               ; clear arrow
+                jsr ClearArrow
 
                 lda BASEX               ; reset arrow's coords
                 sta STEPX
                 lda BASEY
                 sta STEPY
 
-X59             jmp ENDISR
+_XIT             jmp ENDISR
 
-;
-;FIRST BUTTON PASS
-;looks for a unit inside cursor
-;if there is one, puts unit info into text window
-;
-FBUTPS          lda #$FF
+
+;--------------------------------------
+; Looks for a unit inside cursor
+; If there is one, put unit info into
+; text window
+;--------------------------------------
+FirstBtnPass    lda #$FF
                 sta BUTFLG
 
 ;   first get coords of center of cursor (map frame)
-X24             lda CURSXL
+                lda CURSXL
                 clc
                 adc #$06
                 sta TXL
@@ -299,34 +304,33 @@ X24             lda CURSXL
 
 ;   look for a match with unit coordinates
                 ldx #$9E
-LOOP6           cmp CorpsY,X
-                beq MAYBE
+_next1          cmp CorpsY,X
+                beq _1
 
-X16             dex
-                bne LOOP6
+_next2          dex
+                bne _next1
 
                 stx CORPS               ; no match obtained
                 dex
                 stx HITFLG
                 jmp ENDISR
 
-MAYBE           lda CHUNKX
+_1              lda CHUNKX
                 cmp CorpsX,X
-                bne X35
+                bne _2
 
                 lda ArrivalTurn,X
-                bmi X35
+                bmi _2
 
                 cmp TURN
-                bcc MATCH_
-                beq MATCH_
+                bcc _match
+                beq _match
 
-X35             lda CHUNKY
-                jmp X16
-
+_2              lda CHUNKY
+                jmp _next2
 
 ;   match obtained
-MATCH_          lda #$00
+_match          lda #$00
                 sta HITFLG              ; note match
                 sta KEYCHAR             ; last key pressed
                 lda #$5C
@@ -336,7 +340,7 @@ MATCH_          lda #$00
                 stx CORPS
                 ldy #$0D
                 lda CorpNumber,X        ; ID number
-                jsr DNUMBR
+                jsr DisplayNumber
 
                 iny
                 ldx CORPS
@@ -344,25 +348,25 @@ MATCH_          lda #$00
                 sta TEMPI
                 and #$F0
                 lsr A
-                jsr ENTRY2
+                jsr DisplayWord.ENTRY2
 
                 lda TEMPI
                 and #$0F                ; second name
                 clc
                 adc #$08
-                jsr DWORDS
+                jsr DisplayWord
 
                 lda #$1E
                 ldx CORPS
                 cpx #$37
-                bcs X26
+                bcs _3
 
                 lda #$1D
-X26             jsr DWORDS              ; display unit size (corps or army)
+_3              jsr DisplayWord              ; display unit size (corps or army)
 
                 ldy #$38
                 lda #$1F                ; "MUSTER"
-                jsr DWORDS
+                jsr DisplayWord
 
                 dey
                 lda #$1A                ; ":"
@@ -371,15 +375,15 @@ X26             jsr DWORDS              ; display unit size (corps or army)
                 iny
                 ldx CORPS
                 lda MusterStrength,X    ; muster strength
-                jsr DNUMBR
+                jsr DisplayNumber
 
                 iny
                 iny
                 lda #$20                ; "COMBAT"
-                jsr DWORDS
+                jsr DisplayWord
 
                 lda #$21                ; "STRENGTH"
-                jsr DWORDS
+                jsr DisplayWord
 
                 dey
                 lda #$1A                ; ":"
@@ -388,23 +392,23 @@ X26             jsr DWORDS              ; display unit size (corps or army)
                 iny
                 ldx CORPS
                 lda CombatStrength,X    ; combat strength
-                jsr DNUMBR
-X27             jsr SWITCH              ; flip unit with terrain
+                jsr DisplayNumber
+                jsr SwitchCorps         ; flip unit with terrain
 
                 lda CORPS
                 cmp #$37
-                bcc X79                 ; Russian?
+                bcc _4                  ; Russian?
 
                 lda #$FF                ; yes, mask orders and exit
                 sta HITFLG
-                bmi X75
+                bmi _XIT
 
 ;
 ;German unit
 ;set up orders display
 ;first calculate starting coords (BASEX, BASEY)
 ;
-X79             lda #$01
+_4              lda #$01
                 sta ORDCNT
                 lda #$00
                 sta STPCNT
@@ -436,54 +440,55 @@ X79             lda #$01
                 sta ORD1
                 lda WHORDH,X
                 sta ORD2
-X75             jmp ENDISR
+_XIT            jmp ENDISR
 
-;
-;ORDERS INPUT ROUTINE
-;
+
+;--------------------------------------
+; Orders input routine
+;--------------------------------------
 ORDERS          lda STKFLG
-                bne X75
+                bne FirstBtnPass._XIT
 
                 ldx CORPS
                 cpx #$37
-                bcc X64                 ; Russian?
+                bcc _1                  ; Russian?
 
                 ldx #$00                ; yes, error
-                jmp SQUAWK
+                jmp Squawk
 
-X64             lda HowManyOrders,X
+_1              lda HowManyOrders,X
                 cmp #$08
-                bcc X66                 ; only 8 orders allowed
+                bcc _2                  ; only 8 orders allowed
 
                 ldx #$20
-                jmp SQUAWK
+                jmp Squawk
 
-X66             lda KRZFLG
-                bne X67                 ; must wait for maltakreuze
+_2             lda KRZFLG
+                bne _3                  ; must wait for maltakreuze
 
                 ldx #$40
-                jmp SQUAWK
+                jmp Squawk
 
-X67             inc DBTIMR
+_3              inc DBTIMR
                 lda DBTIMR              ; wait for debounce time
                 cmp #$10
-                bcs X68
+                bcs _4
 
-                bcc X75
+                bcc FirstBtnPass._XIT
 
-X68             lda #$00
+_4              lda #$00
                 sta DBTIMR              ; reset debounce timer
                 lda JOYSTICK0           ; joystick0 read
                 and #$0F
                 tax
                 lda STKTAB,X
-                bpl X69
+                bpl _5
 
                 ldx #$60                ; no diagonal orders allowed
-                jmp SQUAWK
+                jmp Squawk
 
 ;   OK, this is a good order
-X69             tay
+_5              tay
                 sta STICKI
                 lda BEEPTB,Y
                 sta SID_FREQ1           ; TODO: "BEEP!"
@@ -510,14 +515,14 @@ X69             tay
                 lda STICKI
 
 ;   isolate order
-X71             dey
-                bmi X70
+_next1          dey
+                bmi _6
 
                 asl A
                 asl A
-                jmp X71
+                jmp _next1
 
-X70             ldy TEMPI
+_6              ldy TEMPI
                 eor ORD1,X              ; fold in new order (sneaky code)
                 and MASKO,Y
                 eor ORD1,X
@@ -529,7 +534,7 @@ X70             ldy TEMPI
                 sta WHORDH,X
 
 ;   move maltakreuze
-                jsr CLRP2
+                jsr ClearMaltakreuze
 
                 ldx STICKI
                 lda KRZX
@@ -540,27 +545,28 @@ X70             ldy TEMPI
                 clc
                 adc YOFF,X
                 sta KRZY
-DSPKRZ          lda KRZX                ; display it
+                lda KRZX                ; display it
                 sta SP02_X_POS          ; Sprite-2 x-position
                 ldy KRZY
                 ldx #$00
-LOOP26          lda MLTKRZ,X
+_next2          lda MLTKRZ,X
                 cpy #$80
-                bcs X45
+                bcs _7
 
                 sta PLYR2,Y
-X45             iny
+_7              iny
                 inx
                 cpx #$08
-                bne LOOP26
+                bne _next2
                 beq EXITI
 
-;
-;ERROR on inputs routine
-;squawks speaker and puts out error message
-;
-SQUAWK          ldy #$69
-LOOP28          lda ERRMSG,X
+
+;--------------------------------------
+; ERROR on inputs routine
+; Squawks speaker and error message
+;--------------------------------------
+Squawk          ldy #$69
+_next1          lda ERRMSG,X
                 sec
                 sbc #$20
                 sta TXTWDW,Y
@@ -568,7 +574,7 @@ LOOP28          lda ERRMSG,X
                 inx
                 txa
                 and #$1F
-                bne LOOP28
+                bne _next1
 
                 lda #$68
                 sta SID_CTRL1           ; TODO: distortion-3; half volume
@@ -578,14 +584,15 @@ LOOP28          lda ERRMSG,X
                 sta ERRFLG
                 bmi EXITI
 
-;
-;NO BUTTON PRESSED ROUTINE
-;
-NOBUT           sta DBTIMR
+
+;--------------------------------------
+; No button pressed routine
+;--------------------------------------
+NoButton        sta DBTIMR
                 lda JOYSTICK0           ; joystick0 read
                 and #$0F
                 eor #$0F
-                bne SCROLL
+                bne Scroll
 
                 sta SID_CTRL1           ; TODO: no distortion; volume set based on joystick movement
                 sta STKFLG
@@ -596,21 +603,29 @@ NOBUT           sta DBTIMR
                 sta TIMSCL
                 jsr ERRCLR
 
+
+;--------------------------------------
+;
+;--------------------------------------
 EXITI           jmp ENDISR
 
+
+;--------------------------------------
+;
+;--------------------------------------
 ;   acceleration feature of cursor
-SCROLL          lda TIMSCL
+Scroll          lda TIMSCL
                 cmp JIFFYCLOCK          ; TODO:
                 bne EXITI
 
                 lda DELAY
                 cmp #$01
-                beq X21
+                beq _1
 
                 sec
                 sbc #$01
                 sta DELAY
-X21             clc
+_1              clc
                 adc JIFFYCLOCK          ; TODO:
                 sta TIMSCL
 
@@ -622,128 +637,128 @@ X21             clc
                 and #$0F
                 pha                     ; save it on stack for other bit checks
                 and #$08                ; joystick left?
-                bne CHKRT               ; no, move on
+                bne _checkRight         ; no, move on
 
                 lda CURSXL
-                bne X13
+                bne _2
 
                 ldx CURSXH
-                beq CHKUP
+                beq _checkUp
 
-X13             sec
+_2              sec
                 sbc #$01
                 sta CURSXL
-                bcs X14
+                bcs _3
 
                 dec CURSXH
-X14             lda SHPOS0
+_3              lda SHPOS0
                 cmp #$BA
-                beq X1
+                beq _4
 
                 clc
                 adc #$01
                 sta SHPOS0
                 sta SP00_X_POS          ; Sprite-0 x-position
-                bne CHKUP
+                bne _checkUp
 
-X1              .m16
+_4              .m16
                 lda X_POS
                 sec                     ; decrement x-coordinate
                 sbc #$01
                 sta X_POS
                 sta TILE3_WINDOW_X_POS  ; fine scroll
                 .m8
-                bra CHKUP               ; no, move on
+                bra _checkUp            ; no, move on
 
-                ; inc OFFLO               ; yes, mark it for offset
+                ; inc OFFLO             ; yes, mark it for offset
                 ; clv
-                ; bvc CHKUP               ; no point in checking for joystick right
+                ; bvc _checkUp          ; no point in checking for joystick right
 
-CHKRT           pla                     ; get back joystick byte
+_checkRight     pla                     ; get back joystick byte
                 pha                     ; save it again
                 and #$04                ; joystick right?
-                bne CHKUP               ; no, move on
+                bne _checkUp            ; no, move on
 
                 lda CURSXL
                 cmp #$64
-                bne X12
+                bne _5
 
                 ldx CURSXH
-                bne CHKUP
+                bne _checkUp
 
-X12             clc
+_5              clc
                 adc #$01
                 sta CURSXL
-                bcc X15
+                bcc _6
 
                 inc CURSXH
-X15             lda SHPOS0
+_6              lda SHPOS0
                 cmp #$36
-                beq X2
+                beq _7
 
                 sec
                 sbc #$01
                 sta SHPOS0
                 sta SP00_X_POS          ; Sprite-0 x-position
-                bne CHKUP
+                bne _checkUp
 
-X2              .m16
+_7              .m16
                 lda X_POS
                 clc                     ; no, increment x-coordinate
                 adc #$01
                 sta X_POS
-X4              sta TILE3_WINDOW_X_POS  ; fine scroll
+                sta TILE3_WINDOW_X_POS  ; fine scroll
                 .m8
-                bra CHKUP               ; scroll overflow? if not, move on
+                bra _checkUp            ; scroll overflow? if not, move on
 
-                ;dec OFFLO               ; yes, set up offset for character scroll
+                ;dec OFFLO              ; yes, set up offset for character scroll
                 ;dec OFFHI
-CHKUP           pla                     ; joystick up?
+_checkUp        pla                     ; joystick up?
                 lsr A
                 pha
-                bcs CHKDN               ; no, ramble on
+                bcs _checkDown          ; no, ramble on
 
                 lda CURSYL
                 cmp #$5E
-                bne X3
+                bne _8
 
                 ldx CURSYH
                 cpx #$02
-                beq CHKDN
+                beq _checkDown
 
-X3              inc CURSYL
-                bne X11
+_8              inc CURSYL
+                bne _9
 
                 inc CURSYH
-X11             ldx SCY
+_9              ldx SCY
                 cpx #$1B
-                beq X6
+                beq _11
 
                 inc CURSYL
-                bne X18
+                bne _10
 
                 inc CURSYH
-X18             dex
+_10             dex
                 stx SCY
                 txa
                 clc
                 adc #$12
                 sta TEMPI
-LOOP4           lda PLYR0,X             ; move cursor up one line
+_next1          lda PLYR0,X             ; move cursor up one line
                 sta PLYR0-1,X
                 inx
                 cpx TEMPI
-                bne LOOP4
-                beq CHKDN
+                bne _next1
+                beq _checkDown
 
-X6              .m16
+_11             .m16
                 lda Y_POS
                 sec
                 sbc #$01
-X7              sta Y_POS
+                sta Y_POS
                 sta TILE3_WINDOW_Y_POS  ; fine scroll
                 .m8
-                bra CHKDN               ; scroll overflow? If not, amble on
+                bra _checkDown          ; scroll overflow? If not, amble on
 
                 lda OFFLO               ; yes, set up offset for character scroll
                 sec
@@ -752,34 +767,34 @@ X7              sta Y_POS
                 lda OFFHI
                 sbc #$00
                 sta OFFHI
-CHKDN           pla                     ; joystick down?
+_checkDown           pla                ; joystick down?
                 lsr A
-                bcs CHGDL               ; no, trudge on
+                bcs _changeDLIST        ; no, trudge on
 
                 lda CURSYL
                 cmp #$02
-                bne X5
+                bne _12
 
                 ldx CURSYH
-                beq CHGDL
+                beq _changeDLIST
 
-X5              sec
+_12             sec
                 sbc #$01
                 sta CURSYL
-                bcs X10
+                bcs _13
 
                 dec CURSYH
-X10             ldx SCY
+_13             ldx SCY
                 cpx #$4E
-                beq X8
+                beq _15
 
                 sec
                 sbc #$01
                 sta CURSYL
-                bcs X19
+                bcs _14
 
                 dec CURSYH
-X19             inx
+_14             inx
                 stx SCY
                 txa
                 clc
@@ -788,21 +803,21 @@ X19             inx
                 dex
                 stx TEMPI
                 tax
-LOOP5           lda PLYR0-1,X           ; move cursor down one line
+_next2          lda PLYR0-1,X           ; move cursor down one line
                 sta PLYR0,X
                 dex
                 cpx TEMPI
-                bne LOOP5
-                beq CHGDL
+                bne _next2
+                beq _changeDLIST
 
-X8              .m16
+_15             .m16
                 lda Y_POS
                 clc                     ; no, decrement y-coordinate
                 adc #$01
                 sta Y_POS
-X9              sta TILE3_WINDOW_Y_POS  ; fine scroll
+                sta TILE3_WINDOW_Y_POS  ; fine scroll
                 .m8
-                bne CHGDL               ; no, move on
+                bne _changeDLIST        ; no, move on
 
                 lda OFFLO               ; yes, mark offset
                 clc
@@ -813,12 +828,12 @@ X9              sta TILE3_WINDOW_Y_POS  ; fine scroll
                 sta OFFHI
 
 ;
-;In this loop we add the offset values to the existing
-;LMS addresses of all display lines.
-;This scrolls the characters.
+; In this loop we add the offset values to the existing
+; LMS addresses of all display lines.
+; This scrolls the characters.
 ;
-CHGDL           ldy #$09
-DLOOP           lda (DLSTPT),Y
+_changeDLIST    ldy #$09
+_next3          lda (DLSTPT),Y
                 clc
                 adc OFFLO
                 sta (DLSTPT),Y
@@ -829,9 +844,14 @@ DLOOP           lda (DLSTPT),Y
                 iny
                 iny
                 cpy #$27
-                bne DLOOP
+                bne _next3
 
-ENDISR          .m16
+
+;--------------------------------------
+;
+;--------------------------------------
+ENDISR          .proc
+                .m16
                 lda Y_POS
                 lsr A
                 lsr A
@@ -840,31 +860,29 @@ ENDISR          .m16
                 lsr A
                 .m8
                 cmp #$11
-                bcs X39
+                bcs _1
 
                 lda #$FF
-                bmi X40
+                bmi _3
 
-X39             cmp #$1A
-                bcc X41
+_1              cmp #$1A
+                bcc _2
 
                 lda #$02
-                bpl X40
+                bpl _3
 
-X41             sta TEMPI
+_2              sta TEMPI
                 inx
                 lda #$1D
                 sec
                 sbc TEMPI
-X40             sta CNT1
+_3              sta CNT1
                 lda #$00
                 sta CNT2
                 ;jmp XITVBV              ; exit vertical blank routine  ; TODO:platform
 
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-; added for binary compatibility
-                .byte $E4
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                .endproc
+
 
 ;--------------------------------------
 ;--------------------------------------
@@ -879,51 +897,57 @@ DEFNC           .byte 2,3,3,2,2,2,1,1,2,0
 ;--------------------------------------
                 * = $02_79C0
 ;--------------------------------------
-;
-;SUBROUTINE DWORDS
-;displays a single word from a long table of words
-;
-DWORDS          asl A
+
+
+;======================================
+; Display a single word from a long
+; table of words
+;======================================
+DisplayWord     .proc
+                asl A
                 asl A
                 asl A
                 bcc ENTRY2
 
                 tax
-BOOP20          lda WordsTbl+256,X
+_next1          lda WordsTbl+256,X
                 sec
                 sbc #$20
-                beq BNDW
+                beq _1
 
                 sta TXTWDW,Y
                 iny
                 inx
                 txa
                 and #$07
-                bne BOOP20
+                bne _next1
 
-BNDW            iny
+_1              iny
                 rts
 
 ENTRY2          tax                     ; this is another entry point
-LOOP20          lda WordsTbl,X
+_next1          lda WordsTbl,X
                 sec
                 sbc #$20
-                beq NDW
+                beq _1
 
                 sta TXTWDW,Y
                 iny
                 inx
                 txa
                 and #$07
-                bne LOOP20
+                bne _next1
 
-NDW             iny
+_1              iny
                 rts
+                .endproc
 
-;
-;SUBROUTINE SWITCH FOR SWAPPING CORPS WITH TERRAIN
-;
-SWITCH          lda #$00
+
+;======================================
+; Swap corps with terrain
+;======================================
+SwitchCorps     .proc
+                lda #$00
                 sta MAPHI
                 lda #$27
                 sec
@@ -954,69 +978,76 @@ SWITCH          lda #$00
                 tay
                 lda (MAPLO),Y
                 ldx CORPS
-                beq X34
+                beq _XIT
 
                 pha
                 lda SWAP,X
                 sta (MAPLO),Y
                 pla
                 sta SWAP,X
-X34             rts
+_XIT            rts
+                .endproc
 
-;
-;SUBROUTINE CLRP1
-;clears the arrow player
-;
-CLRP1           lda #$00
+
+;======================================
+; Clear the arrow player
+;======================================
+ClearArrow      .proc
+                lda #$00
                 ldy STEPY
                 dey
                 tax
-LOOP23          cpy #$80
-                bcs X22
+_next1          cpy #$80
+                bcs _1
 
                 sta PLYR1,Y
-X22             iny
+_1              iny
                 inx
                 cpx #$0B
-                bne LOOP23
+                bne _next1
 
                 rts
+                .endproc
 
-;
-;SUBROUTINE CLRP2
-;clears the maltakreuze
-;
-CLRP2           lda #$00
+
+;======================================
+; Clear the Maltakreuze
+;======================================
+ClearMaltakreuze .proc
+                lda #$00
                 ldy KRZY
                 tax
-LOOP25          cpy #$80
-                bcs X42
+_next1          cpy #$80
+                bcs _1
 
                 sta PLYR2,Y
-X42             iny
+_1              iny
                 inx
                 cpx #$0A
-                bne LOOP25
+                bne _next1
 
                 rts
+                .endproc
 
-;
-;SUBROUTINE ERRCLR
-;clears sound and the text window
-;
-ERRCLR          lda ERRFLG
-                bpl ENDERR
+
+;======================================
+; Clear sound and the text window
+;======================================
+ERRCLR          .proc
+                lda ERRFLG
+                bpl _XIT
 
                 lda #$00
                 sta ERRFLG
                 ldy #$86
                 ldx #$1F
-LOOP29          sta TXTWDW,Y
+_next1          sta TXTWDW,Y
                 dey
                 dex
-                bpl LOOP29
+                bpl _next1
 
-ENDERR          rts
+_XIT            rts
+                .endproc
 
 ;--------------------------------------
 ;--------------------------------------
@@ -1043,9 +1074,14 @@ OBJX            ;.fill 104
 ;This is the DLI routine
 ;
 
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;--------------------------------------
+;--------------------------------------
                 * = $02_7B00
+;--------------------------------------
+
+
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DLISRV          pha
                 txa
@@ -1053,7 +1089,7 @@ DLISRV          pha
                 inc CNT2
                 lda CNT2
                 cmp CNT1
-                bne OVER1
+                bne _1
 
                 ldx #$62                ; map DLI
                 lda #$28
@@ -1062,10 +1098,10 @@ DLISRV          pha
                 ;sta WSYNC              ; TODO:platform
                 ;stx CHBASE             ; TODO: convert to tiles     ; charset = $6200
                 sta LUTPfColor0         ; TODO: playfield-0 color
-                jmp DLIOUT
+                jmp _XIT
 
-OVER1           cmp #$0F
-                bne OVER6
+_1              cmp #$0F
+                bne _2
 
                 lda #$3A
                 ;eor COLRSH             ; TODO:platform
@@ -1075,12 +1111,12 @@ OVER1           cmp #$0F
                 ;eor COLRSH             ; TODO:platform
                 ;and DRKMSK             ; TODO:platform
                 ;sta WSYNC              ; TODO:platform
-                ;stx LUTPfColor2         ; TODO: playfield-2 color
-                ;sta LUTPfColor1         ; TODO: playfield-1 color
-                jmp DLIOUT
+                ;stx LUTPfColor2        ; TODO: playfield-2 color
+                ;sta LUTPfColor1        ; TODO: playfield-1 color
+                jmp _XIT
 
-OVER6           cmp #$01
-                bne OVER2
+_2              cmp #$01
+                bne _3
 
                 lda TRCOLR              ; green tree color
                 ;eor COLRSH             ; TODO:platform
@@ -1090,89 +1126,92 @@ OVER6           cmp #$01
                 ;eor COLRSH             ; TODO:platform
                 ;and DRKMSK             ; TODO:platform
                 ;sta WSYNC              ; TODO:platform
-                ;sta LUTBkColor          ; TODO: background color
-                ;stx LUTPfColor0         ; TODO: playfield-0 color
+                ;sta LUTBkColor         ; TODO: background color
+                ;stx LUTPfColor0        ; TODO: playfield-0 color
 
                 ;lda #$60
                 ;sta CHBASE             ; TODO: convert to tiles     ; charset = $6000
 
-                jmp DLIOUT
+                jmp _XIT
 
-OVER2           cmp #$03
-                bne OVER3
+_3              cmp #$03
+                bne _4
 
                 lda EARTH               ; top of map
                 ;eor COLRSH             ; TODO:platform
                 ;and DRKMSK             ; TODO:platform
                 ;sta WSYNC              ; TODO:platform
                 sta LUTBkColor          ; TODO: background color
-                jmp DLIOUT
+                jmp _XIT
 
-OVER3           cmp #$0D
-                bne OVER4
+_4              cmp #$0D
+                bne _5
 
-                ;ldx #$E0                ; bottom of map
+                ;ldx #$E0               ; bottom of map
                 lda #$22
                 ;eor COLRSH             ; TODO:platform
                 ;and DRKMSK             ; TODO:platform
                 ;sta WSYNC              ; TODO:platform
                 sta LUTPfColor2         ; TODO: playfield-2 color
                 ;stx CHBASE             ; TODO: convert to tiles     ; charset = standard OS charset
-                jmp DLIOUT
+                jmp _XIT
 
-OVER4           cmp #$0E
-                bne OVER5
+_5              cmp #$0E
+                bne _6
 
                 lda #$8A                ; bright blue strip
                 ;eor COLRSH             ; TODO:platform
                 ;and DRKMSK             ; TODO:platform
                 ;sta WSYNC              ; TODO:platform
                 sta LUTBkColor          ; TODO: background color
-                jmp DLIOUT
+                jmp _XIT
 
-OVER5           cmp #$10
-                bne DLIOUT
+_6              cmp #$10
+                bne _XIT
 
                 lda #$D4                ; green bottom
-                ;eor COLRSH  ; TODO:platform
-                ;and DRKMSK  ; TODO:platform
+                ;eor COLRSH             ; TODO:platform
+                ;and DRKMSK             ; TODO:platform
                 pha                     ; some extra delay
                 pla
                 nop
                 sta LUTBkColor          ; TODO: background color
 
-DLIOUT          pla
+_XIT            pla
                 tax
                 pla
                 rti
 
-;
-;SUBROUTINE DNUMBR
-;displays a number with leading zero suppress
-;
-DNUMBR          tax
+
+;======================================
+; Display a number with leading-zero
+; suppressed
+;======================================
+DisplayNumber   .proc
+                tax
                 clc
                 lda HundredDigit,X
-                beq X36
+                beq _1
 
                 adc #$10
                 sta TXTWDW,Y
                 iny
                 sec
-X36             lda TensDigit,X
-                bcs X38
-                beq X37
+_1              lda TensDigit,X
+                bcs _2
+                beq _3
 
-X38             clc
+_2              clc
                 adc #$10
                 sta TXTWDW,Y
                 iny
-X37             lda OnesDigit,X
+_3              lda OnesDigit,X
                 clc
                 adc #$10
                 sta TXTWDW,Y
                 iny
                 rts
+                .endproc
 
 ;--------------------------------------
 ;--------------------------------------

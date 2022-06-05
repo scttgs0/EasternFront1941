@@ -38,7 +38,7 @@ B1              sta SWAP,X
                 sta CHUNKX
                 lda CorpsY,X
                 sta CHUNKY
-                jsr SWITCH
+                jsr SwitchCorps
 
                 .setbank $AF
 
@@ -59,7 +59,7 @@ LOOP78          stx SID_CTRL1           ; TODO: no distortion; max volume
                 .setbank $02
 
 ;   replace original unit character
-                jsr SWITCH
+                jsr SwitchCorps
 
                 ldx DEFNDR
                 pla
@@ -180,7 +180,7 @@ Y27             stx CORPS               ; retreat the defender
                 sta CHUNKX
                 lda CorpsY,X
                 sta CHUNKY
-                jsr SWITCH
+                jsr SwitchCorps
 
                 ldx CORPS
                 lda LATITUDE
@@ -189,7 +189,7 @@ Y27             stx CORPS               ; retreat the defender
                 lda LONGITUDE
                 sta CorpsX,X
                 sta CHUNKX
-                jsr SWITCH
+                jsr SwitchCorps
 
 VICCOM          ldx ARMY
                 stx CORPS
@@ -461,7 +461,7 @@ DEAD            lda #$00
                 sta CHUNKX
                 lda CorpsY,X
                 sta CHUNKY
-                jsr SWITCH
+                jsr SwitchCorps
 
                 rts
 

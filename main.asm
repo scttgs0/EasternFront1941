@@ -101,7 +101,7 @@ _next3          lda MusterStrength,X    ; combat = muster strength
 ;endless         bra endless
 
                 lda #$01
-                sta HANDCP
+                sta HANDICAP
 
                 lda #$FF
                 sta TURN
@@ -162,10 +162,10 @@ _next1          sta TXTWDW,Y
                 txa
                 clc
                 adc #$10
-                jsr DWORDS
+                jsr DisplayWord
 
                 lda DAY
-                jsr DNUMBR
+                jsr DisplayNumber
 
                 lda #$0C
                 sta TXTWDW,Y
@@ -328,7 +328,7 @@ _next1          lda ArrivalTurn,X
 
                 lda #$0A                ; asterisk character
                 sta TXTWDW+36
-_1              jsr SWITCH
+_1              jsr SwitchCorps
 
                 jmp _3
 
@@ -422,12 +422,12 @@ _next7          ldy MOSCOW,X
 _9              dex
                 bpl _next7
 
-                ldx HANDCP              ; was handicap option used?
+                ldx HANDICAP              ; was handicap option used?
                 bne _10                 ; no
 
                 lsr A                   ; yes, halve score
 _10             ldy #$05
-                jsr DNUMBR
+                jsr DisplayNumber
 
                 lda #$00
                 sta TXTWDW,Y
@@ -547,7 +547,7 @@ _DoMove         ldx ARMY
                 cmp #$02
                 bcs _nextJam
 
-_4              jsr SWITCH
+_4              jsr SwitchCorps
 
                 ldx CORPS
                 lda LATITUDE
@@ -556,7 +556,7 @@ _4              jsr SWITCH
                 lda LONGITUDE
                 sta CHUNKX
                 sta CorpsX,X
-                jsr SWITCH
+                jsr SwitchCorps
 
                 ldx ARMY
                 lda #$FF

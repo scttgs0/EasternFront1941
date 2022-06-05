@@ -102,7 +102,7 @@ OCOLUM          .byte ?
 IFRHI           .byte ?
 PASSCT          .byte ?
 DELAY2          .byte ?
-HANDCP          .byte ?
+HANDICAP        .byte ?
 TOTGS           .byte ?         ; [$90]
 TOTRS           .byte ?
 OFR             .byte ?
