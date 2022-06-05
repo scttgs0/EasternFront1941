@@ -281,9 +281,6 @@ MLTKRZ          .byte %00100100         ; ..#..#..
 ;--------------------------------------
                 * = $02_6000
 ;--------------------------------------
-;   First comes 1024 bytes of new character set
-
-                .include "FONTS.asm"
 
 ;
 ;   The display list goes here; it is 49 bytes long.
@@ -658,5 +655,3 @@ PLYR2           .byte $00,$00,$00,$00,$00,$00,$00,$00, $00,$00,$00,$00,$00,$00,$
 HeaderPanel     .binary "images/header.raw"
                 .fill $34800,$00
 FooterPanel     .binary "images/footer.raw"
-
-            .end

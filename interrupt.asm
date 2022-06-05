@@ -1222,5 +1222,3 @@ NDX             .byte 0,1,2,3,4,9,14,19
 YINC            .byte 1
 XINC            .byte 0,$FF,0,1
 OFFNC           .byte 1,1,1,1,1,1,2,2,1,0
-
-            .end
