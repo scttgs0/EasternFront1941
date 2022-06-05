@@ -4,17 +4,16 @@
 ; 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;==================================================================
 
-;
-;This is the initialization program
-;The program begins here
-;
-
 
 ;--------------------------------------
 ;--------------------------------------
                 * = $02_6E00
 ;--------------------------------------
 
+
+;--------------------------------------
+; Start of Code
+;--------------------------------------
 START           ldx #$08
 _next1          lda ZPVAL,X             ; initialize page zero values
                 sta DLSTPT,X
@@ -99,43 +98,28 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 lda #9*$10-8  
                 sta SP02_Y_POS
 
-endless         bra endless
+;endless         bra endless
 
                 lda #$01
                 sta HANDCP
 
-;                 ldx #$33                ; generate cursor stamp
-;                 lda #$FF
-;                 sta PLYR0,X
-;                 inx
-;                 sta PLYR0,X
-;                 inx
-;                 lda #$81
-; LOOP2           sta PLYR0,X
-;                 inx
-;                 cpx #$3F
-;                 bne LOOP2
-
-;                 lda #$FF
-;                 sta PLYR0,X
-;                 sta TURN
-;                 inx
-;                 sta PLYR0,X
+                lda #$FF
+                sta TURN
 
 ;   enable deferred vertical blank interrupt
-                ldy #$00
-                ldx #$74
-                lda #$07
-                ;jsr SETVBV              ; TODO:platform ; = $7400
+                ;ldy #$00
+                ;ldx #$74
+                ;lda #$07
+                ;jsr SETVBV             ; TODO:platform ; = $7400
 
-                lda #$00                ; This is DLI vector (low byte)
-                sta $0200
-                lda #$7B
-                sta $0201
-                lda #$C0
-                ;sta NMIEN               ; Turn interrupts on  ; TODO:platform ; [DLI+VBI]
+                ;lda #$00                ; This is DLI vector (low byte)
+                ;sta VDSLST
+                ;lda #$7B
+                ;sta VDSLST+1
+                ;lda #$C0
+                ;sta NMIEN              ; Turn interrupts on  ; TODO:platform ; [DLI+VBI]
 
-NEWTRN          inc TURN
+NewTurn         inc TURN
 
 ;   first do calendar calculations
 CalendarCalc    lda DAY
@@ -143,36 +127,36 @@ CalendarCalc    lda DAY
                 adc #07
                 ldx MONTH
                 cmp DaysInMonth,X
-                beq X28
-                bcc X28
+                beq _3
+                bcc _3
 
                 cpx #$02
-                bne X96
+                bne _1
 
                 ldy YEAR
                 cpy #44
-                bne X96
+                bne _1
 
                 sec
                 sbc #$01
-X96             sec
+_1              sec
                 sbc DaysInMonth,X
                 inx
                 cpx #13
-                bne X29
+                bne _2
 
                 inc YEAR
                 ldx #01
-X29             stx MONTH
+_2              stx MONTH
                 ldy TreeColors,X
                 sty TRCOLR
-X28             sta DAY
+_3              sta DAY
                 ldy #$93
                 lda #$00
-LOOP13          sta TXTWDW,Y
+_next1          sta TXTWDW,Y
                 iny
                 cpy #$A7
-                bne LOOP13
+                bne _next1
 
                 ldy #$93
                 txa
@@ -205,7 +189,7 @@ LOOP13          sta TXTWDW,Y
 ;   do season calculations
                 lda MONTH
                 cmp #$04
-                bne X87
+                bne _4
 
                 lda #$02
                 sta EARTH
@@ -217,29 +201,29 @@ LOOP13          sta TXTWDW,Y
                 sta SEASN2
                 jmp ENDSSN
 
-X87             cmp #$0A
-                bne X88
+_4              cmp #$0A
+                bne _5
 
                 lda #$02
                 sta EARTH
                 jmp ENDSSN
 
-X88             cmp #$05
-                bne X89
+_5              cmp #$05
+                bne _6
 
                 lda #$10
                 sta EARTH
                 jmp ENDSSN
 
-X89             cmp #$0B
-                bne X90
+_6              cmp #$0B
+                bne _7
 
                 lda #$0A
                 sta EARTH
-                jmp X91
+                jmp _9
 
-X90             cmp #$01
-                bne X92
+_7              cmp #$01
+                bne _8
 
                 lda #$80
                 sta SEASN1
@@ -248,13 +232,13 @@ X90             cmp #$01
                 sta SEASN3
                 jmp ENDSSN
 
-X92             cmp #$03
-                beq X91
+_8              cmp #$03
+                beq _9
 
                 jmp ENDSSN
 
 ;   freeze those rivers, baby
-X91             lda SID_RANDOM
+_9              lda SID_RANDOM
                 and #$07
                 clc
                 adc #$07
@@ -264,15 +248,15 @@ X91             lda SID_RANDOM
                 sta OLDLAT
                 sec
                 sbc TEMPR
-                beq X95
-                bpl X94
+                beq _10
+                bpl _11
 
-X95             lda #$01
-X94             cmp #$27
-                bcc X93
+_10             lda #$01
+_11             cmp #$27
+                bcc _12
 
                 lda #$27
-X93             sta ICELAT
+_12             sta ICELAT
                 lda #$01
                 sta CHUNKX
                 sta LONGITUDE
@@ -280,35 +264,35 @@ X93             sta ICELAT
                 sta CHUNKY
                 sta LATITUDE
 
-LOOP40          jsr TERR
+_next2          jsr Terrain
 
                 and #$3F
                 cmp #$0B
-                bcc NOTCH
+                bcc _15
 
                 cmp #$29
-                bcs NOTCH
+                bcs _15
 
                 ldx CHUNKY
                 cpx #$0E
-                bcs DOTCH
+                bcs _13
 
                 cmp #$23
-                bcs NOTCH
+                bcs _15
 
-DOTCH           ora SEASN1
+_13             ora SEASN1
                 ldx UNITNO
-                beq X86
+                beq _14
 
                 sta SWAP,X
-                jmp NOTCH
+                jmp _15
 
-X86             sta (MAPPTR),Y
-NOTCH           inc CHUNKX
+_14             sta (MAPPTR),Y
+_15             inc CHUNKX
                 lda CHUNKX
                 sta LONGITUDE
                 cmp #46
-                bne LOOP40
+                bne _next2
 
                 lda #$00
                 sta CHUNKX
@@ -321,12 +305,13 @@ NOTCH           inc CHUNKX
                 sbc SEASN3
                 sta CHUNKY
                 sta LATITUDE
-                jmp LOOP40
+                jmp _next2
 
 ENDSSN          ldx #$9E                ; any reinforcements?
-LOOP14          lda ArrivalTurn,X
+
+_next1          lda ArrivalTurn,X
                 cmp TURN
-                bne X33
+                bne _3
 
                 lda CorpsX,X
                 sta CHUNKX
@@ -335,113 +320,113 @@ LOOP14          lda ArrivalTurn,X
                 sta CHUNKY
                 sta LATITUDE
                 stx CORPS
-                jsr TERRB
-                beq SORRY
+                jsr TerrainB
+                beq _2
 
                 cpx #$37
-                bcs A51
+                bcs _1
 
                 lda #$0A                ; asterisk character
                 sta TXTWDW+36
-A51             jsr SWITCH
+_1              jsr SWITCH
 
-                jmp X33
+                jmp _3
 
-SORRY           lda TURN
+_2              lda TURN
                 clc
                 adc #$01
                 sta ArrivalTurn,X
-X33             dex
-                bne LOOP14
+_3              dex
+                bne _next1
 
-X31             ldx #$9E
-LOOPF           stx ARMY
+                ldx #$9E
+_next2          stx ARMY
                 jsr LOGSTC              ; logistics subroutine
 
                 ldx ARMY
                 dex
-                bne LOOPF
+                bne _next2
 
 ;   calculate some points
                 lda #$00
                 sta ACCLO
                 sta ACCHI
                 ldx #$01
-LOOPB           lda #$30
+_next3          lda #$30
                 sec
                 sbc CorpsX,X
                 sta TEMPR
                 lda MusterStrength,X
                 lsr A
-                beq A01
+                beq _5
 
                 tay
                 lda #$00
                 clc
-LOOPA           adc TEMPR
-                bcc A0
+_next4          adc TEMPR
+                bcc _4
 
                 inc ACCHI
                 clc
-                bne A0
+                bne _4
 
                 dec ACCHI
-A0              dey
-                bne LOOPA
+_4              dey
+                bne _next4
 
-A01             inx
+_5              inx
                 cpx #$37
-                bne LOOPB
+                bne _next3
 
-LOOPC           lda CorpsX,X
+_next5          lda CorpsX,X
                 sta TEMPR
                 lda CombatStrength,X
                 lsr A
                 lsr A
                 lsr A
-                beq A02
+                beq _7
 
                 tay
                 lda #$00
                 clc
-LOOPD           adc TEMPR
-                bcc A03
+_next6          adc TEMPR
+                bcc _6
 
                 inc ACCLO
                 clc
-                bne A03
+                bne _6
 
                 dec ACCLO
-A03             dey
-                bne LOOPD
+_6              dey
+                bne _next6
 
-A02             inx
+_7              inx
                 cpx #$9E
-                bne LOOPC
+                bne _next5
 
                 lda ACCHI
                 sec
                 sbc ACCLO
-                bcs A04
+                bcs _8
 
                 lda #$00
-A04             ldx #$03
-LOOPG           ldy MOSCOW,X
-                beq A15
+_8              ldx #$03
+_next7          ldy MOSCOW,X
+                beq _9
 
                 clc
                 adc MPTS,X
-                bcc A15
+                bcc _9
 
                 lda #$FF
-A15             dex
-                bpl LOOPG
+_9              dex
+                bpl _next7
 
                 ldx HANDCP              ; was handicap option used?
-                bne A23                 ; no
+                bne _10                 ; no
 
                 lsr A                   ; yes, halve score
-A23             ldy #$05
+_10             ldy #$05
                 jsr DNUMBR
 
                 lda #$00
@@ -451,49 +436,49 @@ A23             ldy #$05
                 bne Z00_
 
                 lda #$01                ; end of game
-                jsr TXTMSG
+                jsr TextMessage
 
-FINI            jmp FINI                ; hang up
+FINI            bra FINI                ; hang up
 
 Z00_            lda #$00
                 sta BUTMSK
                 sta CORPS
-                jsr TXTMSG
+                jsr TextMessage
                 jsr INIT                ; artificial intelligence routine
 
                 lda #$01
                 sta BUTMSK
                 lda #$02
-                jsr TXTMSG
+                jsr TextMessage
 
 ;   movement execution phase
                 lda #$00
                 sta TICK
                 ldx #$9E
-LOOP31          stx ARMY
+_next1          stx ARMY
                 jsr DINGO               ; determine first execution time
 
                 dex
-                bne LOOP31
+                bne _next1
 
-LOOP33          ldx #$9E
-LOOP32          stx ARMY
+_next2          ldx #$9E
+_next3          stx ARMY
                 lda MusterStrength,X
                 sec
                 sbc CombatStrength,X
                 cmp #$02
-                bcc Y30
+                bcc _1
 
                 inc CombatStrength,X
                 cmp SID_RANDOM
-                bcc Y30
+                bcc _1
 
                 inc CombatStrength,X
-Y30             lda EXEC,X
-                bmi A60
+_1              lda EXEC,X
+                bmi _3
 
                 cmp TICK
-                bne A60
+                bne _3
 
                 lda WhatOrders,X
                 and #$03
@@ -508,37 +493,37 @@ Y30             lda EXEC,X
                 adc YINC,Y
                 sta LATITUDE
                 sta ACCHI
-                jsr TERR
+                jsr Terrain
 
                 lda UNITNO
-                beq DOMOVE
+                beq _DoMove
 
                 cmp #$37
-                bcc GERMAN
+                bcc _2
 
                 lda ARMY
                 cmp #$37
-                bcs TRJAM
-                bcc COMBAT_
+                bcs _nextJam
+                bcc _Combat
 
-GERMAN          lda ARMY
+_2              lda ARMY                ; German
                 cmp #$37
-                bcs COMBAT_
+                bcs _Combat
 
-TRJAM           ldx ARMY
+_nextJam        ldx ARMY
                 lda TICK
                 clc
                 adc #$02
                 sta EXEC,X
-A60             jmp Y06
+_3              jmp _7
 
-COMBAT_         jsr COMBAT
+_Combat         jsr COMBAT
 
                 lda VICTRY
-                beq A60
-                bne Z94
+                beq _3
+                bne _4
 
-DOMOVE          ldx ARMY
+_DoMove         ldx ARMY
                 stx CORPS
                 lda CorpsY,X
                 sta CHUNKY
@@ -554,15 +539,15 @@ DOMOVE          ldx ARMY
                 sta LONGITUDE
                 lda ZOC
                 cmp #$02
-                bcc Z94
+                bcc _4
 
                 jsr CHKZOC
 
                 lda ZOC
                 cmp #$02
-                bcs TRJAM
+                bcs _nextJam
 
-Z94             jsr SWITCH
+_4              jsr SWITCH
 
                 ldx CORPS
                 lda LATITUDE
@@ -577,125 +562,139 @@ Z94             jsr SWITCH
                 lda #$FF
                 sta EXEC,X
                 dec HowManyOrders,X
-                beq Y06
+                beq _7
 
                 lsr WHORDH,X
                 ror WhatOrders,X
                 lsr WHORDH,X
                 ror WhatOrders,X
                 ldy #$03
-LOOPH           lda CorpsX,X
+_next4          lda CorpsX,X
                 cmp MOSCX,Y
-                bne A18
+                bne _6
 
                 lda CorpsY,X
                 cmp MOSCY,Y
-                bne A18
+                bne _6
 
                 lda #$FF
                 cpx #$37
-                bcc A19
+                bcc _5
 
                 lda #$00
-A19             sta MOSCOW,Y
-A18             dey
-                bpl LOOPH
+_5              sta MOSCOW,Y
+_6              dey
+                bpl _next4
 
                 jsr DINGO
                 jsr STALL
 
-Y06             ldx ARMY
+_7              ldx ARMY
                 dex
-                beq Y07
+                beq _8
 
-                jmp LOOP32
+                jmp _next3
 
-Y07             inc TICK
+_8              inc TICK
                 lda TICK
                 cmp #$20
-                beq Y08
+                beq _9
 
-                jmp LOOP33
+                jmp _next2
 
 ;   end of movement phase
-Y08             jmp NEWTRN
+_9              jmp NewTurn
 
 ;--------------------------------------
 ;--------------------------------------
 
 MOSCOW          .byte 0,0,0,0
 
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-; added for binary compatibility
-
                 .byte $22,$50,$a6,$c2,$ca,$f0,$03,$4c,$ff,$70,$ee,$2e
                 .byte $06,$ad,$2e,$06,$c9,$20
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 
 ;--------------------------------------
 ;--------------------------------------
                 * = $02_7200
 ;--------------------------------------
+
+
+;======================================
+;
+;======================================
 STALL           lda #$00
-LOOP79          pha
+_next1          pha
                 pla
                 pha
                 pla
                 pha
                 pla
                 adc #$01
-                bne LOOP79
+                bne _next1
 
                 rts
 
-;
-;this is the debugging routine
-;it can't be reached by any route any longer
-;
+
+;--------------------------------------
+; this is the debugging routine
+; it can't be reached any longer
+;--------------------------------------
 ForceDebug      jmp CalendarCalc
 
 ;--------------------------------------
 ;--------------------------------------
                 * = $02_7210
 ;--------------------------------------
-Break2Monitor   lda #$00
-                sta $D01D
-                sta $D00D
-                sta $D00E
-                sta $D00F
-                lda #$22
-                sta $22F
-                lda #$20
-                sta $230
-                lda #$BC
-                sta $231
-                lda #$40
-                ;sta NMIEN               ; TODO:platform  [VBI]
-                lda #$0A
-                sta $2C5
-                lda #$00
-                sta $5FFF
-                sta $2C8
+
+
+;--------------------------------------
+;
+;--------------------------------------
+Break2Monitor   ;lda #$00
+                ;sta GRACTL
+                ;sta GRAFP0
+                ;sta GRAFP1
+                ;sta GRAFP2
+
+                ;lda #$22
+                ;sta SDMCTL
+                ;lda #$20
+                ;sta SDLSTL
+                ;lda #$BC
+                ;sta SDLSTH
+                ;lda #$40
+                ;sta NMIEN
+                ;lda #$0A
+                ;sta COLOR1
+                ;lda #$00
+                ;sta $5FFF
+                ;sta COLOR4
                 brk                     ; invoke debug monitor
+                nop
 
-
-;
-;Subroutine TERR determines what terrain is in a square
-;
 
 ;--------------------------------------
 ;--------------------------------------
                 * = $02_7240
 ;--------------------------------------
 
-TERR            jsr TERRB
+;======================================
+; Determine terrain within a square
+;======================================
+Terrain         jsr TerrainB
                 beq LOOKUP
 
                 rts
 
-TERRB           lda #$00
+
+;======================================
+;
+;======================================
+TerrainB        lda #$00
                 sta MAPPTR+1
                 sta UNITNO
+
                 lda #$27
                 sec
                 sbc LATITUDE
@@ -715,10 +714,12 @@ TERRB           lda #$00
                 clc
                 adc TLO
                 sta MAPPTR
+
                 lda MAPPTR+1
                 adc THI
                 adc #$65
                 sta MAPPTR+1
+
                 lda #46
                 sec
                 sbc LONGITUDE
@@ -733,48 +734,54 @@ TERRB           lda #$00
 _XIT            rts
 
 
+;--------------------------------------
+;
+;--------------------------------------
 LOOKUP          lda TRNCOD
                 sta UNTCOD
                 and #$C0
                 ldx #$9E
                 cmp #$40
-                bne X98
+                bne _1
 
                 ldx #$37
-X98             lda LATITUDE
-LOOP30          cmp CorpsY,X
-                beq MIGHTB
+_1              lda LATITUDE
+_next1          cmp CorpsY,X
+                beq _2
 
-X97             dex
-                bne LOOP30
+_next2          dex
+                bne _next1
 
                 lda #$FF
                 sta TXTWDW+128
-                bmi MATCH
+                bmi _match
 
-MIGHTB          lda LONGITUDE
+_2              lda LONGITUDE
                 cmp CorpsX,X
-                bne X99
+                bne _3
 
                 lda CombatStrength,X
-                beq X99
+                beq _3
 
                 lda ArrivalTurn,X
-                bmi X99
+                bmi _3
 
                 cmp TURN
-                bcc MATCH
-                beq MATCH
+                bcc _match
+                beq _match
 
-X99             lda LATITUDE
-                jmp X97
+_3              lda LATITUDE
+                jmp _next2
 
-MATCH           stx UNITNO
+_match          stx UNITNO
                 lda SWAP,X
                 sta TRNCOD
                 rts
 
-;   determines execution time of next move
+
+;======================================
+; Determine execution time of next move
+;======================================
 DINGO           ldx ARMY
                 lda HowManyOrders,X
                 bne Y00
@@ -783,11 +790,15 @@ DINGO           ldx ARMY
                 sta EXEC,X
                 rts
 
+
+;======================================
+;
+;======================================
 Y00             lda CorpsX,X
                 sta LONGITUDE
                 lda CorpsY,X
                 sta LATITUDE
-                jsr TERR
+                jsr Terrain
 
                 lda UNTCOD
                 sta UNTCD1
@@ -804,17 +815,17 @@ Y00             lda CorpsX,X
                 clc
                 adc YADD,Y
                 sta LATITUDE
-                jsr TERR
-                jsr TERRTY
+                jsr Terrain
+                jsr TerrainType
 
                 lda UNTCD1
                 and #$3F
                 ldx #$00
                 cmp #$3D
-                beq Y01                 ; infantry
+                beq _2                  ; infantry
 
                 ldx #$0A                ; armor
-Y01             txa
+_2              txa
                 ldx MONTH
                 clc
                 adc SSNCOD-1,X          ; add season index
@@ -827,96 +838,96 @@ Y01             txa
                 sta EXEC,X
                 lda TRNTYP
                 cmp #$07
-                bcc Y02
+                bcc _XIT
 
                 ldy #$15
-LOOP35          lda LATITUDE
+_next1          lda LATITUDE
                 cmp BHY1,Y
-                bne Y03
+                bne _3
 
                 lda LONGITUDE
                 cmp BHX1,Y
-                bne Y03
+                bne _3
 
                 ldx ARMY
                 lda CorpsX,X
                 cmp BHX2,Y
-                bne Y03
+                bne _3
 
                 lda CorpsY,X
                 cmp BHY2,Y
-                bne Y03
+                bne _3
 
                 lda #$FF
                 sta EXEC,X
                 rts
 
-Y03             dey
-                bpl LOOP35
+_3              dey
+                bpl _next1
 
-Y02             rts
+_XIT            rts
 
-;
-;this subroutine determines the type of terrain
-;in a square
-;
-TERRTY          ldy #$00
+
+;======================================
+; Determine type of terrain
+;======================================
+TerrainType     ldy #$00
                 lda TRNCOD
-                beq DONE
+                beq _DONE
 
                 cmp #$7F                ; border?
-                bne Y04
+                bne _1
 
                 ldy #$09
-                bne DONE
+                bne _DONE
 
-Y04             iny
+_1              iny
                 cmp #$07                ; mountain?
-                bcc DONE
+                bcc _DONE
 
                 iny
                 cmp #$4B                ; city?
-                bcc DONE
+                bcc _DONE
 
                 iny
                 cmp #$4F                ; frozen swamp?
-                bcc DONE
+                bcc _DONE
 
                 iny
                 cmp #$69                ; frozen river?
-                bcc DONE
+                bcc _DONE
 
                 iny
                 cmp #$8F                ; swamp?
-                bcc DONE
+                bcc _DONE
 
                 iny
                 cmp #$A4                ; river?
-                bcc DONE
+                bcc _DONE
 
                 ldx LATITUDE
                 cpx #$0E
-                bcc NEXT
+                bcc _2
 
                 cmp #$A9
-                bcc DONE
+                bcc _DONE
 
-NEXT            iny
+_2              iny
                 cmp #$BA                ; coastline?
-                bcc DONE
+                bcc _DONE
 
                 cpx #$0E
-                bcc NEXT2
+                bcc _3
 
                 cmp #$BB
-                bcc DONE
+                bcc _DONE
 
-NEXT2           iny
+_3              iny
                 cmp #$BD                ; estuary?
-                bcc DONE
+                bcc _DONE
 
                 iny
-DONE            sty TRNTYP
+_DONE           sty TRNTYP
                 rts
 
 ;--------------------------------------
@@ -929,7 +940,6 @@ ZPVAL           .word $6400             ; display list address
                 .word $0230             ; cursor y
 
 PSXVAL          .byte $E0               ; position x
-                ;.byte $00
                 .word $0000             ; position y
                 .byte $33               ; screen cursor y
                 .byte $78               ; player 0 position
@@ -947,17 +957,18 @@ MPTS            .byte 20,10,10,10
 MOSCX           .byte 20,33,20,6
 MOSCY           .byte 28,36,0,15
 
-;--------------------------------------
-;--------------------------------------
 
-TXTMSG          asl A
+;======================================
+;
+;======================================
+TextMessage     asl A
                 asl A
                 asl A
                 asl A
                 asl A
                 tax
                 ldy #$69
-LOOP19          lda TxtTbl,X
+_next1          lda TxtTbl,X
                 sec
                 sbc #$20
                 sta TXTWDW,Y
@@ -965,10 +976,6 @@ LOOP19          lda TxtTbl,X
                 inx
                 txa
                 and #$1F
-                bne LOOP19
+                bne _next1
 
                 rts
-
-                .fill 3,$00     ; added for compatibility
-
-            .end

@@ -66,7 +66,7 @@ LOOP78          stx SID_CTRL1           ; TODO: no distortion; max volume
                 sta SWAP,X
 
 
-                jsr TERRTY              ; terrain in defender's square
+                jsr TerrainType              ; terrain in defender's square
 
                 ldx DEFNC,Y             ; defensive bonus factor
                 lda CombatStrength,Y    ; defender's strength
@@ -108,8 +108,8 @@ ATAKR           ldx ARMY
                 sta LONGITUDE
                 lda CorpsY,X
                 sta LATITUDE
-                jsr TERR
-                jsr TERRTY
+                jsr Terrain
+                jsr TerrainType
 
                 lda OFFNC,Y
                 tay
@@ -221,8 +221,8 @@ RETRET          lda CorpsX,X
                 clc
                 adc YINC,Y
                 sta LATITUDE
-                jsr TERR                ; examine terrain
-                jsr TERRTY
+                jsr Terrain                ; examine terrain
+                jsr TerrainType
 
                 ldx DEFNDR
                 lda UNITNO              ; anybody in this square?
@@ -341,7 +341,7 @@ LOOP90          lda SQX
                 cpx #$37
                 bcc A80
 
-                jsr TERRB
+                jsr TerrainB
 
                 lda TRNCOD
                 cmp #$BF
@@ -395,7 +395,7 @@ CHKZOC          lda #$00
 
                 lda #$C0
 A70             sta TEMPR
-                jsr TERRB
+                jsr TerrainB
                 bne A74
 
                 lda TRNCOD
@@ -427,7 +427,7 @@ LOOPQ           ldy JSTP+16,X
                 clc
                 adc YINC,Y
                 sta LATITUDE
-                jsr TERRB
+                jsr TerrainB
                 bne A75
 
                 lda TRNCOD
