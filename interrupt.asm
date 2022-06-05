@@ -5,12 +5,6 @@
 ;===================================================================
 
 
-;--------------------------------------
-;--------------------------------------
-                * = $02_7400
-;--------------------------------------
-
-
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Deferred vertical blank interrupt
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -124,7 +118,7 @@ _8              lda KEYCHAR             ; last key pressed
                 bne _9                  ; space bar pressed?
 
                 ldx CORPS               ; yes, check for Russian
-                cpx #$37
+                cpx #$37                ; when Russian
                 bcs _9
 
                 lda #$00
@@ -189,7 +183,9 @@ _next4          lda ArrowTbl,X
                 cpy #$80
                 bcs _15
 
+                .setbank $05
                 sta PLYR1,Y
+                .setbank $03
 _15             inx
                 iny
                 txa
@@ -235,7 +231,9 @@ _next5          lda MLTKRZ,X
                 cpy #$80
                 bcs _16
 
+                .setbank $05
                 sta PLYR2,Y
+                .setbank $03
 _16             iny
                 inx
                 cpx #$08
@@ -358,19 +356,23 @@ _match          lda #$00
 
                 lda #$1E
                 ldx CORPS
-                cpx #$37
+                cpx #$37                ; when Russian
                 bcs _3
 
                 lda #$1D
-_3              jsr DisplayWord              ; display unit size (corps or army)
+_3              jsr DisplayWord         ; display unit size (corps or army)
 
                 ldy #$38
                 lda #$1F                ; "MUSTER"
                 jsr DisplayWord
 
                 dey
+
+                .setbank $04
                 lda #$1A                ; ":"
                 sta TXTWDW,Y
+                .setbank $03
+
                 iny
                 iny
                 ldx CORPS
@@ -386,8 +388,12 @@ _3              jsr DisplayWord              ; display unit size (corps or army)
                 jsr DisplayWord
 
                 dey
+
+                .setbank $04
                 lda #$1A                ; ":"
                 sta TXTWDW,Y
+                .setbank $03
+
                 iny
                 iny
                 ldx CORPS
@@ -450,8 +456,8 @@ ORDERS          lda STKFLG
                 bne FirstBtnPass._XIT
 
                 ldx CORPS
-                cpx #$37
-                bcc _1                  ; Russian?
+                cpx #$37                ; when Russian
+                bcc _1
 
                 ldx #$00                ; yes, error
                 jmp Squawk
@@ -549,6 +555,9 @@ _6              ldy TEMPI
                 sta SP02_X_POS          ; Sprite-2 x-position
                 ldy KRZY
                 ldx #$00
+
+                .setbank $05
+
 _next2          lda MLTKRZ,X
                 cpy #$80
                 bcs _7
@@ -558,6 +567,9 @@ _7              iny
                 inx
                 cpx #$08
                 bne _next2
+
+                .setbank $03
+
                 beq EXITI
 
 
@@ -566,6 +578,8 @@ _7              iny
 ; Squawks speaker and error message
 ;--------------------------------------
 Squawk          ldy #$69
+
+                .setbank $04
 _next1          lda ERRMSG,X
                 sec
                 sbc #$20
@@ -575,6 +589,8 @@ _next1          lda ERRMSG,X
                 txa
                 and #$1F
                 bne _next1
+
+                .setbank $03
 
                 lda #$68
                 sta SID_CTRL1           ; TODO: distortion-3; half volume
@@ -886,16 +902,7 @@ _3              sta CNT1
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $02_799C
-;--------------------------------------
-JSTP            .byte 0,0,0,0,3,3,3,3
-                .byte 2,2,2,2,1,1,1,0
-                .byte 0,0,3,3,2,2,1,0
-DEFNC           .byte 2,3,3,2,2,2,1,1,2,0
-
-;--------------------------------------
-;--------------------------------------
-                * = $02_79C0
+                .align $100
 ;--------------------------------------
 
 
@@ -909,6 +916,7 @@ DisplayWord     .proc
                 asl A
                 bcc ENTRY2
 
+                .setbank $04
                 tax
 _next1          lda WordsTbl+256,X
                 sec
@@ -922,10 +930,15 @@ _next1          lda WordsTbl+256,X
                 and #$07
                 bne _next1
 
+                .setbank $03
+
 _1              iny
                 rts
 
 ENTRY2          tax                     ; this is another entry point
+
+                .setbank $04
+
 _next1          lda WordsTbl,X
                 sec
                 sbc #$20
@@ -937,6 +950,8 @@ _next1          lda WordsTbl,X
                 txa
                 and #$07
                 bne _next1
+
+                .setbank $03
 
 _1              iny
                 rts
@@ -997,6 +1012,9 @@ ClearArrow      .proc
                 ldy STEPY
                 dey
                 tax
+
+                .setbank $05
+
 _next1          cpy #$80
                 bcs _1
 
@@ -1005,6 +1023,8 @@ _1              iny
                 inx
                 cpx #$0B
                 bne _next1
+
+                .setbank $03
 
                 rts
                 .endproc
@@ -1017,6 +1037,8 @@ ClearMaltakreuze .proc
                 lda #$00
                 ldy KRZY
                 tax
+
+                .setbank $05
 _next1          cpy #$80
                 bcs _1
 
@@ -1025,6 +1047,8 @@ _1              iny
                 inx
                 cpx #$0A
                 bne _next1
+
+                .setbank $03
 
                 rts
                 .endproc
@@ -1041,30 +1065,19 @@ ERRCLR          .proc
                 sta ERRFLG
                 ldy #$86
                 ldx #$1F
+
+                .setbank $04
+
 _next1          sta TXTWDW,Y
                 dey
                 dex
                 bpl _next1
 
+                .setbank $03
+
 _XIT            rts
                 .endproc
 
-;--------------------------------------
-;--------------------------------------
-
-BITTAB          .byte $C0,3,$C,$30
-ROTARR          .byte 4,9,14,19,24
-                .byte 3,8,13,18,23
-                .byte 2,7,12,17,22
-                .byte 1,6,11,16,21
-                .byte 0,5,10,15,20
-
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-; added for binary compatibility
-OBJX            ;.fill 104
-                .byte $03,$08,$0d,$12,$17,$02,$07,$0c,$11,$16,$01,$06,$0b,$10,$15,$00,$05,$0a,$0f,$14
-                .fill 84
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 ;
 ;From here to $7B00 is expansion RAM
@@ -1076,7 +1089,7 @@ OBJX            ;.fill 104
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $02_7B00
+                .align $1000
 ;--------------------------------------
 
 
@@ -1188,6 +1201,8 @@ _XIT            pla
 ; suppressed
 ;======================================
 DisplayNumber   .proc
+                .setbank $04
+
                 tax
                 clc
                 lda HundredDigit,X
@@ -1210,15 +1225,9 @@ _3              lda OnesDigit,X
                 adc #$10
                 sta TXTWDW,Y
                 iny
+
+                .setbank $03
+
                 rts
                 .endproc
 
-;--------------------------------------
-;--------------------------------------
-
-NDX             .byte 0,1,2,3,4,9,14,19
-                .byte 24,23,22,21,20,15,10,5
-                .byte 6,7,8,13,18,17,16,11
-YINC            .byte 1
-XINC            .byte 0,$FF,0,1
-OFFNC           .byte 1,1,1,1,1,1,2,2,1,0

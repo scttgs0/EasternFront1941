@@ -6,12 +6,6 @@
 
 
 ;--------------------------------------
-;--------------------------------------
-                * = $02_6E00
-;--------------------------------------
-
-
-;--------------------------------------
 ; Start of Code
 ;--------------------------------------
 START           ldx #$08
@@ -43,27 +37,6 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 jsr InitSprites
                 jsr InitBitmap
 
-
-;---
-;                .m16i16
-; _reset          lda #$00
-; _nextXPos       inc A
-;                 cmp #160                ;768-640
-;                 beq _reset
-; _setPos         sta TILE3_WINDOW_X_POS
-;                 sta TILE3_WINDOW_Y_POS
-
-;                 ;ldy #$04
-; _again          ldx #$800
-; _wait           inx
-;                 bne _wait
-
-;                 ;dey
-;                 ;bne _again
-
-;                 bra _nextXPos
-;---
-
                 .m16i16
                 lda #$00                ; enable display list & scroll
                 sta TILE3_WINDOW_X_POS  ; fine scroll
@@ -88,15 +61,35 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 lda #8*$10-8    ; 8
                 sta SP00_Y_POS          ; Sprite-0 y-position
 
-                lda #12*$10-8 
+                lda #12*$10-8
                 sta SP01_X_POS
-                lda #8*$10-8  
+                lda #8*$10-8
                 sta SP01_Y_POS
 
-                lda #12*$10-8 
+                lda #12*$10-8
                 sta SP02_X_POS
-                lda #9*$10-8  
+                lda #9*$10-8
                 sta SP02_Y_POS
+
+;---
+;                .m16i16
+; _reset          lda #$00
+; _nextXPos       inc A
+;                 cmp #160                ;768-640
+;                 beq _reset
+; _setPos         sta TILE3_WINDOW_X_POS
+;                 sta TILE3_WINDOW_Y_POS
+
+;                 ;ldy #$04
+; _again          ldx #$800
+; _wait           inx
+;                 bne _wait
+
+;                 ;dey
+;                 ;bne _again
+
+;                 bra _nextXPos
+;---
 
 ;endless         bra endless
 
@@ -153,7 +146,8 @@ _2              stx MONTH
 _3              sta DAY
                 ldy #$93
                 lda #$00
-_next1          sta TXTWDW,Y
+_next1          .setbank $04
+                sta TXTWDW,Y
                 iny
                 cpy #$A7
                 bne _next1
@@ -185,6 +179,7 @@ _next1          sta TXTWDW,Y
                 clc
                 adc #$10
                 sta TXTWDW,Y
+                .setbank $03
 
 ;   do season calculations
                 lda MONTH
@@ -316,26 +311,29 @@ _next1          lda ArrivalTurn,X
                 lda CorpsX,X
                 sta CHUNKX
                 sta LONGITUDE
+
                 lda CorpsY,X
                 sta CHUNKY
                 sta LATITUDE
+
                 stx CORPS
                 jsr TerrainB
-                beq _2
+                beq _2                  ; must delay arrival by one turn
 
-                cpx #$37
+                cpx #$37                ; when Russian, skip asterisk
                 bcs _1
 
-                lda #$0A                ; asterisk character
+                lda #$0A                ; asterisk character (reinforcements indicator)
                 sta TXTWDW+36
 _1              jsr SwitchCorps
 
                 jmp _3
 
-_2              lda TURN
+_2              lda TURN                ; delay arrival
                 clc
                 adc #$01
                 sta ArrivalTurn,X
+
 _3              dex
                 bne _next1
 
@@ -375,7 +373,7 @@ _4              dey
                 bne _next4
 
 _5              inx
-                cpx #$37
+                cpx #$37                ; when Russian
                 bne _next3
 
 _next5          lda CorpsX,X
@@ -429,8 +427,11 @@ _9              dex
 _10             ldy #$05
                 jsr DisplayNumber
 
+                .setbank $04
                 lda #$00
                 sta TXTWDW,Y
+                .setbank $03
+
                 lda TURN
                 cmp #$28
                 bne Z00_
@@ -578,7 +579,7 @@ _next4          lda CorpsX,X
                 bne _6
 
                 lda #$FF
-                cpx #$37
+                cpx #$37                ; when Russian
                 bcc _5
 
                 lda #$00
@@ -605,18 +606,10 @@ _8              inc TICK
 ;   end of movement phase
 _9              jmp NewTurn
 
-;--------------------------------------
-;--------------------------------------
-
-MOSCOW          .byte 0,0,0,0
-
-                .byte $22,$50,$a6,$c2,$ca,$f0,$03,$4c,$ff,$70,$ee,$2e
-                .byte $06,$ad,$2e,$06,$c9,$20
-
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $02_7200
+                .align $100
 ;--------------------------------------
 
 
@@ -644,7 +637,7 @@ ForceDebug      jmp CalendarCalc
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $02_7210
+                .align $100
 ;--------------------------------------
 
 
@@ -676,7 +669,7 @@ Break2Monitor   ;lda #$00
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $02_7240
+                .align $100
 ;--------------------------------------
 
 ;======================================
@@ -706,7 +699,8 @@ TerrainB        lda #$00
                 rol MAPPTR+1
                 asl A
                 rol MAPPTR+1
-                sta TLO
+                sta TLO                 ; TLO (TerrainL) = (39 - Y) * 16
+
                 ldy MAPPTR+1
                 sty THI
                 asl A
@@ -727,10 +721,10 @@ TerrainB        lda #$00
                 lda (MAPPTR),Y
                 sta TRNCOD
                 and #$3F
-                cmp #$3D
+                cmp #$3D                ; is infantry?
                 beq _XIT
 
-                cmp #$3E
+                cmp #$3E                ; is armor?
 _XIT            rts
 
 
@@ -930,33 +924,6 @@ _3              iny
 _DONE           sty TRNTYP
                 rts
 
-;--------------------------------------
-;--------------------------------------
-
-ZPVAL           .word $6400             ; display list address
-                .word $0000             ; map address
-                .byte $00               ; active corp
-                .word $0122             ; cursor x
-                .word $0230             ; cursor y
-
-PSXVAL          .byte $E0               ; position x
-                .word $0000             ; position y
-                .byte $33               ; screen cursor y
-                .byte $78               ; player 0 position
-                .byte $D6               ; tree color
-                .byte $10               ; earth color
-                .byte $27               ; ice latitude
-                .byte $40,$00,$01       ; season 1-3
-                .byte $0F,$06,$29       ; day month year
-                .byte $00,$01           ; BUTFLG, BUTMSK
-
-COLTAB          .byte $58,$DC,$2F,$00   ; color table
-                .byte $6A,$0C,$94,$46,$B0
-
-MPTS            .byte 20,10,10,10
-MOSCX           .byte 20,33,20,6
-MOSCY           .byte 28,36,0,15
-
 
 ;======================================
 ;
@@ -968,6 +935,8 @@ TextMessage     asl A
                 asl A
                 tax
                 ldy #$69
+
+                .setbank $04
 _next1          lda TxtTbl,X
                 sec
                 sbc #$20
@@ -977,5 +946,7 @@ _next1          lda TxtTbl,X
                 txa
                 and #$1F
                 bne _next1
+
+                .setbank $03
 
                 rts

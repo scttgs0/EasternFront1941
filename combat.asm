@@ -5,12 +5,6 @@
 ;================================================================
 
 
-;--------------------------------------
-;--------------------------------------
-                * = $02_4ED8
-;--------------------------------------
-
-
 ;======================================
 ; Combat routine
 ;======================================
@@ -32,7 +26,7 @@ _1              ldy UNITNO
                 lda SWAP,X
                 pha
                 lda #$FF                ; solid red square
-                cpx #$37                ; Russian unit?
+                cpx #$37                ; ...when Russian
                 bcs _2
 
                 lda #$7F                ; make it white for Germans
@@ -60,7 +54,7 @@ _next1          stx SID_CTRL1           ; TODO: no distortion; max volume
                 cpx #$7F
                 bne _next1
 
-                .setbank $02
+                .setbank $03
 
 ;   replace original unit character
                 jsr SwitchCorps
@@ -139,7 +133,7 @@ _7              jsr Dead                ; defender dies
 
 _8              jmp _endCombat
 
-_9              jsr MoraleCheck              ; does defender break?
+_9              jsr MoraleCheck         ; does defender break?
 
                 bcc _8
 
@@ -148,11 +142,11 @@ _9              jsr MoraleCheck              ; does defender break?
                 and #$03
                 tay                     ; first retreat priority : away from attacker
                 jsr Retreat
-                bcc _vickory              ; defender died
+                bcc _vickory            ; defender died
                 beq _12                 ; defender may retreat
 
                 ldy #$01                ; second priority: east/west
-                cpx #$37
+                cpx #$37                ; ...when Russian
                 bcs _10
 
                 ldy #$03
@@ -171,7 +165,7 @@ _10             jsr Retreat
                 beq _12
 
                 ldy #$03                ; last priority: west/east
-                cpx #$37
+                cpx #$37                ; ...when Russian
                 bcs _11
 
                 ldy #$01
@@ -299,7 +293,7 @@ _5              lda #$FF
 
 
 ;======================================
-;   supply evaluation routine
+; Supply evaluation routine
 ;======================================
 Logistics       .proc
                 lda ArrivalTurn,X
@@ -307,10 +301,10 @@ Logistics       .proc
                 beq _1
                 bcc _1
 
-                rts
+                rts                     ; not on board yet... ignore
 
 _1              lda #$18
-                cpx #$37
+                cpx #$37                ; when Russian, skip ahead
                 bcs _2
 
                 lda #$18
@@ -331,11 +325,12 @@ _1              lda #$18
                 lda #$10                ; harder to get supplies in winter
 _2              sta ACCLO
                 ldy #$01                ; Russians go east
-                cpx #$37
+                cpx #$37                ; ...when Russian
                 bcs _3
 
                 ldy #$03                ; Germans go west
-_3              sty HOMEDR
+_3              sty HOMEDIRECTION
+
                 lda CorpsX,X
                 sta LONGITUDE
                 lda CorpsY,X
@@ -356,7 +351,7 @@ _next2          lda SQX
                 sta LATITUDE
                 jsr CheckZOC
 
-                cpx #$37
+                cpx #$37                ; when Russian
                 bcc _4
 
                 jsr TerrainB
@@ -387,7 +382,7 @@ _7              lda SID_RANDOM
                 tay
                 jmp _next2
 
-_8              ldy HOMEDR
+_8              ldy HOMEDIRECTION
                 lda LONGITUDE
                 cpy #$01
                 bne _9
@@ -413,7 +408,7 @@ CheckZOC        .proc
                 lda #$00
                 sta ZOC
                 lda #$40
-                cpx #$37
+                cpx #$37                ; when Russian
                 bcs _1
 
                 lda #$C0
@@ -503,7 +498,7 @@ Dead            .proc
 ; attack breaks
 ;======================================
 MoraleCheck     .proc
-                cpx #$37
+                cpx #$37                ; when Russian
                 bcs _1
 
                 lda CorpType,X

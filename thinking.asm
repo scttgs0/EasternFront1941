@@ -8,12 +8,6 @@
 ;Russian artificial intelligence routine
 ;
 
-;--------------------------------------
-;--------------------------------------
-                * = $02_4700
-;--------------------------------------
-
-
 ;======================================
 ; Initialization loop
 ;======================================
@@ -84,7 +78,7 @@ _next5          stx ARMY
                 lda CorpsY,X
                 sta MoraleCheck2._OBJY-55,X
 _5              dex
-                cpx #$37
+                cpx #$37                ; when Russian
                 bcs _next5
 
 
@@ -137,7 +131,7 @@ _next2          lda ArrivalTurn,Y
                 sta TEMPR
                 .setbank $00
                 lda IFR-55,Y
-                .setbank $02
+                .setbank $03
                 sec
                 sbc TEMPR
                 bcc _2                  ; no good using nearby armies
@@ -208,9 +202,9 @@ _7              sta TARGY
 
                 ldy ARMY
                 lda EXEC,Y              ; is square accessible?
-                bpl _8                 ; yes
+                bpl _8                  ; yes
 
-                jmp _41              ; no, skip this square
+                jmp _41                 ; no, skip this square
 
 ;   fill in the direct line array
 _8              lda #$00
@@ -253,7 +247,7 @@ _9              lda OBJX-55,X
                 bne _12
 
 _10             dex
-                cpx #$37
+                cpx #$37                ; when Russian
                 bcs _next5
 
 _11             lda #$00
@@ -357,7 +351,7 @@ _next10         lda LV,X
                 iny
                 .setbank $00
                 lda LINARR,Y
-                .setbank $02
+                .setbank $03
                 beq _21
 
                 lda LPTS
@@ -383,7 +377,7 @@ _next12         stx COLUM
                 lda LV,X
                 sec
                 sbc LV,Y
-                .setbank $02
+                .setbank $03
                 beq _23
                 bmi _23
 
@@ -468,7 +462,7 @@ _next16         ldy ROTARR,X
                 .setbank $00
                 lda BAKARR,X
                 sta LINARR,Y
-                .setbank $02
+                .setbank $03
                 dex
                 bpl _next16
 
@@ -558,7 +552,9 @@ _next19         lda OBJX-55,Y
                 cmp TARGX
                 bne _39
 
+                .setbank $02
                 lda MoraleCheck2._OBJY-55,Y
+                .setbank $03
                 cmp TARGY
                 bne _39
 
@@ -658,7 +654,7 @@ _TOGSCN         lda JOYSTICK0           ; read joystick0 button
                 beq _WRAPUP
 
 _46             dex
-                cpx #$37
+                cpx #$37                ; when Russian
                 bcc _47
 
                 jmp _next1
@@ -779,7 +775,7 @@ _54             ldx ARMY
                 sta HowManyOrders,X
 
 _55             dex
-                cpx #$37
+                cpx #$37                ; when Russian
                 bcc _XIT2
 
                 jmp _next21

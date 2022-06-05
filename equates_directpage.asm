@@ -106,7 +106,9 @@ HANDICAP        .byte ?
 TOTGS           .byte ?         ; [$90]
 TOTRS           .byte ?
 OFR             .byte ?
-HOMEDR          .byte ?
+HOMEDIRECTION   .byte ?                 ; Direction toward Home
+                                        ; 1 = East (Russian)
+                                        ; 3 = West (German)
 ZOC             .byte ?
 TEMPQ           .byte ?
 LLIM            .byte ?
