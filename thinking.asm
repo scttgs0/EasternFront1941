@@ -79,7 +79,7 @@ LOOP50          stx ARMY
                 lda CorpsX,X
                 sta OBJX-55,X
                 lda CorpsY,X
-                sta OBJY-55,X
+                sta MoraleCheck2._OBJY-55,X
 Y44             dex
                 cpx #$37
                 bcs LOOP50
@@ -149,7 +149,7 @@ Y54             dey
                 lda CorpsX,Y
                 sta OBJX-55,X
                 lda CorpsY,Y
-                sta OBJY-55,X
+                sta MoraleCheck2._OBJY-55,X
                 jmp TOGSCN
 
 ;   front line armies
@@ -185,7 +185,7 @@ DRLOOP          lda OBJX-55,X
                 clc
                 adc XINC,Y
 Y55             sta TARGX
-                lda OBJY-55,X
+                lda MoraleCheck2._OBJY-55,X
                 ldy DIR
                 bmi Y56
 
@@ -236,7 +236,7 @@ Z25             lda OBJX-55,X
                 cmp SQX
                 bne Y58
 
-                lda OBJY-55,X
+                lda MoraleCheck2._OBJY-55,X
                 cmp SQY
                 bne Y58
 
@@ -554,7 +554,7 @@ LOOP58          lda OBJX-55,Y
                 cmp TARGX
                 bne Y63
 
-                lda OBJY-55,Y
+                lda MoraleCheck2._OBJY-55,Y
                 cmp TARGY
                 bne Y63
 
@@ -635,13 +635,13 @@ Y73             lda OBJX-55,X
                 clc
                 adc XINC,Y
 Y74             sta OBJX-55,X
-                lda OBJY-55,X
+                lda MoraleCheck2._OBJY-55,X
                 ldy BONE
                 bmi Y75
 
                 clc
                 adc YINC,Y
-Y75             sta OBJY-55,X
+Y75             sta MoraleCheck2._OBJY-55,X
 
 TOGSCN          lda JOYSTICK0           ; read joystick0 button
                 and #$10
@@ -681,7 +681,7 @@ Y78             lda OBJX-55,X
 Y79             sty HDIR
                 sta HRNGE
                 ldy #$00
-                lda OBJY-55,X
+                lda MoraleCheck2._OBJY-55,X
                 sec
                 sbc CorpsY,X
                 bpl Y80

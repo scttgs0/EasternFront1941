@@ -341,7 +341,7 @@ _3              dex
 
                 ldx #$9E
 _next2          stx ARMY
-                jsr LOGSTC              ; logistics subroutine
+                jsr Logistics           ; logistics subroutine
 
                 ldx ARMY
                 dex
@@ -531,7 +531,7 @@ _DoMove         ldx ARMY
                 lda CorpsX,X
                 sta CHUNKX
                 sta LONGITUDE
-                jsr CHKZOC
+                jsr CheckZOC
 
                 lda ACCHI
                 sta LATITUDE
@@ -541,7 +541,7 @@ _DoMove         ldx ARMY
                 cmp #$02
                 bcc _4
 
-                jsr CHKZOC
+                jsr CheckZOC
 
                 lda ZOC
                 cmp #$02
