@@ -63,7 +63,6 @@ _next1          stx SID_CTRL1           ; TODO: no distortion; max volume
                 pla
                 sta SWAP,X
 
-
                 jsr TerrainType         ; terrain in defender's square
 
                 ldx DEFNC,Y             ; defensive bonus factor
