@@ -15,12 +15,12 @@ SprColor4       .dword $00480800
 SprColor5       .dword $00002000
 SprColor6       .dword $00002020
 SprColor7       .dword $00201c00
-GrmnUnit        .dword $00205a78
-RssnUnit        .dword $00742526
-                .dword $00202020
-                .dword $00a10000
-                .dword $00810081
-                .dword $00342c00
+GrmnUnit        .dword $009dd6e9    ; [11]
+FinnUnit        .dword $00d1d1d1    ; [12]
+ItlnUnit        .dword $00a6a4a5    ; [13]
+AxisUnit        .dword $0065c556    ; [14]
+RssnUnit        .dword $00745720    ; [15]
+Black           .dword $00000000    ; [16]
                 .dword $00c20000
                 .dword $00612000
                 .dword $00a100a1
@@ -112,16 +112,16 @@ RssnUnit        .dword $00742526
                 .dword $00eaeaea
                 .dword $00ffff00
                 .dword $00c2ffff
-                .dword $00ffff40
-                .dword $00ffff81
-                .dword $00ffffa1
-                .dword $00ffffc2
-                .dword $00ffffe2
-                .dword $00ffffff
-HeaderPrimary   .dword $00001f07    ; [$78]
-HeaderAccent    .dword $00899b29    ; [$79]
-FooterPrimary   .dword $00331f00    ; [$7A]
-FooterSecondary .dword $00b47e51    ; [$7B]
-FooterTertiary  .dword $00115300    ; [$7C]
-FooterAccentA   .dword $00827ae7    ; [$7D]
-FooterAccentB   .dword $00041600    ; [$7E]
+Text0           .dword $00c3b057    ; [72]
+Text1           .dword $002f0000    ; [73]
+Text2           .dword $00af69cb    ; [74]
+Text4           .dword $00ffff40    ; [75]
+Text5           .dword $00ffffff    ; [76]
+Text6           .dword $00000000    ; [77]
+HeaderPrimary   .dword $00001f07    ; [78]
+HeaderAccent    .dword $00899b29    ; [79]
+FooterPrimary   .dword $00331f00    ; [7A]
+FooterSecondary .dword $00b47e51    ; [7B]
+FooterTertiary  .dword $00115300    ; [7C]
+FooterAccentA   .dword $00b8b0ff    ; [7D]
+FooterAccentB   .dword $00041600    ; [7E]

@@ -26,12 +26,12 @@
 ;                   c000-c80f           MAP
 ;                   d000-d80f           units
 ;   05      tiles, sprites
-;                   0000-7fff           TILES
-;                   8000-9bff           STAMPS
+;                   0000-82ff           TILES
+;                   9000-abff           STAMPS
 ;   06-0A   bitmaps
-;                   06:0000-77ff        header
-;                   06:7800-09:bfff     <empty>
-;                   09:c000-0a:afff     footer
+;                   06:0000-4fff        header
+;                   06:5000-09:e7ff     <empty>
+;                   09:e800-0a:afff     footer
 
 
                 .cpu "65816"

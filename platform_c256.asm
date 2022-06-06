@@ -129,7 +129,7 @@ InitUnitOverlay .proc
                 ldx #0
                 ldy #0
 _nextTile       lda unitsData,Y         ; Get the tile code
-                and #$7F
+                ;and #$7F
                 sta TILEMAPUNITS,X      ; save it to the tile map
                 inx                     ; Note: writes to video RAM need to be 8-bit only
                 lda #0

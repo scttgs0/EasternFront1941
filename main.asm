@@ -33,7 +33,30 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 jsr InitLUT
                 jsr InitTiles
                 jsr InitMap
-                ;jsr InitUnitOverlay
+
+;   place a few units
+                .setbank $04
+                .m8i16
+                lda #$80                ; finns
+                ldy #0*48+10+1+3*48     ; (10,0)
+                sta unitsData,Y
+                ldy #1*48+9+1+3*48      ; (9,1)
+                sta unitsData,Y
+
+                lda #$3D                ; germans
+                ldy #25*48+2+1+3*48     ; (2,25)
+                sta unitsData,Y
+                ldy #23*48+4+1+3*48     ; (4,23)
+                sta unitsData,Y
+
+                lda #$7D                ; russian
+                ldy #1*48+12+1+3*48     ; (12,1)
+                sta unitsData,Y
+                ldy #4*48+14+1+3*48     ; (14,4)
+                sta unitsData,Y
+                .setbank $03
+                jsr InitUnitOverlay
+                
                 jsr InitSprites
                 jsr InitBitmap
 
