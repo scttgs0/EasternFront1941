@@ -24,6 +24,7 @@
 ;                   1000-afff           FONT
 ;                   b000-b0ad           TEXT
 ;                   c000-c80f           MAP
+;                   d000-d80f           units
 ;   05      tiles, sprites
 ;                   0000-7fff           TILES
 ;                   8000-9bff           STAMPS
@@ -99,6 +100,8 @@ textData        .include "TEXT.asm"
                 .align $1000
 mapData         .include "MAP.asm"
 
+                .align $1000
+unitsData       .fill $810,$00
 
 ;--------------------------------------
 ;--------------------------------------
@@ -115,5 +118,5 @@ stamps          .include "STAMPS.asm"
                 .align $10000
 ;--------------------------------------
 HeaderPanel     .binary "images/header.raw"
-                .fill $34800,$00
+                .fill $39800,$00
 FooterPanel     .binary "images/footer.raw"

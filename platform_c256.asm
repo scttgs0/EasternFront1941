@@ -86,7 +86,7 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
 
                 inx                     ; move to the next tile
                 iny
-                cpy #$840               ; 48x44
+                cpy #$810               ; 48x43
                 bne _nextTile
 
                 .m16
@@ -99,7 +99,7 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
                 .m16
                 lda #48                ; Set the size of the tile map
                 sta TILE3_X_SIZE
-                lda #44
+                lda #43
                 sta TILE3_Y_SIZE
 
                 lda #$00
@@ -123,12 +123,12 @@ InitUnitOverlay .proc
                 phb
                 php
 
-                .setbank `MAPWDW
+                .setbank `unitsData
 
                 .m8i16
                 ldx #0
                 ldy #0
-_nextTile       lda MAPWDW,Y            ; Get the tile code
+_nextTile       lda unitsData,Y         ; Get the tile code
                 and #$7F
                 sta TILEMAPUNITS,X      ; save it to the tile map
                 inx                     ; Note: writes to video RAM need to be 8-bit only
@@ -137,7 +137,7 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
 
                 inx                     ; move to the next tile
                 iny
-                cpy #$840               ; 48x44
+                cpy #$810               ; 48x43
                 bne _nextTile
 
                 .m16
@@ -148,9 +148,9 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
                 sta TILE2_START_ADDR+2
 
                 .m16
-                lda #48                ; Set the size of the tile map to 64x41
+                lda #48                ; Set the size of the tile map
                 sta TILE2_X_SIZE
-                lda #44
+                lda #43
                 sta TILE2_Y_SIZE
 
                 lda #$00
