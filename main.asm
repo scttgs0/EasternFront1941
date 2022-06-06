@@ -63,7 +63,10 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 .m16i16
                 lda #$00                ; enable display list & scroll
                 sta TILE3_WINDOW_X_POS  ; fine scroll
+                sta TILE2_WINDOW_X_POS  ; fine scroll
+                lda #$120
                 sta TILE3_WINDOW_Y_POS
+                sta TILE2_WINDOW_Y_POS
 
                 .m8i8
                 ldx #$00
