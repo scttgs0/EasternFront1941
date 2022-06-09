@@ -5,7 +5,10 @@ TILEMAP         = $B20000
 TILEMAPUNITS    = $B22000
 SPRITES         = $B24000
 BITMAP          = $B30000
-
+BITMAPTXT0      = $B6F200
+BITMAPTXT1      = $B71A00
+BITMAPTXT2      = $B74C00
+BITMAPTXT3      = $B31900
 
 ;======================================
 ; Create the lookup table (LUT)
@@ -226,6 +229,9 @@ InitSprites     .proc
                 .endproc
 
 
+;======================================
+;
+;======================================
 InitBitmap      .proc
                 phb
                 php
@@ -255,6 +261,36 @@ InitBitmap      .proc
 
                 lda #bmcEnable
                 sta BITMAP0_CTRL
+
+                plp
+                plb
+                rts
+                .endproc
+
+
+;======================================
+; Blit bitmap text to VRAM
+;--------------------------------------
+; on entry:
+;   DEST        set by caller
+;======================================
+BlitText        .proc
+                .m16i16
+                phb
+                php
+
+                lda #$2800              ; Set the size
+                sta SIZE
+                lda #$00
+                sta SIZE+2
+
+                lda #<>Text2Bitmap      ; Set the source address
+                sta SOURCE
+                lda #`Text2Bitmap
+                sta SOURCE+2
+
+                .m8
+                jsr Copy2VRAM
 
                 plp
                 plb

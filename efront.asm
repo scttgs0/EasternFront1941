@@ -12,19 +12,19 @@
 ;   02      code
 ;                   0fd8-0ffb           PGX bootstrap
 ;                   1000-17a9           thinking (AI)
-;                   2000-2796           main
+;                   2000-2896           main
 ;                   3000-3509           combat
 ;                   4000-4711           interrupt
 ;                   5000-50a3               DLISRV
-;                   6000-61d9           platform_c256
+;                   6000-625b           platform_c256
 ;   03      data
 ;                   0000-1280           data
 ;   04      palette, font, text, map
 ;                   0000-01fb           PALETTE
 ;                   1000-afff           FONT
-;                   b000-b0ad           TEXT
-;                   c000-c80f           MAP
-;                   d000-d80f           units
+;                   b000-d948           TEXT
+;                   e000-e80f           MAP
+;                   f000-f80f           units
 ;   05      tiles, sprites
 ;                   0000-82ff           TILES
 ;                   9000-abff           STAMPS

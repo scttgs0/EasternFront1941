@@ -97,6 +97,73 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 lda #9*$10-8
                 sta SP02_Y_POS
 
+                .m16i8
+                pea #<>TXTWDWTOP
+                ldx #$78
+                phx
+                ldx #$74
+                phx
+                jsl TransformText
+                pla                     ; clean up stack
+                pla
+
+                lda #<>(BITMAPTXT3-VRAM)  ; Set the destination address
+                sta DEST
+                lda #`(BITMAPTXT3-VRAM)
+                sta DEST+2
+                jsr BlitText
+
+                .m16i8
+                pea #<>TXTWDW
+                ldx #$7A
+                phx
+                ldx #$72
+                phx
+                jsl TransformText
+                pla                     ; clean up stack
+                pla
+
+                lda #<>(BITMAPTXT0-VRAM)  ; Set the destination address
+                sta DEST
+                lda #`(BITMAPTXT0-VRAM)
+                sta DEST+2
+                jsr BlitText
+
+                .m16i8
+                pea #<>TXTWDW+40
+                ldx #$7A
+                phx
+                ldx #$72
+                phx
+                jsl TransformText
+                pla                     ; clean up stack
+                pla
+
+                lda #<>(BITMAPTXT1-VRAM)  ; Set the destination address
+                sta DEST
+                lda #`(BITMAPTXT1-VRAM)
+                sta DEST+2
+                jsr BlitText
+
+                .m16i8
+                pea #<>TXTWDW+80
+                ldx #$7B
+                phx
+                ldx #$73
+                phx
+                jsl TransformText
+                pla                     ; clean up stack
+                pla
+
+                lda #<>(BITMAPTXT2-VRAM)  ; Set the destination address
+                sta DEST
+                lda #`(BITMAPTXT2-VRAM)
+                sta DEST+2
+                jsr BlitText
+
+                .m8
+                .setbank $03
+
 ;---
 ;                .m16i16
 ; _reset          lda #$00

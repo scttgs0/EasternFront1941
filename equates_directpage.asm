@@ -161,3 +161,6 @@ blockRow        .word ?         ; [C8]
 ptrMap          .word ?
 X_POS           .word ?
 Y_POS           .word ?
+pBuffer         .word ?         ; [D0]
+pGlyph          .word ?
+pSource         .word ?
