@@ -56,7 +56,7 @@ _2              sta MusterStrength,X
                 dex
                 bne _next1
 
-_3             lda JOYSTICK0            ; read joystick0 button
+_3              lda JOYSTICK0           ; read joystick0 button
                 and #$10
                 ora BUTMSK              ; button allowed?
                 beq _5
@@ -1199,6 +1199,10 @@ _XIT            pla
 ;======================================
 ; Display a number with leading-zero
 ; suppressed
+;--------------------------------------
+; at entry
+;   A           Value
+;   Y           Position offset
 ;======================================
 DisplayNumber   .proc
                 .setbank $04
