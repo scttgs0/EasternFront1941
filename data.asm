@@ -18,7 +18,8 @@
 ;   Initial Map Coordinates
 
 ;   x-coords of all units (pixel frame)
-CorpsX          .byte 0,40,40,40,40,40,41,40,41,41,41,42,42,42,42,43
+CorpsX          .byte 0     ; unused
+                .byte 40,40,40,40,40,41,40,41,41,41,42,42,42,42,43
                 .byte 43,43,41,40,40,41,41,42,42,42,40,41,42,41,42,42
                 .byte 43,41,42,43,30,30,31,33,35,37,35,36,36,45,45,38
                 .byte 45,31,45,45,32,45,45
@@ -32,7 +33,8 @@ CorpsX          .byte 0,40,40,40,40,40,41,40,41,41,41,42,42,42,42,43
                 .byte 12,20,21,20,15,21,20,19
 
 ;   y-coords of all units (pixel frame)
-CorpsY          .byte 0,20,19,18,17,16,20,19,18,17,16,20,19,18,17,19
+CorpsY          .byte 0     ; unused
+                .byte 20,19,18,17,16,20,19,18,17,16,20,19,18,17,19
                 .byte 18,17,23,22,21,21,22,22,23,24,15,14,13,15,14,12
                 .byte 13,15,16,16,2,3,4,6,7,8,38,37,38,20,15,8
                 .byte 16,1,20,19,1,17,18
@@ -45,7 +47,8 @@ CorpsY          .byte 0,20,19,18,17,16,20,19,18,17,16,20,19,18,17,19
                 .byte 25,11,23,19,21,33,28,13,26,10,29,35,27,15,30,22
                 .byte 8,13,14,28,3,3,3,2
 
-MusterStrength  .byte 0,203,205,192,199,184,136,127,150,129,136,109,72,70,81,131
+MusterStrength  .byte 0     ; unused
+                .byte 203,205,192,199,184,136,127,150,129,136,109,72,70,81,131
                 .byte 102,53,198,194,129,123,101,104,112,120,202,195,191,72,140,142
                 .byte 119,111,122,77,97,96,92,125,131,106,112,104,101,210,97,98
                 .byte 95,52,98,96,55,104,101
@@ -63,7 +66,8 @@ CombatStrength  .fill 159,$00
 ;   Two purposes for the SWAP table
 ;   Contains the unit type (infantry or armor) when the unit is place on the map
 ;   Once placed, swapped with the terrain type in which the unit occupies
-SWAP            .byte $00,$7E,$7E,$7E,$7E,$7E,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D
+SWAP            .byte $00     ; unused
+                .byte $7E,$7E,$7E,$7E,$7E,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D
                 .byte $7D,$7D,$7E,$7E,$7D,$7D,$7D,$7D,$7D,$7D,$7E,$7E,$7E,$7E,$7D,$7D
                 .byte $7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7E,$7D,$7E
                 .byte $7D,$7D,$7D,$7D,$7D,$7D,$7E
@@ -77,7 +81,8 @@ SWAP            .byte $00,$7E,$7E,$7E,$7E,$7E,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7
                 .byte $FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD
 
 ;   the turn in which the unit first enters the map
-ArrivalTurn     .byte 255,0,255,0,0,0,0,0,0,0,0,255,255,255,255,255
+ArrivalTurn     .byte 255     ; unused
+                .byte 0,255,0,0,0,0,0,0,0,0,255,255,255,255,255
                 .byte 255,255,0,0,0,0,0,0,0,0,0,0,0,255,0,0
                 .byte 0,0,255,255,0,0,0,0,0,0,0,0,255,2,255,2
                 .byte 5,6,9,10,11,20,24
@@ -91,7 +96,8 @@ ArrivalTurn     .byte 255,0,255,0,0,0,0,0,0,0,0,255,255,255,255,255
                 .byte 3,3,3,6,6,4,4,4
 
 ;   codes for unit types
-CorpType        .byte 0,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0
+CorpType        .byte 0     ; unused
+                .byte 3,3,3,3,3,0,0,0,0,0,0,0,0,0,0
                 .byte 0,$40,3,3,0,0,0,0,0,0,3,3,3,3,0,0
                 .byte 0,0,0,0,$30,$30,$30,0,0,0,$20,$20,$20,3,0,$53
                 .byte 0,$30,0,0,$40,0,7
@@ -105,7 +111,8 @@ CorpType        .byte 0,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0
                 .byte 0,0,0,4,4,4,4,4
 
 ;   ID numbers of units
-CorpNumber      .byte 0,24,39,46,47,57,5,6,7,8,9,12,13,20,42,43
+CorpNumber      .byte 0     ; unused
+                .byte 24,39,46,47,57,5,6,7,8,9,12,13,20,42,43
                 .byte 53,3,41,56,1,2,10,26,28,38,3,14,48,52,49,4
                 .byte 17,29,44,55,1,2,4,11,30,54,2,4,6,40,27,1
                 .byte 23,5,34,35,4,51,50
@@ -458,6 +465,7 @@ PSXVAL          .byte $E0               ; position x
 COLTAB          .byte $58,$DC,$2F,$00   ; color table
                 .byte $6A,$0C,$94,$46,$B0
 
-MPTS            .byte 20,10,10,10
-MOSCX           .byte 20,33,20,6
-MOSCY           .byte 28,36,0,15
+MPTS            .byte 20,10,10,10       ; 0=Moscow
+MOSCX           .byte 20,33,20,6        ; 1=Leningrad
+MOSCY           .byte 28,36,15,15       ; 2=Kharkov
+                                        ; 3=Stalingrad
