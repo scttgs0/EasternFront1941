@@ -56,7 +56,7 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 sta unitsData,Y
                 .setbank $03
                 jsr InitUnitOverlay
-                
+
                 jsr InitSprites
                 jsr InitBitmap
 
@@ -81,11 +81,11 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 cpx #$A0
                 bne _next3
 
-;   here follow various initializations
-                lda #12*$10-8   ; 12
-                sta SP00_X_POS          ; Sprite-0 x-position
-                lda #8*$10-8    ; 8
-                sta SP00_Y_POS          ; Sprite-0 y-position
+;   position sprites
+                lda #12*$10-8
+                sta SP00_X_POS
+                lda #8*$10-8
+                sta SP00_Y_POS
 
                 lda #12*$10-8
                 sta SP01_X_POS
@@ -97,6 +97,7 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 lda #9*$10-8
                 sta SP02_Y_POS
 
+;   text messages
                 .m16i8
                 pea #<>TXTWDWTOP
                 ldx #$78
@@ -198,333 +199,45 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 ;lda #$07
                 ;jsr SETVBV             ; TODO:platform ; = $7400
 
-                ;lda #$00                ; This is DLI vector (low byte)
+                ;lda #$00               ; This is DLI vector (low byte)
                 ;sta VDSLST
                 ;lda #$7B
                 ;sta VDSLST+1
                 ;lda #$C0
                 ;sta NMIEN              ; Turn interrupts on  ; TODO:platform ; [DLI+VBI]
 
+                bra MainLoop
+
+
+;--------------------------------------
+;
+;--------------------------------------
+MainLoop        .proc
 NewTurn         inc TURN
 
-;   first do calendar calculations
-CalendarCalc    lda DAY
-                clc
-                adc #07
-                ldx MONTH
-                cmp DaysInMonth,X
-                beq _3
-                bcc _3
+;   do calendar calculations
+                jsr CalendarCalc
+                jsr CalendarDisplay
 
-                cpx #$02
-                bne _1
+;   do seasonal calculations
+                jsr SeasonalCalc
 
-                ldy YEAR
-                cpy #44
-                bne _1
+;   reinforcements and supplies
+                jsr Reinforcements
+                jsr CheckSupplyLine
 
-                sec
-                sbc #$01
-_1              sec
-                sbc DaysInMonth,X
-                inx
-                cpx #13
-                bne _2
-
-                inc YEAR
-                ldx #01
-_2              stx MONTH
-                ldy TreeColors,X
-                sty TRCOLR
-_3              sta DAY
-                ldy #$93
-                lda #$00
-_next1          .setbank $04
-                sta TXTWDW,Y
-                iny
-                cpy #$A7
-                bne _next1
-
-                ldy #$93
-                txa
-                clc
-                adc #$10
-                jsr DisplayWord
-
-                lda DAY
+;   calculate score
+                jsr ScoreCalc
+                ldy #$05
                 jsr DisplayNumber
 
-                lda #$0C
-                sta TXTWDW,Y
-                iny
-                iny
-                lda #$11
-                sta TXTWDW,Y
-                iny
-                lda #$19
-                sta TXTWDW,Y
-                iny
-                ldx YEAR
-                lda #$14
-                sta TXTWDW,Y
-                iny
-                lda OnesDigit,X
-                clc
-                adc #$10
-                sta TXTWDW,Y
-                .setbank $03
-
-;   do season calculations
-                lda MONTH
-                cmp #$04
-                bne _4
-
-                lda #$02
-                sta EARTH
-                lda #$40
-                sta SEASN1
-                lda #$01
-                sta SEASN3
-                lda #$00
-                sta SEASN2
-                jmp ENDSSN
-
-_4              cmp #$0A
-                bne _5
-
-                lda #$02
-                sta EARTH
-                jmp ENDSSN
-
-_5              cmp #$05
-                bne _6
-
-                lda #$10
-                sta EARTH
-                jmp ENDSSN
-
-_6              cmp #$0B
-                bne _7
-
-                lda #$0A
-                sta EARTH
-                jmp _9
-
-_7              cmp #$01
-                bne _8
-
-                lda #$80
-                sta SEASN1
-                lda #$FF
-                sta SEASN2
-                sta SEASN3
-                jmp ENDSSN
-
-_8              cmp #$03
-                beq _9
-
-                jmp ENDSSN
-
-;   freeze those rivers, baby
-_9              lda SID_RANDOM
-                and #$07
-                clc
-                adc #$07
-                eor SEASN2
-                sta TEMPR
-                lda ICELAT
-                sta OLDLAT
-                sec
-                sbc TEMPR
-                beq _10
-                bpl _11
-
-_10             lda #$01
-_11             cmp #$27
-                bcc _12
-
-                lda #$27
-_12             sta ICELAT
-                lda #$01
-                sta CHUNKX
-                sta LONGITUDE
-                lda OLDLAT
-                sta CHUNKY
-                sta LATITUDE
-
-_next2          jsr Terrain
-
-                and #$3F
-                cmp #$0B
-                bcc _15
-
-                cmp #$29
-                bcs _15
-
-                ldx CHUNKY
-                cpx #$0E
-                bcs _13
-
-                cmp #$23
-                bcs _15
-
-_13             ora SEASN1
-                ldx UNITNO
-                beq _14
-
-                sta SWAP,X
-                jmp _15
-
-_14             sta (MAPPTR),Y
-_15             inc CHUNKX
-                lda CHUNKX
-                sta LONGITUDE
-                cmp #46
-                bne _next2
-
-                lda #$00
-                sta CHUNKX
-                sta LONGITUDE
-                lda CHUNKY
-                cmp ICELAT
-                beq ENDSSN
-
-                sec
-                sbc SEASN3
-                sta CHUNKY
-                sta LATITUDE
-                jmp _next2
-
-ENDSSN          ldx #$9E                ; any reinforcements?
-
-_next1          lda ArrivalTurn,X
-                cmp TURN
-                bne _3
-
-                lda CorpsX,X
-                sta CHUNKX
-                sta LONGITUDE
-
-                lda CorpsY,X
-                sta CHUNKY
-                sta LATITUDE
-
-                stx CORPS
-                jsr TerrainB
-                beq _2                  ; must delay arrival by one turn
-
-                cpx #$37                ; when Russian, skip asterisk
-                bcs _1
-
-                lda #$0A                ; asterisk character (reinforcements indicator)
-                sta TXTWDW+36
-_1              jsr SwitchCorps
-
-                jmp _3
-
-_2              lda TURN                ; delay arrival
-                clc
-                adc #$01
-                sta ArrivalTurn,X
-
-_3              dex
-                bne _next1
-
-                ldx #$9E
-_next2          stx ARMY
-                jsr Logistics           ; logistics subroutine
-
-                ldx ARMY
-                dex
-                bne _next2
-
-;   calculate some points
-                lda #$00
-                sta ACCLO
-                sta ACCHI
-                ldx #$01
-_next3          lda #$30
-                sec
-                sbc CorpsX,X
-                sta TEMPR
-                lda MusterStrength,X
-                lsr A
-                beq _5
-
-                tay
-                lda #$00
-                clc
-_next4          adc TEMPR
-                bcc _4
-
-                inc ACCHI
-                clc
-                bne _4
-
-                dec ACCHI
-_4              dey
-                bne _next4
-
-_5              inx
-                cpx #$37                ; when Russian
-                bne _next3
-
-_next5          lda CorpsX,X
-                sta TEMPR
-                lda CombatStrength,X
-                lsr A
-                lsr A
-                lsr A
-                beq _7
-
-                tay
-                lda #$00
-                clc
-_next6          adc TEMPR
-                bcc _6
-
-                inc ACCLO
-                clc
-                bne _6
-
-                dec ACCLO
-_6              dey
-                bne _next6
-
-_7              inx
-                cpx #$9E
-                bne _next5
-
-                lda ACCHI
-                sec
-                sbc ACCLO
-                bcs _8
-
-                lda #$00
-_8              ldx #$03
-_next7          ldy MOSCOW,X
-                beq _9
-
-                clc
-                adc MPTS,X
-                bcc _9
-
-                lda #$FF
-_9              dex
-                bpl _next7
-
-                ldx HANDICAP              ; was handicap option used?
-                bne _10                 ; no
-
-                lsr A                   ; yes, halve score
-_10             ldy #$05
-                jsr DisplayNumber
-
+;   why???
                 .setbank $04
                 lda #$00
                 sta TXTWDW,Y
                 .setbank $03
 
+;   check for game end
                 lda TURN
                 cmp #$28
                 bne Z00_
@@ -532,15 +245,16 @@ _10             ldy #$05
                 lda #$01                ; end of game
                 jsr TextMessage
 
-FINI            bra FINI                ; hang up
+FINI            bra FINI                ; freeze up... endless loop
 
-Z00_            lda #$00
+;   begin phase
+Z00_            lda #$00                ; allow input
                 sta BUTMSK
                 sta CORPS
                 jsr TextMessage
                 jsr INIT                ; artificial intelligence routine
 
-                lda #$01
+                lda #$01                ; prevent input
                 sta BUTMSK
                 lda #$02
                 jsr TextMessage
@@ -548,6 +262,7 @@ Z00_            lda #$00
 ;   movement execution phase
                 lda #$00
                 sta TICK
+
                 ldx #$9E
 _next1          stx ARMY
                 jsr DINGO               ; determine first execution time
@@ -699,34 +414,8 @@ _8              inc TICK
 ;   end of movement phase
 _9              jmp NewTurn
 
+                .endproc
 
-;--------------------------------------
-;--------------------------------------
-                .align $100
-;--------------------------------------
-
-
-;======================================
-;
-;======================================
-STALL           lda #$00
-_next1          pha
-                pla
-                pha
-                pla
-                pha
-                pla
-                adc #$01
-                bne _next1
-
-                rts
-
-
-;--------------------------------------
-; this is the debugging routine
-; it can't be reached any longer
-;--------------------------------------
-ForceDebug      jmp CalendarCalc
 
 ;--------------------------------------
 ;--------------------------------------
@@ -765,19 +454,408 @@ Break2Monitor   ;lda #$00
                 .align $100
 ;--------------------------------------
 
-;======================================
-; Determine terrain within a square
-;======================================
-Terrain         jsr TerrainB
-                beq LOOKUP
 
+;======================================
+;
+;======================================
+CalendarCalc    .proc
+
+;   one week has past
+                lda DAY
+                clc
+                adc #07
+
+;   have we entered a new month?
+                ldx MONTH
+                cmp DaysInMonth,X
+                beq _3
+                bcc _3
+
+;   is it Feburary 1944?
+                cpx #$02
+                bne _1
+
+                ldy YEAR
+                cpy #44
+                bne _1
+
+;   leap year, so remove the extra day
+                sec
+                sbc #$01
+
+;   subtract the number of days in the previous month, then advance to the current month
+_1              sec
+                sbc DaysInMonth,X
+                inx
+
+;   did we enter the next year?
+                cpx #13
+                bne _2
+
+                inc YEAR
+                ldx #01
+
+_2              stx MONTH
+                ldy TreeColors,X        ; seasonal tree color
+                sty TRCOLR
+_3              sta DAY
                 rts
+                .endproc
 
 
 ;======================================
 ;
 ;======================================
-TerrainB        lda #$00
+CalendarDisplay .proc
+                .setbank $04
+
+;   clear existing display
+                ldy #$93
+                lda #$00
+_next1          sta TXTWDW,Y
+                iny
+                cpy #$A7
+                bne _next1
+
+;   display month
+                ldy #$93
+                txa
+                clc
+                adc #$10
+                jsr DisplayWord
+
+;   display day
+                lda DAY
+                jsr DisplayNumber
+
+;   comma
+                lda #$0C
+                sta TXTWDW,Y
+                iny
+                iny
+
+;   year (194x)
+                lda #$11                ; '1'
+                sta TXTWDW,Y
+                iny
+                lda #$19                ; '9'
+                sta TXTWDW,Y
+                iny
+                ldx YEAR
+                lda #$14                ; '4'
+                sta TXTWDW,Y
+                iny
+                lda OnesDigit,X         ; last digit in year
+                clc
+                adc #$10
+                sta TXTWDW,Y
+
+                .setbank $03
+                rts
+                .endproc
+
+
+;======================================
+;
+;======================================
+SeasonalCalc    .proc
+                lda MONTH
+                cmp #$04
+                bne _4
+
+;   set april colors
+                lda #$02
+                sta EARTH
+                lda #$40
+                sta SEASN1
+                lda #$01
+                sta SEASN3
+                lda #$00
+                sta SEASN2
+                jmp _XIT
+
+_4              cmp #$0A
+                bne _5
+
+;   set october colors
+                lda #$02
+                sta EARTH
+                jmp _XIT
+
+_5              cmp #$05
+                bne _6
+
+;   set may colors
+                lda #$10
+                sta EARTH
+                jmp _XIT
+
+_6              cmp #$0B
+                bne _7
+
+;   set november colors
+                lda #$0A
+                sta EARTH
+                bra _9
+
+_7              cmp #$01
+                bne _8
+
+;   set january colors
+                lda #$80
+                sta SEASN1
+                lda #$FF
+                sta SEASN2
+                sta SEASN3
+                bra _XIT
+
+_8              cmp #$03
+                beq _9
+
+;   no seasonal changes for remaining months
+                bra _XIT
+
+;   November and March...
+;   freeze those rivers, baby
+_9              lda SID_RANDOM
+                and #$07
+                clc
+                adc #$07
+                eor SEASN2
+                sta TEMPR
+                lda ICELAT
+                sta OLDLAT
+                sec
+                sbc TEMPR
+                beq _10
+                bpl _11
+
+_10             lda #$01
+_11             cmp #$27
+                bcc _12
+
+                lda #$27
+_12             sta ICELAT
+                lda #$01
+                sta CHUNKX
+                sta LONGITUDE
+                lda OLDLAT
+                sta CHUNKY
+                sta LATITUDE
+
+_next2          jsr Terrain
+
+                and #$3F
+                cmp #$0B
+                bcc _15
+
+                cmp #$29
+                bcs _15
+
+                ldx CHUNKY
+                cpx #$0E
+                bcs _13
+
+                cmp #$23
+                bcs _15
+
+_13             ora SEASN1
+                ldx UNITNO
+                beq _14
+
+                sta SWAP,X
+                bra _15
+
+_14             sta (MAPPTR),Y
+_15             inc CHUNKX
+                lda CHUNKX
+                sta LONGITUDE
+                cmp #46
+                bne _next2
+
+                lda #$00
+                sta CHUNKX
+                sta LONGITUDE
+                lda CHUNKY
+                cmp ICELAT
+                beq _XIT
+
+                sec
+                sbc SEASN3
+                sta CHUNKY
+                sta LATITUDE
+                bra _next2
+
+_XIT            rts
+                .endproc
+
+
+;======================================
+; any reinforcements?
+;======================================
+Reinforcements  .proc
+                ldx #$9E
+
+_next1          lda ArrivalTurn,X
+                cmp TURN
+                bne _nextItem           ; skip if arrival != this turn
+
+                lda CorpsX,X
+                sta CHUNKX
+                sta LONGITUDE
+
+                lda CorpsY,X
+                sta CHUNKY
+                sta LATITUDE
+
+;   determine terrain type
+                stx CORPS
+                jsr TerrainB
+                beq _2                  ; when =0, must delay arrival by one turn
+
+;   visual indicator
+                cpx #$37                ; when Russian, skip asterisk
+                bcs _1
+
+                lda #$0A                ; asterisk character (reinforcements indicator)
+                sta TXTWDW+36
+
+;   place units
+_1              jsr SwitchCorps
+
+                bra _nextItem
+
+;   delay arrival to next turn
+_2              lda TURN
+                clc
+                adc #$01
+                sta ArrivalTurn,X
+
+_nextItem       dex
+                bne _next1              ; item 0 is unused
+
+                rts
+                .endproc
+
+
+;======================================
+; Logistics check
+;======================================
+CheckSupplyLine .proc
+                ldx #$9E
+_next1          stx ARMY
+                jsr Logistics
+
+                ldx ARMY
+                dex
+                bne _next1
+
+                rts
+                .endproc
+
+
+;======================================
+;
+;======================================
+ScoreCalc       .proc
+                lda #$00
+                sta ACCLO
+                sta ACCHI
+                ldx #$01
+_next3          lda #$30
+                sec
+                sbc CorpsX,X
+                sta TEMPR
+                lda MusterStrength,X
+                lsr A
+                beq _5
+
+                tay
+                lda #$00
+                clc
+_next4          adc TEMPR
+                bcc _4
+
+                inc ACCHI
+                clc
+                bne _4
+
+                dec ACCHI
+_4              dey
+                bne _next4
+
+_5              inx
+                cpx #$37                ; when Russian
+                bne _next3
+
+_next5          lda CorpsX,X
+                sta TEMPR
+                lda CombatStrength,X
+                lsr A
+                lsr A
+                lsr A
+                beq _7
+
+                tay
+                lda #$00
+                clc
+_next6          adc TEMPR
+                bcc _6
+
+                inc ACCLO
+                clc
+                bne _6
+
+                dec ACCLO
+_6              dey
+                bne _next6
+
+_7              inx
+                cpx #$9E
+                bne _next5
+
+                lda ACCHI
+                sec
+                sbc ACCLO
+                bcs _8
+
+                lda #$00
+_8              ldx #$03
+_next7          ldy MOSCOW,X
+                beq _9
+
+                clc
+                adc MPTS,X
+                bcc _9
+
+                lda #$FF
+_9              dex
+                bpl _next7
+
+                ldx HANDICAP            ; was handicap option used?
+                bne _10                 ; no
+
+                lsr A                   ; yes, halve score
+_10             rts
+                .endproc
+
+
+;======================================
+; Determine terrain within a square
+;======================================
+Terrain         .proc
+                jsr TerrainB
+                beq LOOKUP
+
+                rts
+                .endproc
+
+
+;======================================
+;
+;======================================
+TerrainB        .proc
+                lda #$00
                 sta MAPPTR+1
                 sta UNITNO
 
@@ -819,12 +897,14 @@ TerrainB        lda #$00
 
                 cmp #$3E                ; is armor?
 _XIT            rts
+                .endproc
 
 
 ;--------------------------------------
 ;
 ;--------------------------------------
-LOOKUP          lda TRNCOD
+LOOKUP          .proc
+                lda TRNCOD
                 sta UNTCOD
                 and #$C0
                 ldx #$9E
@@ -864,24 +944,28 @@ _match          stx UNITNO
                 lda SWAP,X
                 sta TRNCOD
                 rts
+                .endproc
 
 
 ;======================================
 ; Determine execution time of next move
 ;======================================
-DINGO           ldx ARMY
+DINGO           .proc
+                ldx ARMY
                 lda HowManyOrders,X
                 bne Y00
 
                 lda #$FF
                 sta EXEC,X
                 rts
+                .endproc
 
 
 ;======================================
 ;
 ;======================================
-Y00             lda CorpsX,X
+Y00             .proc
+                lda CorpsX,X
                 sta LONGITUDE
                 lda CorpsY,X
                 sta LATITUDE
@@ -953,12 +1037,14 @@ _3              dey
                 bpl _next1
 
 _XIT            rts
+                .endproc
 
 
 ;======================================
 ; Determine type of terrain
 ;======================================
-TerrainType     ldy #$00
+TerrainType     .proc
+                ldy #$00
                 lda TRNCOD
                 beq _DONE
 
@@ -1016,20 +1102,22 @@ _3              iny
                 iny
 _DONE           sty TRNTYP
                 rts
+                .endproc
 
 
 ;======================================
 ;
 ;======================================
-TextMessage     asl A
+TextMessage     .proc
+                .setbank $04
+
+                asl A                   ; *32
                 asl A
                 asl A
                 asl A
                 asl A
                 tax
-                ldy #$69
-
-                .setbank $04
+                ldy #$69                
 _next1          lda TxtTbl,X
                 sec
                 sbc #$20
@@ -1041,5 +1129,36 @@ _next1          lda TxtTbl,X
                 bne _next1
 
                 .setbank $03
+                rts
+                .endproc
+
+
+;--------------------------------------
+;--------------------------------------
+                .align $100
+;--------------------------------------
+
+
+;======================================
+;
+;======================================
+STALL           .proc
+                lda #$00
+_next1          pha
+                pla
+                pha
+                pla
+                pha
+                pla
+                adc #$01
+                bne _next1
 
                 rts
+                .endproc
+
+
+;--------------------------------------
+; this is the debugging routine
+; it can't be reached any longer
+;--------------------------------------
+ForceDebug      jmp CalendarCalc
