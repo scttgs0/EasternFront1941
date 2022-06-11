@@ -68,12 +68,14 @@ _3              lda JOYSTICK0           ; read joystick0 button
 
 _4              lda #$58                ; button just released
                 sta LUTSprColor0        ; TODO: Sprite-0 color
+
                 lda #$00
                 sta BUTFLG
                 sta KRZFLG
                 sta SID_CTRL1           ; TODO: no distortion; no volume
-                ldx #$52
-_next2          sta TXTWDW+8,X          ; clear text window
+
+                ldx #79
+_next2          sta TXTWDW,X            ; clear text window
                 dex
                 bpl _next2
 
@@ -390,7 +392,7 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
                 dey
 
                 .setbank $04
-                lda #$1A                ; ":"
+                lda #$3A                ; ":"
                 sta TXTWDW,Y
                 .setbank $03
 
@@ -581,8 +583,8 @@ Squawk          ldy #$69
 
                 .setbank $04
 _next1          lda ERRMSG,X
-                sec
-                sbc #$20
+                ;sec
+                ;sbc #$20
                 sta TXTWDW,Y
                 iny
                 inx
@@ -919,8 +921,6 @@ DisplayWord     .proc
                 .setbank $04
                 tax
 _next1          lda WordsTbl+256,X      ; COMBAT|STRENGTH
-                ;sec
-                ;sbc #$20
                 beq _1
 
                 sta TXTWDW,Y
@@ -1062,11 +1062,11 @@ ERRCLR          .proc
 
                 lda #$00
                 sta ERRFLG
-                ldy #$86
-                ldx #$1F
 
                 .setbank $04
 
+                ldy #$86
+                ldx #$1F
 _next1          sta TXTWDW,Y
                 dey
                 dex

@@ -22,7 +22,7 @@
 ;   04      palette, font, text, map
 ;                   0000-01fb           PALETTE
 ;                   1000-afff           FONT
-;                   b000-d948           TEXT
+;                   b000-d950           TEXT
 ;                   e000-e80f           MAP
 ;                   f000-f80f           units
 ;   05      tiles, sprites

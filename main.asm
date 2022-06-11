@@ -130,22 +130,6 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 sta DEST+2
                 jsr BlitText
 
-                .m16i8
-                pea #<>TXTWDW+80
-                ldx #$7B
-                phx
-                ldx #$73
-                phx
-                jsl TransformText
-                pla                     ; clean up stack
-                pla
-
-                lda #<>(BITMAPTXT2-VRAM)  ; Set the destination address
-                sta DEST
-                lda #`(BITMAPTXT2-VRAM)
-                sta DEST+2
-                jsr BlitText
-
                 .m8
                 .setbank $03
 
@@ -216,7 +200,7 @@ NewTurn         inc TURN
                 ldy #$05
                 jsr DisplayNumber
 
-;   why???
+;   why??? - in the event the score has less digits than previously
                 .setbank $04
                 lda #$00
                 sta TXTWDW,Y
@@ -225,15 +209,15 @@ NewTurn         inc TURN
 ;   check for game end
                 lda TURN
                 cmp #$28
-                bne Z00_
+                bne _0
 
                 lda #$01                ; end of game
                 jsr TextMessage
 
-FINI            bra FINI                ; freeze up... endless loop
+_FINI           bra _FINI               ; freeze up... endless loop
 
 ;   begin phase
-Z00_            lda #$00                ; allow input
+_0              lda #$00                ; allow input
                 sta BUTMSK
                 sta CORPS
                 jsr TextMessage
@@ -931,7 +915,7 @@ _next2          dex
                 bne _next1
 
                 lda #$FF
-                sta TXTWDW+128
+                sta TXTWDW+128  ; ??
                 bmi _match
 
 _2              lda LONGITUDE
@@ -1120,6 +1104,7 @@ _DONE           sty TRNTYP
 ;
 ;======================================
 TextMessage     .proc
+                php
                 .setbank $04
 
                 asl A                   ; *32
@@ -1128,18 +1113,32 @@ TextMessage     .proc
                 asl A
                 asl A
                 tax
-                ldy #$69                
+                ldy #$00
 _next1          lda TxtTbl,X
-                sec
-                sbc #$20
-                sta TXTWDW,Y
+                sta TXTWDW+84,Y
                 iny
                 inx
-                txa
-                and #$1F
+                cpy #$20
                 bne _next1
 
+                .m16i8
+                pea #<>TXTWDW+80
+                ldx #$7B
+                phx
+                ldx #$73
+                phx
+                jsl TransformText
+                pla                     ; clean up stack
+                pla
+
+                lda #<>(BITMAPTXT2-VRAM)
+                sta DEST
+                lda #`(BITMAPTXT2-VRAM)
+                sta DEST+2
+                jsr BlitText
+
                 .setbank $03
+                plp
                 rts
                 .endproc
 
