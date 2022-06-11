@@ -14,8 +14,8 @@ BITMAPTXT3      = $B31900
 ; Create the lookup table (LUT)
 ;======================================
 InitLUT         .proc
-                phb
                 php
+                phb
 
                 .m16i16
                 lda #palette_end-palette ; Copy the palette to LUT0
@@ -23,8 +23,8 @@ InitLUT         .proc
                 ldy #<>GRPH_LUT0_PTR
                 mvn `palette,`GRPH_LUT0_PTR
 
-                plp
                 plb
+                plp
                 rts
                 .endproc
 
@@ -33,8 +33,8 @@ InitLUT         .proc
 ; Load the tiles into VRAM
 ;======================================
 InitTiles       .proc
-                phb
                 php
+                phb
 
                 .m16i16
                 lda #$FFFF              ; Set the size
@@ -62,8 +62,8 @@ InitTiles       .proc
                 lda #tclVertical
                 sta TILESET0_ADDR_CFG
 
-                plp
                 plb
+                plp
                 rts
                 .endproc
 
@@ -72,8 +72,8 @@ InitTiles       .proc
 ; Initialize the Map layer
 ;======================================
 InitMap         .proc
-                phb
                 php
+                phb
 
                 .setbank `MAPWDW
 
@@ -113,8 +113,8 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
                 lda #tcEnable           ; Enable the tileset, LUT0
                 sta TILE3_CTRL
 
-                plp
                 plb
+                plp
                 rts
                 .endproc
 
@@ -123,8 +123,8 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
 ; Initialize the Unit layer (troops)
 ;======================================
 InitUnitOverlay .proc
-                phb
                 php
+                phb
 
                 .setbank `unitsData
 
@@ -164,8 +164,8 @@ _nextTile       lda unitsData,Y         ; Get the tile code
                 lda #tcEnable           ; Enable the tileset, LUT0
                 sta TILE2_CTRL
 
-                plp
                 plb
+                plp
                 rts
                 .endproc
 
@@ -174,8 +174,8 @@ _nextTile       lda unitsData,Y         ; Get the tile code
 ; Initialize the Sprite layer
 ;======================================
 InitSprites     .proc
-                phb
                 php
+                phb
 
                 .m16i16
                 lda #$1C00              ; Set the size
@@ -223,8 +223,8 @@ InitSprites     .proc
                 sta SP01_CTRL
                 sta SP02_CTRL
 
-                plp
                 plb
+                plp
                 rts
                 .endproc
 
@@ -233,8 +233,8 @@ InitSprites     .proc
 ;
 ;======================================
 InitBitmap      .proc
-                phb
                 php
+                phb
 
                 .m16i16
                 lda #$B000              ; Set the size
@@ -262,8 +262,8 @@ InitBitmap      .proc
                 lda #bmcEnable
                 sta BITMAP0_CTRL
 
-                plp
                 plb
+                plp
                 rts
                 .endproc
 
@@ -275,9 +275,9 @@ InitBitmap      .proc
 ;   DEST        set by caller
 ;======================================
 BlitText        .proc
-                .m16i16
-                phb
                 php
+                phb
+                .m16i16
 
                 lda #$2800              ; Set the size
                 sta SIZE
@@ -292,8 +292,8 @@ BlitText        .proc
                 .m8
                 jsr Copy2VRAM
 
-                plp
                 plb
+                plp
                 rts
                 .endproc
 
@@ -310,8 +310,8 @@ BlitText        .proc
 ;   None
 ;======================================
 Copy2VRAM       .proc
-                phd
                 php
+                phd
 
                 .setdp SOURCE
                 .setbank `SDMA_SRC_ADDR
@@ -368,8 +368,8 @@ wait_vdma       lda VDMA_STATUS         ; Get the VDMA status
                 sta SDMA0_CTRL
                 sta VDMA_CTRL
 
-                plp
                 pld
+                plp
                 rts
 
 vdma_err        brk

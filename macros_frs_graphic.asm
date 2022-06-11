@@ -7,14 +7,14 @@ frsGraphics     .macro
                 .endmacro
 
 frsGraphics_s   .macro
-                pha
                 php
+                pha
 
                 .m8
                 .frsGraphics \@
 
-                plp
                 pla
+                plp
                 .endmacro
 
 frsBorder_off   .macro

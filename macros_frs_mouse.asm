@@ -18,12 +18,12 @@ frsMouse_on     .macro
                 .endmacro
 
 frsMouse_on_s   .macro
-                pha
                 php
+                pha
 
                 .m8
                 .mouse_on
 
-                plp
                 pla
+                plp
                 .endmacro
