@@ -8,7 +8,7 @@ BITMAP          = $B30000
 BITMAPTXT0      = $B6F200
 BITMAPTXT1      = $B71A00
 BITMAPTXT2      = $B74C00
-BITMAPTXT3      = $B31900
+BITMAPTXT3      = $B31400
 
 ;======================================
 ; Create the lookup table (LUT)

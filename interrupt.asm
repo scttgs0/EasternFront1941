@@ -911,16 +911,16 @@ _3              sta CNT1
 ; table of words
 ;======================================
 DisplayWord     .proc
-                asl A
+                asl A                   ; *8
                 asl A
                 asl A
                 bcc ENTRY2
 
                 .setbank $04
                 tax
-_next1          lda WordsTbl+256,X
-                sec
-                sbc #$20
+_next1          lda WordsTbl+256,X      ; COMBAT|STRENGTH
+                ;sec
+                ;sbc #$20
                 beq _1
 
                 sta TXTWDW,Y
@@ -940,8 +940,7 @@ ENTRY2          tax                     ; this is another entry point
                 .setbank $04
 
 _next1          lda WordsTbl,X
-                sec
-                sbc #$20
+                cmp #$20                ; finished once we hit the first space character
                 beq _1
 
                 sta TXTWDW,Y
@@ -1212,7 +1211,7 @@ DisplayNumber   .proc
                 lda HundredDigit,X
                 beq _1
 
-                adc #$10
+                adc #$30
                 sta TXTWDW,Y
                 iny
                 sec
@@ -1221,17 +1220,16 @@ _1              lda TensDigit,X
                 beq _3
 
 _2              clc
-                adc #$10
+                adc #$30
                 sta TXTWDW,Y
                 iny
 _3              lda OnesDigit,X
                 clc
-                adc #$10
+                adc #$30
                 sta TXTWDW,Y
                 iny
 
                 .setbank $03
-
                 rts
                 .endproc
 

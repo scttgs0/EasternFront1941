@@ -14,9 +14,9 @@ BackColor       .byte ?
 ; Convert ASCII text to Bitmap
 ;--------------------------------------
 ; on entry
-;   SP+07       Font Color
-;   SP+08       Background Color
-;   SP+09       ASCII source pointer
+;   SP+05       Font Color
+;   SP+06       Background Color
+;   SP+07       ASCII source pointer
 ;======================================
 TransformText   .proc
                 php
@@ -24,13 +24,13 @@ TransformText   .proc
 
 ;   clear the line buffer
                 .m8i8
-                lda 7,S                 ; retrieve and save
+                lda 5,S                 ; retrieve and save
                 sta ForeColor
 
-                lda 8,S                 ; FooterPrimary
+                lda 6,S                 ; FooterPrimary
                 sta BackColor
                 xba
-                lda 8,S
+                lda 6,S
 
                 .m16i16
                 ldy #$27fe
@@ -40,7 +40,7 @@ _nextClear      sta Text2Bitmap,Y
                 bpl _nextClear
 
 ;   retrieve the source addr
-                lda 9,S
+                lda 7,S
                 sta pSource
 
 ;   retrieve char

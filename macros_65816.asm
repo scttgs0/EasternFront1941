@@ -46,9 +46,10 @@ i16             .macro
 
 setdp           .macro
                 php
-                pha
 
                 .m16
+                pha
+
                 lda @w #\1
                 tcd
                 .dpage \1
@@ -59,9 +60,10 @@ setdp           .macro
 
 setbank         .macro
                 php
-                pha
 
                 .m8
+                pha
+
                 lda #\1
                 pha
                 plb

@@ -99,22 +99,6 @@ _next3          lda MusterStrength,X    ; combat = muster strength
 
 ;   text messages
                 .m16i8
-                pea #<>TXTWDWTOP
-                ldx #$78
-                phx
-                ldx #$74
-                phx
-                jsl TransformText
-                pla                     ; clean up stack
-                pla
-
-                lda #<>(BITMAPTXT3-VRAM)  ; Set the destination address
-                sta DEST
-                lda #`(BITMAPTXT3-VRAM)
-                sta DEST+2
-                jsr BlitText
-
-                .m16i8
                 pea #<>TXTWDW
                 ldx #$7A
                 phx
@@ -213,6 +197,7 @@ _next3          lda MusterStrength,X    ; combat = muster strength
 ;
 ;--------------------------------------
 MainLoop        .proc
+                .m8i8
 NewTurn         inc TURN
 
 ;   do calendar calculations
@@ -505,52 +490,78 @@ _3              sta DAY
 
 ;======================================
 ;
+;--------------------------------------
+; at entry
+;   A           Day
+;   X           Month
 ;======================================
 CalendarDisplay .proc
+                php
                 .setbank $04
+                .m8i8
 
 ;   clear existing display
-                ldy #$93
+                ldy #39
                 lda #$00
-_next1          sta TXTWDW,Y
-                iny
-                cpy #$A7
-                bne _next1
+_next1          sta TXTWDWTOP,Y
+                dey
+                bpl _next1
 
 ;   display month
-                ldy #$93
+                ldy #124
                 txa
                 clc
                 adc #$10
                 jsr DisplayWord
+                .setbank $04
 
 ;   display day
                 lda DAY
                 jsr DisplayNumber
+                .setbank $04
 
 ;   comma
-                lda #$0C
+                lda #$2C
                 sta TXTWDW,Y
                 iny
                 iny
 
 ;   year (194x)
-                lda #$11                ; '1'
+                lda #$31                ; '1'
                 sta TXTWDW,Y
                 iny
-                lda #$19                ; '9'
+                lda #$39                ; '9'
                 sta TXTWDW,Y
                 iny
                 ldx YEAR
-                lda #$14                ; '4'
+                lda #$34                ; '4'
                 sta TXTWDW,Y
                 iny
                 lda OnesDigit,X         ; last digit in year
                 clc
-                adc #$10
+                adc #$30
                 sta TXTWDW,Y
 
+                .m16i8
+                pea #<>TXTWDWTOP
+                ldx #$78
+                phx
+                ldx #$74
+                phx
+                jsl TransformText
+                .setbank $04
+                pla                     ; clean up stack
+                pla
+
+                .m16
+                lda #<>(BITMAPTXT3-VRAM)  ; Set the destination address
+                sta DEST
+                lda #`(BITMAPTXT3-VRAM)
+                sta DEST+2
+                jsr BlitText
+
                 .setbank $03
+                plp
                 rts
                 .endproc
 
