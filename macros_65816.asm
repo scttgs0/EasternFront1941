@@ -45,21 +45,21 @@ i16             .macro
                 .endmacro
 
 setdp           .macro
-                pha
                 php
+                pha
 
                 .m16
                 lda @w #\1
                 tcd
                 .dpage \1
 
-                plp
                 pla
+                plp
                 .endmacro
 
 setbank         .macro
-                pha
                 php
+                pha
 
                 .m8
                 lda #\1
@@ -67,6 +67,6 @@ setbank         .macro
                 plb
                 .databank \1
 
-                plp
                 pla
+                plp
                 .endmacro
