@@ -124,8 +124,6 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
 ;======================================
 InitUnitOverlay .proc
                 php
-                phb
-
                 .setbank `unitsData
 
                 .m8i16
@@ -164,7 +162,7 @@ _nextTile       lda unitsData,Y         ; Get the tile code
                 lda #tcEnable           ; Enable the tileset, LUT0
                 sta TILE2_CTRL
 
-                plb
+                .setbank $03
                 plp
                 rts
                 .endproc
@@ -311,10 +309,8 @@ BlitText        .proc
 ;======================================
 Copy2VRAM       .proc
                 php
-                phd
-
-                .setdp SOURCE
                 .setbank `SDMA_SRC_ADDR
+                .setdp SOURCE
                 .m8
 
     ; Set SDMA to go from system to video RAM, 1D copy
@@ -368,7 +364,8 @@ wait_vdma       lda VDMA_STATUS         ; Get the VDMA status
                 sta SDMA0_CTRL
                 sta VDMA_CTRL
 
-                pld
+                .setdp $0800
+                .setbank $03
                 plp
                 rts
 

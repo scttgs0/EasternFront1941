@@ -1,8 +1,7 @@
-TXTWDWTOP       .text '    JUNE 22, 1941                       '
-
 TXTWDW          .text '            EASTERN FRONT 1941          '
                 .text '       COPYRIGHT 1981 CHRIS CRAWFORD    '
                 .text '       PLEASE ENTER YOUR ORDERS NOW     '
+TXTWDWTOP       .text '                                        '
 
 Text2Bitmap     .fill $2800,$00
 ColumnOffset    .word ?
@@ -21,8 +20,6 @@ BackColor       .byte ?
 ;======================================
 TransformText   .proc
                 php
-                phd
-
                 .setbank $04
 
 ;   clear the line buffer
@@ -126,7 +123,7 @@ _2              ply
                 bne _nextRow
                 bra _nextChar
 
-_XIT            pld
+_XIT            .setbank $03
                 plp
                 rtl
                 .endproc
