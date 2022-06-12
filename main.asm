@@ -99,22 +99,6 @@ _next3          lda MusterStrength,X    ; combat = muster strength
 
 ;   text messages
                 .m16i8
-                pea #<>TXTWDW
-                ldx #$7A
-                phx
-                ldx #$72
-                phx
-                jsl TransformText
-                pla                     ; clean up stack
-                pla
-
-                lda #<>(BITMAPTXT0-VRAM)  ; Set the destination address
-                sta DEST
-                lda #`(BITMAPTXT0-VRAM)
-                sta DEST+2
-                jsr BlitText
-
-                .m16i8
                 pea #<>TXTWDW+40
                 ldx #$7A
                 phx
@@ -124,7 +108,7 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 pla                     ; clean up stack
                 pla
 
-                lda #<>(BITMAPTXT1-VRAM)  ; Set the destination address
+                lda #<>(BITMAPTXT1-VRAM)
                 sta DEST
                 lda #`(BITMAPTXT1-VRAM)
                 sta DEST+2
@@ -197,7 +181,7 @@ NewTurn         inc TURN
 
 ;   calculate score
                 jsr ScoreCalc
-                ldy #$05
+                ldy #$02
                 jsr DisplayNumber
 
 ;   why??? - in the event the score has less digits than previously
@@ -205,6 +189,24 @@ NewTurn         inc TURN
                 lda #$00
                 sta TXTWDW,Y
                 .setbank $03
+
+;   update text window
+                .m16i8
+                pea #<>TXTWDW
+                ldx #$7A
+                phx
+                ldx #$72
+                phx
+                jsl TransformText
+                pla                     ; clean up stack
+                pla
+
+                lda #<>(BITMAPTXT0-VRAM)
+                sta DEST
+                lda #`(BITMAPTXT0-VRAM)
+                sta DEST+2
+                jsr BlitText
+                .m8i8
 
 ;   check for game end
                 lda TURN
@@ -221,6 +223,9 @@ _0              lda #$00                ; allow input
                 sta BUTMSK
                 sta CORPS
                 jsr TextMessage
+
+_endless         bra _endless
+
                 jsr INIT                ; artificial intelligence routine
 
                 lda #$01                ; prevent input
@@ -712,7 +717,7 @@ _next1          lda ArrivalTurn,X
                 cpx #$37                ; when Russian, skip asterisk
                 bcs _1
 
-                lda #$0A                ; asterisk character (reinforcements indicator)
+                lda #$2A                ; asterisk character (reinforcements indicator)
                 sta TXTWDW+36
 
 ;   place units
