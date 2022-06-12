@@ -32,30 +32,8 @@ _next2          lda PSXVAL,X            ; initialize page six values
 
                 jsr InitLUT
                 jsr InitTiles
+
                 jsr InitMap
-
-;   place a few units
-                .setbank $04
-                .m8i16
-                lda #$80                ; finns
-                ldy #0*MAPWIDTH+10+1+3*MAPWIDTH
-                sta unitsData,Y
-                ldy #1*MAPWIDTH+9+1+3*MAPWIDTH
-                sta unitsData,Y
-
-                lda #$3D                ; germans
-                ldy #25*MAPWIDTH+2+1+3*MAPWIDTH
-                sta unitsData,Y
-                ldy #23*MAPWIDTH+4+1+3*MAPWIDTH
-                sta unitsData,Y
-
-                lda #$7D                ; russian
-                ldy #1*MAPWIDTH+12+1+3*MAPWIDTH
-                sta unitsData,Y
-                ldy #4*MAPWIDTH+14+1+3*MAPWIDTH
-                sta unitsData,Y
-                .setbank $03
-
                 jsr InitUnitOverlay
 
                 jsr InitSprites
@@ -65,7 +43,7 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 lda #$00                ; enable display list & scroll
                 sta TILE3_WINDOW_X_POS  ; fine scroll
                 sta TILE2_WINDOW_X_POS  ; fine scroll
-                lda #$60
+                lda #$120
                 sta TILE3_WINDOW_Y_POS
                 sta TILE2_WINDOW_Y_POS
 
@@ -98,7 +76,7 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 lda #9*$10-8
                 sta SP02_Y_POS
 
-;   text messages
+;   copyright text
                 .m16i8
                 pea #<>TXTWDW+40
                 ldx #$7A
@@ -209,6 +187,9 @@ NewTurn         inc TURN
                 jsr BlitText
                 .m8i8
 
+;   update unit tile map
+                jsr RefreshUnitOverlay
+
 ;   check for game end
                 lda TURN
                 cmp #$28
@@ -225,7 +206,7 @@ _0              lda #$00                ; allow input
                 sta CORPS
                 jsr TextMessage
 
-_endless         bra _endless
+_endless        bra _endless
 
                 jsr INIT                ; artificial intelligence routine
 
@@ -696,7 +677,6 @@ _XIT            rts
 ;======================================
 Reinforcements  .proc
                 ldx #$9E
-
 _next1          lda ArrivalTurn,X
                 cmp TURN
                 bne _nextItem           ; skip if arrival != this turn

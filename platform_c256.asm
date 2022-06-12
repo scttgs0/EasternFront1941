@@ -120,9 +120,9 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
 
 
 ;======================================
-; Initialize the Unit layer (troops)
+;
 ;======================================
-InitUnitOverlay .proc
+RefreshUnitOverlay .proc
                 php
                 .setbank `unitsData
 
@@ -141,6 +141,20 @@ _nextTile       lda unitsData,Y         ; Get the tile code
                 cpy #MAPWIDTH*MAPHEIGHT
                 bne _nextTile
 
+                .setbank $03
+                plp
+                rts
+                .endproc
+
+
+;======================================
+; Initialize the Unit layer (troops)
+;======================================
+InitUnitOverlay .proc
+                php
+
+                jsr RefreshUnitOverlay
+
                 .m16
                 lda #<>(TILEMAPUNITS-VRAM)   ; Set the pointer to the tile map
                 sta TILE2_START_ADDR
@@ -149,7 +163,7 @@ _nextTile       lda unitsData,Y         ; Get the tile code
                 sta TILE2_START_ADDR+2
 
                 .m16
-                lda #MAPWIDTH                ; Set the size of the tile map
+                lda #MAPWIDTH           ; Set the size of the tile map
                 sta TILE2_X_SIZE
                 lda #MAPHEIGHT
                 sta TILE2_Y_SIZE
@@ -162,7 +176,6 @@ _nextTile       lda unitsData,Y         ; Get the tile code
                 lda #tcEnable           ; Enable the tileset, LUT0
                 sta TILE2_CTRL
 
-                .setbank $03
                 plp
                 rts
                 .endproc

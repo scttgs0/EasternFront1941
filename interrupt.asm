@@ -967,37 +967,59 @@ _1              iny
 ; Swap corps with terrain
 ;======================================
 SwitchCorps     .proc
-                lda #$00
-                sta MAPHI
-                lda #$27
+                php
+                .setbank $04
+                .m16i8
+
+;   MAP origin is lower-right
+;   TEMPLO origin is upper-left
+;   conver the coordinate systems
+;   TEMPLO = 38-CHUNKY*49
+                lda #38                 ; MAP HEIGHT excluding border
+                .m8
                 sec
                 sbc CHUNKY
+                .m16
+;   multiple by 49 -- *32 + *16 + *1 = *49
+                pha
+                asl A                   ; *32
                 asl A
-                rol MAPHI
                 asl A
-                rol MAPHI
                 asl A
-                rol MAPHI
                 asl A
-                rol MAPHI
                 sta TEMPLO
-                ldx MAPHI
-                stx TEMPHI
+                pla
+                pha
+                asl A                   ; *16
                 asl A
-                rol MAPHI
+                asl A
+                asl A
                 clc
                 adc TEMPLO
+                sta TEMPLO
+                pla                     ; *1
+                clc
+                adc TEMPLO
+
+                clc
+                adc #$E000+MAPWIDTH*3   ; MAP address + top border
                 sta MAPLO
-                lda MAPHI
-                adc TEMPHI
-                adc #$65
-                sta MAPHI
-                lda #46
+
+;   offset = 45-CHUNKX+2
+                lda #45                 ; MAP WIDTH excluding border
+                .m8
                 sec
                 sbc CHUNKX
+                .m16
+                clc
+                adc #2
+
+;   retrieve the terrain type
+                .m8
                 tay
                 lda (MAPLO),Y
-                ldx CORPS
+
+                ldx CORPS               ; index 0 is unused -- indicates the end of the list
                 beq _XIT
 
                 pha
@@ -1005,7 +1027,41 @@ SwitchCorps     .proc
                 sta (MAPLO),Y
                 pla
                 sta SWAP,X
-_XIT            rts
+
+;   place unit tile
+                .m16
+                lda MAPLO
+                clc
+                adc #$1000              ; UNIT tile map is $1000 bytes ahead of MAP
+                sta TEMPLO
+
+                .m8
+                lda (MAPLO),Y
+                cmp #$3D                ; german
+                beq _1
+                cmp #$3E
+                beq _1
+                cmp #$7D                ; russian
+                beq _1
+                cmp #$7E
+                beq _1
+                cmp #$80                ; axis minor
+                beq _1
+                cmp #$81
+                beq _1
+                cmp #$82
+                beq _1
+
+                lda #$00                ; not a unit counter -- clear the tile
+                sta (TEMPLO),Y
+
+                bra _XIT
+
+_1              sta (TEMPLO),Y          ; place the unit on the UNIT tile map
+
+_XIT            .setbank $03
+                plp
+                rts
                 .endproc
 
 

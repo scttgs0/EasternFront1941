@@ -67,18 +67,18 @@ CombatStrength  .fill 159,$00
 ;   Contains the unit type (infantry or armor) when the unit is place on the map
 ;   Once placed, swapped with the terrain type in which the unit occupies
 SWAP            .byte $00     ; unused
-                .byte $7E,$7E,$7E,$7E,$7E,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D
-                .byte $7D,$7D,$7E,$7E,$7D,$7D,$7D,$7D,$7D,$7D,$7E,$7E,$7E,$7E,$7D,$7D
-                .byte $7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7E,$7D,$7E
-                .byte $7D,$7D,$7D,$7D,$7D,$7D,$7E
+                .byte $3E,$3E,$3E,$3E,$3E,$3D,$3D,$3D,$3D,$3D,$3D,$3D,$3D,$3D,$3D
+                .byte $3D,$81,$3E,$3E,$3D,$3D,$3D,$3D,$3D,$3D,$3E,$3E,$3E,$3E,$3D,$3D
+                .byte $3D,$3D,$3D,$3D,$82,$82,$82,$3D,$3D,$3D,$80,$80,$80,$3E,$3D,$3E
+                .byte $3D,$82,$3D,$3D,$81,$3D,$3E
 ;   RUSSIAN
-                .byte $FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FE,$FE,$FE,$FE,$FE,$FE
-                .byte $FE,$FD,$FD,$FE,$FD,$FE,$FD,$FD,$FD,$FE,$FD,$FD,$FD,$FD,$FD,$FE
-                .byte $FE,$FD,$FD,$FD,$FE,$FE,$FE,$FE,$FD,$FD,$FD,$FD,$FE,$FE,$FE,$FE
-                .byte $FD,$FE,$FE,$FE,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD
-                .byte $FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD,$FE,$FD,$FD,$FD,$FD,$FD
-                .byte $FD,$FD,$FD,$FD,$FE,$FE,$FE,$FD,$FE,$FD,$FE,$FE,$FD,$FE,$FD,$FD
-                .byte $FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD
+                .byte $7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7E,$7E,$7E,$7E,$7E,$7E
+                .byte $7E,$7D,$7D,$7E,$7D,$7E,$7D,$7D,$7D,$7E,$7D,$7D,$7D,$7D,$7D,$7E
+                .byte $7E,$7D,$7D,$7D,$7E,$7E,$7E,$7E,$7D,$7D,$7D,$7D,$7E,$7E,$7E,$7E
+                .byte $7D,$7E,$7E,$7E,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D
+                .byte $7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7E,$7D,$7D,$7D,$7D,$7D
+                .byte $7D,$7D,$7D,$7D,$7E,$7E,$7E,$7D,$7E,$7D,$7E,$7E,$7D,$7E,$7D,$7D
+                .byte $7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D
 
 ;   the turn in which the unit first enters the map
 ArrivalTurn     .byte 255     ; unused
