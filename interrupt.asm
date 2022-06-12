@@ -111,7 +111,7 @@ _6              sta DBTIMR              ; no, set debounce
 
                 jmp FirstBtnPass        ; yes
 
-_7              jsr ERRCLR              ; no, clear errors
+_7              jsr ClearError          ; no, clear errors
 
                 lda HITFLG
                 beq _8                  ; anybody in the window?
@@ -256,7 +256,7 @@ _16             iny
                 lda BASEY
                 sta STEPY
 
-_XIT             jmp ENDISR
+_XIT            jmp ENDISR
 
 
 ;--------------------------------------
@@ -412,7 +412,7 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
 
                 lda #$FF                ; yes, mask orders and exit
                 sta HITFLG
-                bmi _XIT
+                bra _XIT
 
 ;
 ;German unit
@@ -576,35 +576,7 @@ _7              iny
 
                 .setbank $03
 
-                beq EXITI
-
-
-;--------------------------------------
-; ERROR on inputs routine
-; Squawks speaker and error message
-;--------------------------------------
-Squawk          ldy #$69
-
-                .setbank $04
-_next1          lda ERRMSG,X
-                ;sec
-                ;sbc #$20
-                sta TXTWDW,Y
-                iny
-                inx
-                txa
-                and #$1F
-                bne _next1
-
-                .setbank $03
-
-                lda #$68
-                sta SID_CTRL1           ; TODO: distortion-3; half volume
-                lda #$50
-                sta SID_FREQ1           ; TODO: "HONK!"
-                lda #$FF
-                sta ERRFLG
-                bmi EXITI
+                bra EXITI
 
 
 ;--------------------------------------
@@ -624,7 +596,7 @@ NoButton        sta DBTIMR
                 clc
                 adc JIFFYCLOCK          ; TODO:
                 sta TIMSCL
-                jsr ERRCLR
+                jsr ClearError
 
 
 ;--------------------------------------
@@ -915,55 +887,6 @@ _3              sta CNT1
 
 
 ;======================================
-; Display a single word from a long
-; table of words
-;======================================
-DisplayWord     .proc
-                asl A                   ; *8
-                asl A
-                asl A
-                bcc ENTRY2
-
-                .setbank $04
-                tax
-_next1          lda WordsTbl+256,X      ; COMBAT|STRENGTH
-                beq _1
-
-                sta TXTWDW,Y
-                iny
-                inx
-                txa
-                and #$07
-                bne _next1
-
-                .setbank $03
-
-_1              iny
-                rts
-
-ENTRY2          tax                     ; this is another entry point
-
-                .setbank $04
-
-_next1          lda WordsTbl,X
-                cmp #$20                ; finished once we hit the first space character
-                beq _1
-
-                sta TXTWDW,Y
-                iny
-                inx
-                txa
-                and #$07
-                bne _next1
-
-                .setbank $03
-
-_1              iny
-                rts
-                .endproc
-
-
-;======================================
 ; Swap corps with terrain
 ;======================================
 SwitchCorps     .proc
@@ -1115,10 +1038,35 @@ _1              iny
                 .endproc
 
 
+;--------------------------------------
+; ERROR on inputs routine
+; Squawks speaker and error message
+;--------------------------------------
+Squawk          ldy #$00
+
+                .setbank $04
+_next1          lda ERRMSG,X
+                sta FooterText3+4,Y
+                iny
+                inx
+                cpy #$20
+                bne _next1
+
+                .setbank $03
+
+                lda #$68
+                sta SID_CTRL1           ; TODO: distortion-3; half volume
+                lda #$50
+                sta SID_FREQ1           ; TODO: "HONK!"
+                lda #$FF
+                sta ERRFLG
+                jmp EXITI
+
+
 ;======================================
 ; Clear sound and the text window
 ;======================================
-ERRCLR          .proc
+ClearError      .proc
                 lda ERRFLG
                 bpl _XIT
 
@@ -1127,9 +1075,9 @@ ERRCLR          .proc
 
                 .setbank $04
 
-                ldy #$86
+                ldy #$00
                 ldx #$1F
-_next1          sta TXTWDW,Y
+_next1          sta FooterText3+4,Y
                 dey
                 dex
                 bpl _next1
@@ -1292,5 +1240,54 @@ _3              lda OnesDigit,X
                 iny
 
                 .setbank $03
+                rts
+                .endproc
+
+
+;======================================
+; Display a single word from a long
+; table of words
+;======================================
+DisplayWord     .proc
+                asl A                   ; *8
+                asl A
+                asl A
+                bcc ENTRY2
+
+                .setbank $04
+                tax
+_next1          lda WordsTbl+256,X      ; COMBAT|STRENGTH
+                beq _1
+
+                sta TXTWDW,Y
+                iny
+                inx
+                txa
+                and #$07
+                bne _next1
+
+                .setbank $03
+
+_1              iny
+                rts
+
+ENTRY2          tax                     ; this is another entry point
+
+                .setbank $04
+
+_next1          lda WordsTbl,X
+                cmp #$20                ; finished once we hit the first space character
+                beq _1
+
+                sta TXTWDW,Y
+                iny
+                inx
+                txa
+                and #$07
+                bne _next1
+
+                .setbank $03
+
+_1              iny
                 rts
                 .endproc

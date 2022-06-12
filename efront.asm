@@ -11,20 +11,20 @@
 ;                   0800-08cd           direct-page
 ;   02      code
 ;                   0fd8-0ffb           PGX bootstrap
-;                   1000-17a9           thinking (AI)
-;                   2000-2896           main
+;                   1000-17a4           thinking (AI)
+;                   2000-280f           main
 ;                   3000-3509           combat
-;                   4000-4711           interrupt
-;                   5000-50a3               DLISRV
-;                   6000-625b           platform_c256
+;                   4000-4743           interrupt
+;                   5000-50f8               DLISRV
+;                   6000-627b           platform_c256
 ;   03      data
 ;                   0000-1280           data
 ;   04      palette, font, text, map
 ;                   0000-01fb           PALETTE
 ;                   1000-afff           FONT
-;                   b000-d950           TEXT
-;                   e000-e80f           MAP
-;                   f000-f80f           units
+;                   b000-d9aa           TEXT
+;                   e000-e83a           MAP
+;                   f000-f83a           units
 ;   05      tiles, sprites
 ;                   0000-82ff           TILES
 ;                   9000-abff           STAMPS
@@ -41,6 +41,7 @@
                 .include "macros_65816.asm"
                 .include "macros_frs_graphic.asm"
                 .include "macros_frs_mouse.asm"
+                .include "macros_game.asm"
 
 ;--------------------------------------
 ;--------------------------------------

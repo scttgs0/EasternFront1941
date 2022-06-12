@@ -3,6 +3,11 @@ TXTWDW          .text '            EASTERN FRONT 1941          '
                 .text '       PLEASE ENTER YOUR ORDERS NOW     '
 TXTWDWTOP       .text '                                        '
 
+HeaderText      = TXTWDWTOP
+FooterText1     = TXTWDW
+FooterText2     = TXTWDW+40
+FooterText3     = TXTWDW+80
+
 Text2Bitmap     .fill 640*16,$00
 ColumnOffset    .word ?
 GlyphOffset     .word ?

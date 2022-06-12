@@ -40,7 +40,7 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 jsr InitBitmap
 
                 .m16i16
-                lda #$00                ; enable display list & scroll
+                lda #$00
                 sta TILE3_WINDOW_X_POS  ; fine scroll
                 sta TILE2_WINDOW_X_POS  ; fine scroll
                 lda #$120
@@ -49,7 +49,7 @@ _next2          lda PSXVAL,X            ; initialize page six values
 
                 .m8i8
                 ldx #$00
-_next3          lda MusterStrength,X    ; combat = muster strength
+_next3          lda MusterStrength,X    ; combat strength = muster strength
                 sta CombatStrength,X
                 lda #$00                ; no orders
                 sta HowManyOrders,X
@@ -77,21 +77,7 @@ _next3          lda MusterStrength,X    ; combat = muster strength
                 sta SP02_Y_POS
 
 ;   copyright text
-                .m16i8
-                pea #<>TXTWDW+40
-                ldx #$7A
-                phx
-                ldx #$72
-                phx
-                jsl TransformText
-                pla                     ; clean up stack
-                pla
-
-                lda #<>(BITMAPTXT1-VRAM)
-                sta DEST
-                lda #`(BITMAPTXT1-VRAM)
-                sta DEST+2
-                jsr BlitText
+                .RenderText $7A,$72,FooterText2,BITMAPTXT1
 
                 .m8
                 .setbank $03
@@ -115,8 +101,6 @@ _next3          lda MusterStrength,X    ; combat = muster strength
 
 ;                 bra _nextXPos
 ;---
-
-;endless         bra endless
 
                 lda #$01
                 sta HANDICAP
@@ -166,25 +150,11 @@ NewTurn         inc TURN
 ;   why??? - in the event the score has less digits than previously
                 .setbank $04
                 lda #$00
-                sta TXTWDW,Y
+                sta FooterText1,Y
                 .setbank $03
 
 ;   update text window
-                .m16i8
-                pea #<>TXTWDW
-                ldx #$7A
-                phx
-                ldx #$72
-                phx
-                jsl TransformText
-                pla                     ; clean up stack
-                pla
-
-                lda #<>(BITMAPTXT0-VRAM)
-                sta DEST
-                lda #`(BITMAPTXT0-VRAM)
-                sta DEST+2
-                jsr BlitText
+                .RenderText $7A,$72,FooterText1,BITMAPTXT0
                 .m8i8
 
 ;   update unit tile map
@@ -513,23 +483,7 @@ _next1          sta TXTWDWTOP,Y
                 adc #$30
                 sta TXTWDW,Y
 
-                .m16i8
-                pea #<>TXTWDWTOP
-                ldx #$78
-                phx
-                ldx #$74
-                phx
-                jsl TransformText
-                .setbank $04
-                pla                     ; clean up stack
-                pla
-
-                .m16
-                lda #<>(BITMAPTXT3-VRAM)  ; Set the destination address
-                sta DEST
-                lda #`(BITMAPTXT3-VRAM)
-                sta DEST+2
-                jsr BlitText
+                .RenderText $78,$74,HeaderText,BITMAPTXT3
 
                 .setbank $03
                 plp
@@ -699,7 +653,7 @@ _next1          lda ArrivalTurn,X
                 bcs _1
 
                 lda #$2A                ; asterisk character (reinforcements indicator)
-                sta TXTWDW+36
+                sta FooterText1+36
 
 ;   place units
 _1              jsr SwitchCorps
@@ -901,7 +855,7 @@ _next2          dex
                 bne _next1
 
                 lda #$FF
-                sta TXTWDW+128  ; ??
+                sta HeaderText+8  ; ??
                 bmi _match
 
 _2              lda LONGITUDE
@@ -1101,27 +1055,13 @@ TextMessage     .proc
                 tax
                 ldy #$00
 _next1          lda TxtTbl,X
-                sta TXTWDW+84,Y
+                sta FooterText3+4,Y
                 iny
                 inx
                 cpy #$20
                 bne _next1
 
-                .m16i8
-                pea #<>TXTWDW+80
-                ldx #$7B
-                phx
-                ldx #$73
-                phx
-                jsl TransformText
-                pla                     ; clean up stack
-                pla
-
-                lda #<>(BITMAPTXT2-VRAM)
-                sta DEST
-                lda #`(BITMAPTXT2-VRAM)
-                sta DEST+2
-                jsr BlitText
+                .RenderText $7B,$73,FooterText3,BITMAPTXT2
 
                 .setbank $03
                 plp
