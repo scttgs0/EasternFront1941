@@ -101,7 +101,7 @@ textData        .include "TEXT.asm"
 mapData         .include "MAP.asm"
 
                 .align $1000
-unitsData       .fill $810,$00
+unitsData       .fill MAPWIDTH*MAPHEIGHT,$00
 
 ;--------------------------------------
 ;--------------------------------------

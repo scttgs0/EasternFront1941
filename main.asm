@@ -38,23 +38,24 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 .setbank $04
                 .m8i16
                 lda #$80                ; finns
-                ldy #0*48+10+1+3*48     ; (10,0)
+                ldy #0*MAPWIDTH+10+1+3*MAPWIDTH
                 sta unitsData,Y
-                ldy #1*48+9+1+3*48      ; (9,1)
+                ldy #1*MAPWIDTH+9+1+3*MAPWIDTH
                 sta unitsData,Y
 
                 lda #$3D                ; germans
-                ldy #25*48+2+1+3*48     ; (2,25)
+                ldy #25*MAPWIDTH+2+1+3*MAPWIDTH
                 sta unitsData,Y
-                ldy #23*48+4+1+3*48     ; (4,23)
+                ldy #23*MAPWIDTH+4+1+3*MAPWIDTH
                 sta unitsData,Y
 
                 lda #$7D                ; russian
-                ldy #1*48+12+1+3*48     ; (12,1)
+                ldy #1*MAPWIDTH+12+1+3*MAPWIDTH
                 sta unitsData,Y
-                ldy #4*48+14+1+3*48     ; (14,4)
+                ldy #4*MAPWIDTH+14+1+3*MAPWIDTH
                 sta unitsData,Y
                 .setbank $03
+
                 jsr InitUnitOverlay
 
                 jsr InitSprites
@@ -64,7 +65,7 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 lda #$00                ; enable display list & scroll
                 sta TILE3_WINDOW_X_POS  ; fine scroll
                 sta TILE2_WINDOW_X_POS  ; fine scroll
-                lda #$120
+                lda #$60
                 sta TILE3_WINDOW_Y_POS
                 sta TILE2_WINDOW_Y_POS
 

@@ -89,7 +89,7 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
 
                 inx                     ; move to the next tile
                 iny
-                cpy #$810               ; 48x43
+                cpy #MAPWIDTH*MAPHEIGHT
                 bne _nextTile
 
                 .m16
@@ -100,9 +100,9 @@ _nextTile       lda MAPWDW,Y            ; Get the tile code
                 sta TILE3_START_ADDR+2
 
                 .m16
-                lda #48                ; Set the size of the tile map
+                lda #MAPWIDTH                ; Set the size of the tile map
                 sta TILE3_X_SIZE
-                lda #43
+                lda #MAPHEIGHT
                 sta TILE3_Y_SIZE
 
                 lda #$00
@@ -138,7 +138,7 @@ _nextTile       lda unitsData,Y         ; Get the tile code
 
                 inx                     ; move to the next tile
                 iny
-                cpy #$810               ; 48x43
+                cpy #MAPWIDTH*MAPHEIGHT
                 bne _nextTile
 
                 .m16
@@ -149,9 +149,9 @@ _nextTile       lda unitsData,Y         ; Get the tile code
                 sta TILE2_START_ADDR+2
 
                 .m16
-                lda #48                ; Set the size of the tile map
+                lda #MAPWIDTH                ; Set the size of the tile map
                 sta TILE2_X_SIZE
-                lda #43
+                lda #MAPHEIGHT
                 sta TILE2_Y_SIZE
 
                 lda #$00
@@ -277,7 +277,7 @@ BlitText        .proc
                 phb
                 .m16i16
 
-                lda #$2800              ; Set the size
+                lda #640*16             ; Set the size
                 sta SIZE
                 lda #$00
                 sta SIZE+2

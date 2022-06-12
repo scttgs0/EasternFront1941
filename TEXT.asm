@@ -3,7 +3,7 @@ TXTWDW          .text '            EASTERN FRONT 1941          '
                 .text '       PLEASE ENTER YOUR ORDERS NOW     '
 TXTWDWTOP       .text '                                        '
 
-Text2Bitmap     .fill $2800,$00
+Text2Bitmap     .fill 640*16,$00
 ColumnOffset    .word ?
 GlyphOffset     .word ?
 ForeColor       .byte ?
