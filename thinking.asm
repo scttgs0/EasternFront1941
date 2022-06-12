@@ -355,8 +355,8 @@ _next10         lda LV,X
                 beq _21
 
                 lda LPTS
-                sec
-                sbc #$20
+                ;sec
+                ;sbc #$20   ?? is this screen code???
                 bcs _20
 
                 lda #$00
@@ -509,7 +509,7 @@ _32             dey
                 sbc TEMPR
                 bcc _33
 
-                asl A                   ;OK, let's fool the routine
+                asl A                   ; OK, let's fool the routine
                 sta TEMPR
                 lda #$09
                 sec
@@ -643,7 +643,8 @@ _44             sta OBJX-55,X
                 adc YINC,Y
 _45             sta MoraleCheck2._OBJY-55,X
 
-_TOGSCN         lda JOYSTICK0           ; read joystick0 button
+_TOGSCN         ;lda JOYSTICK0           ; read joystick0 button
+                lda #$1F    ; HACK:
                 and #$10
                 beq _46                 ; ignore game console if red button is down
 

@@ -31,7 +31,8 @@ DVBI            ;lda JOYSTICK1          ; read joystick1 button (check for break
 _1              lda HANDICAP
                 beq _3                  ; skip when handicap
 
-                lda JOYSTICK0           ; read joystick0 button
+                ;lda JOYSTICK0           ; read joystick0 button
+                lda #$1F    ; HACK:
                 and #$10
                 beq _3                  ; skip when button is pressed
 
@@ -56,7 +57,8 @@ _2              sta MusterStrength,X
                 dex
                 bne _next1
 
-_3              lda JOYSTICK0           ; read joystick0 button
+_3              ;lda JOYSTICK0           ; read joystick0 button
+                lda #$1F    ; HACK:
                 and #$10
                 ora BUTMSK              ; button allowed?
                 beq _5
@@ -93,7 +95,8 @@ _next2          sta TXTWDW,X            ; clear text window
 
                 jmp ENDISR
 
-_5              lda JOYSTICK0           ; button is pressed - joystick0 read
+_5              ;lda JOYSTICK0           ; button is pressed - joystick0 read
+                lda #$1F    ; HACK:
                 and #$0F
                 eor #$0F
                 beq _6                  ; joystick active?
@@ -137,7 +140,7 @@ _8              lda KEYCHAR             ; last key pressed
                 sta STEPX
                 lda BASEY
                 sta STEPY
-_9             lda JIFFYCLOCK           ; TODO:
+_9              lda JIFFYCLOCK          ; TODO:
                 and #$03
                 beq _10                 ; time to move arrow?
 
@@ -471,7 +474,7 @@ _1              lda HowManyOrders,X
                 ldx #$20
                 jmp Squawk
 
-_2             lda KRZFLG
+_2              lda KRZFLG
                 bne _3                  ; must wait for maltakreuze
 
                 ldx #$40
@@ -486,7 +489,8 @@ _3              inc DBTIMR
 
 _4              lda #$00
                 sta DBTIMR              ; reset debounce timer
-                lda JOYSTICK0           ; joystick0 read
+                ;lda JOYSTICK0           ; joystick0 read
+                lda #$1F    ; HACK:
                 and #$0F
                 tax
                 lda STKTAB,X
@@ -607,7 +611,8 @@ _next1          lda ERRMSG,X
 ; No button pressed routine
 ;--------------------------------------
 NoButton        sta DBTIMR
-                lda JOYSTICK0           ; joystick0 read
+                ;lda JOYSTICK0           ; joystick0 read
+                lda #$1F    ; HACK:
                 and #$0F
                 eor #$0F
                 bne Scroll
@@ -651,7 +656,8 @@ _1              clc
                 sta OFFLO
                 sta OFFHI               ; zero the offset
 
-                lda JOYSTICK0           ; joystick0 read
+                ;lda JOYSTICK0           ; joystick0 read
+                lda #$1F    ; HACK:
                 and #$0F
                 pha                     ; save it on stack for other bit checks
                 and #$08                ; joystick left?
@@ -1232,4 +1238,3 @@ _3              lda OnesDigit,X
                 .setbank $03
                 rts
                 .endproc
-
