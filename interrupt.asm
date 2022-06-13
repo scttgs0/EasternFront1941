@@ -12,7 +12,6 @@
 DVBI            ;lda JOYSTICK1          ; read joystick1 button (check for break button)
                 ;and #$10
                 lda #$FF                ; force break to be ignored
-                nop
                 bne _1                  ; no, check next
 
 ;   end debug entry
@@ -29,7 +28,7 @@ DVBI            ;lda JOYSTICK1          ; read joystick1 button (check for break
                 ;jmp Break2Monitor      ; break routine
 
 _1              lda HANDICAP
-                beq _3                  ; skip when handicap
+                beq _3                  ; skip when handicap is active
 
                 ;lda JOYSTICK0           ; read joystick0 button
                 lda #$1F    ; HACK:
@@ -582,7 +581,8 @@ _7              iny
 ;--------------------------------------
 ; No button pressed routine
 ;--------------------------------------
-NoButton        sta DBTIMR
+NoButton        .proc
+                sta DBTIMR
                 ;lda JOYSTICK0           ; joystick0 read
                 lda #$1F    ; HACK:
                 and #$0F
@@ -598,6 +598,10 @@ NoButton        sta DBTIMR
                 sta TIMSCL
                 jsr ClearError
 
+                .endproc
+
+                ;[fall-through]
+
 
 ;--------------------------------------
 ;
@@ -609,7 +613,8 @@ EXITI           jmp ENDISR
 ;
 ;--------------------------------------
 ;   acceleration feature of cursor
-Scroll          lda TIMSCL
+Scroll          .proc
+                lda TIMSCL
                 cmp JIFFYCLOCK          ; TODO:
                 bne EXITI
 
@@ -765,14 +770,14 @@ _11             .m16
                 sta OFFHI
 _checkDown           pla                ; joystick down?
                 lsr A
-                bcs _changeDLIST        ; no, trudge on
+                bcs _XIT                ; no, trudge on
 
                 lda CURSYL
                 cmp #$02
                 bne _12
 
                 ldx CURSYH
-                beq _changeDLIST
+                beq _XIT
 
 _12             sec
                 sbc #$01
@@ -804,7 +809,7 @@ _next2          lda PLYR0-1,X           ; move cursor down one line
                 dex
                 cpx TEMPI
                 bne _next2
-                beq _changeDLIST
+                beq _XIT
 
 _15             .m16
                 lda Y_POS
@@ -813,7 +818,7 @@ _15             .m16
                 sta Y_POS
                 sta TILE3_WINDOW_Y_POS  ; fine scroll
                 .m8
-                bne _changeDLIST        ; no, move on
+                bne _XIT                ; no, move on
 
                 lda OFFLO               ; yes, mark offset
                 clc
@@ -823,24 +828,10 @@ _15             .m16
                 adc #$00
                 sta OFFHI
 
-;
-; In this loop we add the offset values to the existing
-; LMS addresses of all display lines.
-; This scrolls the characters.
-;
-_changeDLIST    ldy #$09
-_next3          lda (DLSTPT),Y
-                clc
-                adc OFFLO
-                sta (DLSTPT),Y
-                iny
-                lda (DLSTPT),Y
-                adc OFFHI
-                sta (DLSTPT),Y
-                iny
-                iny
-                cpy #$27
-                bne _next3
+_XIT
+                .endproc
+
+                ;[fall-through]
 
 
 ;--------------------------------------
@@ -855,11 +846,12 @@ ENDISR          .proc
                 lsr A
                 lsr A
                 .m8
+
                 cmp #$11
                 bcs _1
 
                 lda #$FF
-                bmi _3
+                bra _3
 
 _1              cmp #$1A
                 bcc _2
@@ -872,10 +864,8 @@ _2              sta TEMPI
                 lda #$1D
                 sec
                 sbc TEMPI
-_3              sta CNT1
-                lda #$00
-                sta CNT2
-                ;jmp XITVBV              ; exit vertical blank routine  ; TODO:platform
+
+_3              rti
 
                 .endproc
 
@@ -1042,7 +1032,8 @@ _1              iny
 ; ERROR on inputs routine
 ; Squawks speaker and error message
 ;--------------------------------------
-Squawk          ldy #$00
+Squawk          .proc
+                ldy #$00
 
                 .setbank $04
 _next1          lda ERRMSG,X
@@ -1061,6 +1052,8 @@ _next1          lda ERRMSG,X
                 lda #$FF
                 sta ERRFLG
                 jmp EXITI
+
+                .endproc
 
 
 ;======================================
@@ -1086,123 +1079,6 @@ _next1          sta FooterText3+4,Y
 
 _XIT            rts
                 .endproc
-
-
-;
-;From here to $7B00 is expansion RAM
-;
-
-;
-;This is the DLI routine
-;
-
-;--------------------------------------
-;--------------------------------------
-                .align $1000
-;--------------------------------------
-
-
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-DLISRV          pha
-                txa
-                pha
-                inc CNT2
-                lda CNT2
-                cmp CNT1
-                bne _1
-
-                ldx #$62                ; map DLI
-                lda #$28
-                ;eor COLRSH             ; TODO:platform
-                ;and DRKMSK             ; TODO:platform
-                ;sta WSYNC              ; TODO:platform
-                ;stx CHBASE             ; TODO: convert to tiles     ; charset = $6200
-                sta LUTPfColor0         ; TODO: playfield-0 color
-                jmp _XIT
-
-_1              cmp #$0F
-                bne _2
-
-                lda #$3A
-                ;eor COLRSH             ; TODO:platform
-                ;and DRKMSK             ; TODO:platform
-                tax
-                lda #$00
-                ;eor COLRSH             ; TODO:platform
-                ;and DRKMSK             ; TODO:platform
-                ;sta WSYNC              ; TODO:platform
-                ;stx LUTPfColor2        ; TODO: playfield-2 color
-                ;sta LUTPfColor1        ; TODO: playfield-1 color
-                jmp _XIT
-
-_2              cmp #$01
-                bne _3
-
-                lda TRCOLR              ; green tree color
-                ;eor COLRSH             ; TODO:platform
-                ;and DRKMSK             ; TODO:platform
-                tax
-                lda #$1A                ; yellow band at top of map
-                ;eor COLRSH             ; TODO:platform
-                ;and DRKMSK             ; TODO:platform
-                ;sta WSYNC              ; TODO:platform
-                ;sta LUTBkColor         ; TODO: background color
-                ;stx LUTPfColor0        ; TODO: playfield-0 color
-
-                ;lda #$60
-                ;sta CHBASE             ; TODO: convert to tiles     ; charset = $6000
-
-                jmp _XIT
-
-_3              cmp #$03
-                bne _4
-
-                lda EARTH               ; top of map
-                ;eor COLRSH             ; TODO:platform
-                ;and DRKMSK             ; TODO:platform
-                ;sta WSYNC              ; TODO:platform
-                sta LUTBkColor          ; TODO: background color
-                jmp _XIT
-
-_4              cmp #$0D
-                bne _5
-
-                ;ldx #$E0               ; bottom of map
-                lda #$22
-                ;eor COLRSH             ; TODO:platform
-                ;and DRKMSK             ; TODO:platform
-                ;sta WSYNC              ; TODO:platform
-                sta LUTPfColor2         ; TODO: playfield-2 color
-                ;stx CHBASE             ; TODO: convert to tiles     ; charset = standard OS charset
-                jmp _XIT
-
-_5              cmp #$0E
-                bne _6
-
-                lda #$8A                ; bright blue strip
-                ;eor COLRSH             ; TODO:platform
-                ;and DRKMSK             ; TODO:platform
-                ;sta WSYNC              ; TODO:platform
-                sta LUTBkColor          ; TODO: background color
-                jmp _XIT
-
-_6              cmp #$10
-                bne _XIT
-
-                lda #$D4                ; green bottom
-                ;eor COLRSH             ; TODO:platform
-                ;and DRKMSK             ; TODO:platform
-                pha                     ; some extra delay
-                pla
-                nop
-                sta LUTBkColor          ; TODO: background color
-
-_XIT            pla
-                tax
-                pla
-                rti
 
 
 ;======================================

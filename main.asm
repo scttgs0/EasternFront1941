@@ -114,12 +114,8 @@ _next3          lda MusterStrength,X    ; combat strength = muster strength
                 ;lda #$07
                 ;jsr SETVBV             ; TODO:platform ; = $7400
 
-                ;lda #$00               ; This is DLI vector (low byte)
-                ;sta VDSLST
-                ;lda #$7B
-                ;sta VDSLST+1
                 ;lda #$C0
-                ;sta NMIEN              ; Turn interrupts on  ; TODO:platform ; [DLI+VBI]
+                ;sta NMIEN              ; Turn interrupts on  ; TODO:platform ; [VBI]
 
                 bra MainLoop
 

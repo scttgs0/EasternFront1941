@@ -125,11 +125,10 @@ CURSXL          .byte ?
 CURSXH          .byte ?         ; [A0]
 CURSYL          .byte ?                 ; cursor coordinates on screen (map frame)
 CURSYH          .byte ?
+
 OFFLO           .byte ?                 ; How far to offset new LMS value
 OFFHI           .byte ?
 TEMPI           .byte ?                 ; An all-purpose temporary register
-CNT1            .byte ?                 ; DLI counter
-CNT2            .byte ?                 ; DLI counter for movable map DLI
 CHUNKX          .byte ?         ; [A8]    cursor coordinates (pixel frame)
 CHUNKY          .byte ?
 

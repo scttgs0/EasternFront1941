@@ -14,9 +14,8 @@
 ;                   1000-17a4           thinking (AI)
 ;                   2000-280f           main
 ;                   3000-3509           combat
-;                   4000-4743           interrupt
-;                   5000-50f8               DLISRV
-;                   6000-627b           platform_c256
+;                   4000-47d6           interrupt
+;                   5000-527b           platform_c256
 ;   03      data
 ;                   0000-1280           data
 ;   04      palette, font, text, map
