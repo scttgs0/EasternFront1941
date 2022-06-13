@@ -247,8 +247,8 @@ OnesDigit       .byte 0,1,2,3,4,5,6,7,8,9
                 .byte 0,1,2,3,4,5,6,7,8,9
                 .byte 0,1,2,3,4,5
 
-TxtTbl          .text "  PLEASE ENTER YOUR ORDERS NOW  "
-                .text "          GAME OVER             "
+TxtTbl          .text "        ENTER YOUR ORDERS       "
+                .text "            GAME OVER           "
                 .text "FIGURING MOVE; NO ORDERS ALLOWED"
 
 DaysInMonth     .byte 0,31,28,31,30,31
@@ -413,14 +413,14 @@ ZPVAL           .word $6400             ; display list address
 
 PSXVAL          .byte $E0               ; position x
                 .word $0000             ; position y
-                .byte $33               ; screen cursor y
-                .byte $78               ; player 0 position
+                .byte $0038             ; screen cursor y
+                .byte $0078             ; player-0 position
                 .byte $D6               ; tree color
                 .byte $10               ; earth color
                 .byte $27               ; ice latitude
                 .byte $40,$00,$01       ; season 1-3
                 .byte $0F,$06,$29       ; day month year
-                .byte $00,$01           ; BUTFLG, BUTMSK
+                .byte $00,$01           ; BUTTON_FLAG[1st-press not occurred], BUTTON_MASK[prevent]
 
 COLTAB          .byte $58,$DC,$2F,$00   ; color table
                 .byte $6A,$0C,$94,$46,$B0

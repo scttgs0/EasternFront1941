@@ -16,7 +16,7 @@ _next1          lda ZPVAL,X             ; initialize page zero values
                 dex
                 bpl _next1
 
-                ldx #$0F
+                ldx #$11
 _next2          lda PSXVAL,X            ; initialize page six values
                 sta XPOSL,X
                 dex
@@ -43,7 +43,7 @@ _next2          lda PSXVAL,X            ; initialize page six values
                 lda #$00
                 sta TILE3_WINDOW_X_POS  ; fine scroll
                 sta TILE2_WINDOW_X_POS  ; fine scroll
-                lda #$120
+                ;lda #$120
                 sta TILE3_WINDOW_Y_POS
                 sta TILE2_WINDOW_Y_POS
 
@@ -61,9 +61,9 @@ _next3          lda MusterStrength,X    ; combat strength = muster strength
                 bne _next3
 
 ;   position sprites
-                lda #12*$10-8
+                lda #7*$10-8
                 sta SP00_X_POS
-                lda #8*$10-8
+                lda #6*$10-8
                 sta SP00_Y_POS
 
                 lda #12*$10-8
@@ -108,14 +108,31 @@ _next3          lda MusterStrength,X    ; combat strength = muster strength
                 lda #$FF
                 sta TURN
 
-;   enable deferred vertical blank interrupt
-                ;ldy #$00
-                ;ldx #$74
-                ;lda #$07
-                ;jsr SETVBV             ; TODO:platform ; = $7400
+;   enable vertical blank interrupt
 
-                ;lda #$C0
-                ;sta NMIEN              ; Turn interrupts on  ; TODO:platform ; [VBI]
+                .m8i8
+                ldx #$03
+_relocate       lda HandleIrq,X
+                sta @l $002000,X
+                dex
+                bpl _relocate
+
+                sei                     ; disable IRQ
+
+                .m16
+                lda @l vecIRQ
+                sta IRQ_PRIOR
+
+                lda #<>$002000
+                sta @l vecIRQ
+
+                .m8
+                lda @l INT_MASK_REG0
+                and #~FNX0_INT00_SOF    ; enable Start-of-Frame IRQ
+                sta @l INT_MASK_REG0
+
+                cli                     ; enable IRQ
+                wai
 
                 bra MainLoop
 
@@ -168,16 +185,16 @@ _FINI           bra _FINI               ; freeze up... endless loop
 
 ;   begin phase
 _0              lda #$00                ; allow input
-                sta BUTMSK
+                sta BUTTON_MASK
                 sta CORPS
                 jsr TextMessage
 
-_endless        bra _endless
+;_endless        bra _endless
 
                 jsr INIT                ; artificial intelligence routine
 
                 lda #$01                ; prevent input
-                sta BUTMSK
+                sta BUTTON_MASK
                 lda #$02
                 jsr TextMessage
 

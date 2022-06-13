@@ -6,14 +6,30 @@
 
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; To be relocated to 00:2000
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+HandleIrq       jml DVBI
+                ;jmp IRQ_PRIOR
+
+
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Deferred vertical blank interrupt
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DVBI            .proc
+                .m8i8
+                .setbank $03
+
+                lda JIFFYCLOCK
+                inc A
+                sta JIFFYCLOCK
+
+;--------------------------------------
+
 ;   debug entry
-DVBI            ;lda JOYSTICK1          ; read joystick1 button (check for break button)
+                ;lda JOYSTICK1          ; read joystick1 button (check for break button)
                 ;and #$10
                 lda #$FF                ; force break to be ignored
                 bne _1                  ; no, check next
-
 ;   end debug entry
 
 ;   start debug mode
@@ -26,26 +42,28 @@ DVBI            ;lda JOYSTICK1          ; read joystick1 button (check for break
                 ;pla
                 ;pla
                 ;jmp Break2Monitor      ; break routine
+;   end debug mode
+
+;--------------------------------------
 
 _1              lda HANDICAP
                 beq _3                  ; skip when handicap is active
 
-                ;lda JOYSTICK0           ; read joystick0 button
-                lda #$1F    ; HACK:
+                lda JOYSTICK0           ; read joystick0 button
+                ;lda #$1F    ; HACK:
                 and #$10
                 beq _3                  ; skip when button is pressed
 
-                lda #$08
+                lda #$07
                 sta CONSOL              ; TODO: reset function keys
                 lda CONSOL              ; TODO: read function keys
                 and #$04                ; OPTION key
                 bne _3
 
-                sta HANDICAP
-                lda #$30
-                sta $7B7A               ; my trademark
+                sta HANDICAP            ; enable Handicap when OPTION is pressed
+
                 ldx #$36
-_next1          lda MusterStrength,X
+_next1          lda MusterStrength,X    ; muster strength = 150%... 255 max
                 sta TEMPI
                 lsr A
                 adc TEMPI
@@ -56,13 +74,13 @@ _2              sta MusterStrength,X
                 dex
                 bne _next1
 
-_3              ;lda JOYSTICK0           ; read joystick0 button
-                lda #$1F    ; HACK:
+_3              lda JOYSTICK0           ; read joystick0 button
+                ;lda #$1F    ; HACK:
                 and #$10
-                ora BUTMSK              ; button allowed?
+                ora BUTTON_MASK         ; button allowed?
                 beq _5
 
-                lda BUTFLG              ; no button now; previous status
+                lda BUTTON_FLAG         ; no button now; previous status
                 bne _4
 
                 jmp NoButton
@@ -71,7 +89,7 @@ _4              lda #$58                ; button just released
                 sta LUTSprColor0        ; TODO: Sprite-0 color
 
                 lda #$00
-                sta BUTFLG
+                sta BUTTON_FLAG         ; =false
                 sta KRZFLG
                 sta SID_CTRL1           ; TODO: no distortion; no volume
 
@@ -83,7 +101,7 @@ _next2          sta TXTWDW,X            ; clear text window
                 lda #$08
                 sta DELAY
                 clc
-                adc JIFFYCLOCK          ; TODO:
+                adc JIFFYCLOCK
                 sta TIMSCL
                 jsr SwitchCorps
 
@@ -94,18 +112,19 @@ _next2          sta TXTWDW,X            ; clear text window
 
                 jmp ENDISR
 
-_5              ;lda JOYSTICK0           ; button is pressed - joystick0 read
-                lda #$1F    ; HACK:
+_5              lda JOYSTICK0           ; button is pressed - joystick0 read
+                ;lda #$1F    ; HACK:
                 and #$0F
                 eor #$0F
-                beq _6                  ; joystick active?
+                beq _6                  ; joystick deflection?
 
                 jmp ORDERS              ; yes
 
-_6              sta DBTIMR              ; no, set debounce
+_6              sta DEBOUNCE_TIMER      ;   no, clear debounce
                 sta SID_CTRL1           ; TODO: distortion/volume
                 sta STKFLG
-                lda BUTFLG
+
+                lda BUTTON_FLAG
                 bne _7                  ; is this the first button pass
 
                 jmp FirstBtnPass        ; yes
@@ -139,7 +158,7 @@ _8              lda KEYCHAR             ; last key pressed
                 sta STEPX
                 lda BASEY
                 sta STEPY
-_9              lda JIFFYCLOCK          ; TODO:
+_9              lda JIFFYCLOCK
                 and #$03
                 beq _10                 ; time to move arrow?
 
@@ -257,51 +276,57 @@ _16             iny
 
 _XIT            jmp ENDISR
 
+                .endproc
+
 
 ;--------------------------------------
 ; Looks for a unit inside cursor
 ; If there is one, put unit info into
 ; text window
 ;--------------------------------------
-FirstBtnPass    lda #$FF
-                sta BUTFLG
+FirstBtnPass    .proc
+                lda #$FF
+                sta BUTTON_FLAG         ; =true
 
 ;   first get coords of center of cursor (map frame)
-                lda CURSXL
+                .m16
+                lda CURSOR_MapX
                 clc
                 adc #$06
-                sta TXL
-                lda CURSXH
-                adc #$00
-                sta TXH
-                lda CURSYL
+                sta TXL                 ; 16-bit intentional
+
+                lda CURSOR_MapY
                 clc
                 adc #$09
-                sta TYL
-                lda CURSYH
-                adc #$00
-                sta TYH
+                sta TYL                 ; 16-bit intentional
+
+;   coords of cursor (pixel frame)
+;   CHUNKX = /8
+;   CHUNKY = /16
+                .m8
                 lda TXH
-                lsr A
+                lsr A                   ; /8
                 lda TXL
                 ror A
                 lsr A
                 lsr A
-
-;   coords of cursor (pixel frame)
                 sta CHUNKX
+
                 lda TYH
-                lsr A
-                tax
-                lda TYL
+                lsr A                   ; /2
+                tax                     ; save in X
+
+                lda TYL                 ; continue /2
                 ror A
-                tay
-                txa
-                lsr A
-                tya
-                ror A
-                lsr A
-                lsr A
+                tay                     ; save in Y
+
+                txa                     ; restore high-byte
+                lsr A                   ; /2
+
+                tya                     ; restore low-byte
+                ror A                   ; continue /2
+                lsr A                   ; /2
+                lsr A                   ; /2
                 sta CHUNKY
 
 ;   look for a match with unit coordinates
@@ -428,7 +453,7 @@ _4              lda #$01
                 clc
                 adc #$01
                 clc
-                adc SHPOS0
+                adc shSpr0PositionX     ; TODO: 16-bit
                 sta BASEX
                 sta STEPX
 
@@ -438,7 +463,7 @@ _4              lda #$01
                 sec
                 sbc #$01
                 clc
-                adc SCY
+                adc shSpr0PositionY     ; TODO: 16-bit'
                 sta BASEY
                 sta STEPY
 
@@ -452,11 +477,14 @@ _4              lda #$01
                 sta ORD2
 _XIT            jmp ENDISR
 
+                .endproc
+
 
 ;--------------------------------------
 ; Orders input routine
 ;--------------------------------------
-ORDERS          lda STKFLG
+ORDERS          .proc
+                lda STKFLG
                 bne FirstBtnPass._XIT
 
                 ldx CORPS
@@ -479,17 +507,17 @@ _2              lda KRZFLG
                 ldx #$40
                 jmp Squawk
 
-_3              inc DBTIMR
-                lda DBTIMR              ; wait for debounce time
+_3              inc DEBOUNCE_TIMER
+                lda DEBOUNCE_TIMER      ; wait for debounce time
                 cmp #$10
                 bcs _4
 
                 bcc FirstBtnPass._XIT
 
 _4              lda #$00
-                sta DBTIMR              ; reset debounce timer
-                ;lda JOYSTICK0           ; joystick0 read
-                lda #$1F    ; HACK:
+                sta DEBOUNCE_TIMER      ; reset debounce timer
+                lda JOYSTICK0           ; joystick0 read
+                ;lda #$1F    ; HACK:
                 and #$0F
                 tax
                 lda STKTAB,X
@@ -577,14 +605,16 @@ _7              iny
 
                 bra EXITI
 
+                .endproc
+
 
 ;--------------------------------------
 ; No button pressed routine
 ;--------------------------------------
 NoButton        .proc
-                sta DBTIMR
-                ;lda JOYSTICK0           ; joystick0 read
-                lda #$1F    ; HACK:
+                sta DEBOUNCE_TIMER
+                lda JOYSTICK0           ; joystick0 read
+                ;lda #$1F    ; HACK:
                 and #$0F
                 eor #$0F
                 bne Scroll
@@ -594,7 +624,7 @@ NoButton        .proc
                 lda #$08
                 sta DELAY
                 clc
-                adc JIFFYCLOCK          ; TODO:
+                adc JIFFYCLOCK
                 sta TIMSCL
                 jsr ClearError
 
@@ -615,7 +645,7 @@ EXITI           jmp ENDISR
 ;   acceleration feature of cursor
 Scroll          .proc
                 lda TIMSCL
-                cmp JIFFYCLOCK          ; TODO:
+                cmp JIFFYCLOCK
                 bne EXITI
 
                 lda DELAY
@@ -626,39 +656,35 @@ Scroll          .proc
                 sbc #$01
                 sta DELAY
 _1              clc
-                adc JIFFYCLOCK          ; TODO:
+                adc JIFFYCLOCK
                 sta TIMSCL
 
                 lda #$00
                 sta OFFLO
                 sta OFFHI               ; zero the offset
 
-                ;lda JOYSTICK0           ; joystick0 read
-                lda #$1F    ; HACK:
+_checkLeft      .m8
+                lda JOYSTICK0           ; joystick0 read
+                ;lda #$1F    ; HACK:
                 and #$0F
                 pha                     ; save it on stack for other bit checks
                 and #$08                ; joystick left?
-                bne _checkRight         ; no, move on
+                bne _checkRight         ;   no, move on
 
-                lda CURSXL
-                bne _2
+                .m16
+                lda CURSOR_MapX         ; already at zero?
+                beq _checkUp            ;   yes, move on
 
-                ldx CURSXH
-                beq _checkUp
+_2              dec A
+                sta CURSOR_MapX
 
-_2              sec
-                sbc #$01
-                sta CURSXL
-                bcs _3
-
-                dec CURSXH
-_3              lda SHPOS0
+_3              lda shSpr0PositionX
                 cmp #$BA
                 beq _4
 
                 clc
                 adc #$01
-                sta SHPOS0
+                sta shSpr0PositionX
                 sta SP00_X_POS          ; Sprite-0 x-position
                 bne _checkUp
 
@@ -668,79 +694,66 @@ _4              .m16
                 sbc #$01
                 sta X_POS
                 sta TILE3_WINDOW_X_POS  ; fine scroll
-                .m8
+                sta TILE2_WINDOW_X_POS
+
                 bra _checkUp            ; no, move on
 
                 ; inc OFFLO             ; yes, mark it for offset
                 ; clv
                 ; bvc _checkUp          ; no point in checking for joystick right
 
-_checkRight     pla                     ; get back joystick byte
+_checkRight     .m8
+                pla                     ; get back joystick byte
                 pha                     ; save it again
                 and #$04                ; joystick right?
                 bne _checkUp            ; no, move on
 
-                lda CURSXL
+                .m16
+                lda CURSOR_MapX
                 cmp #$64
-                bne _5
+                beq _checkUp
 
-                ldx CURSXH
-                bne _checkUp
-
-_5              clc
-                adc #$01
-                sta CURSXL
-                bcc _6
-
-                inc CURSXH
-_6              lda SHPOS0
+_5              inc A
+                sta CURSOR_MapX
+_6              lda shSpr0PositionX
                 cmp #$36
                 beq _7
 
-                sec
-                sbc #$01
-                sta SHPOS0
+                dec A
+                sta shSpr0PositionX
                 sta SP00_X_POS          ; Sprite-0 x-position
                 bne _checkUp
 
-_7              .m16
-                lda X_POS
-                clc                     ; no, increment x-coordinate
-                adc #$01
+_7              lda X_POS
+                inc A                   ; no, increment x-coordinate
                 sta X_POS
                 sta TILE3_WINDOW_X_POS  ; fine scroll
-                .m8
+                sta TILE2_WINDOW_X_POS
+
                 bra _checkUp            ; scroll overflow? if not, move on
 
                 ;dec OFFLO              ; yes, set up offset for character scroll
                 ;dec OFFHI
-_checkUp        pla                     ; joystick up?
+_checkUp        .m8
+                pla                     ; joystick up?
                 lsr A
                 pha
                 bcs _checkDown          ; no, ramble on
 
-                lda CURSYL
-                cmp #$5E
-                bne _8
-
-                ldx CURSYH
-                cpx #$02
+                .m16
+                lda CURSOR_MapY
+                cmp #$25E
                 beq _checkDown
 
-_8              inc CURSYL
-                bne _9
-
-                inc CURSYH
-_9              ldx SCY
+_8              inc CURSOR_MapY
+_9              ldx shSpr0PositionY
                 cpx #$1B
                 beq _11
 
-                inc CURSYL
-                bne _10
+                inc CURSOR_MapY
 
-                inc CURSYH
 _10             dex
-                stx SCY
+                stx shSpr0PositionY
                 txa
                 clc
                 adc #$12
@@ -768,35 +781,27 @@ _11             .m16
                 lda OFFHI
                 sbc #$00
                 sta OFFHI
-_checkDown           pla                ; joystick down?
+_checkDown      .m8
+                pla                     ; joystick down?
                 lsr A
                 bcs _XIT                ; no, trudge on
 
-                lda CURSYL
+                lda CURSOR_MapY
                 cmp #$02
-                bne _12
-
-                ldx CURSYH
                 beq _XIT
 
-_12             sec
-                sbc #$01
-                sta CURSYL
-                bcs _13
+_12             dec A
+                sta CURSOR_MapY
 
-                dec CURSYH
-_13             ldx SCY
+_13             ldx shSpr0PositionY
                 cpx #$4E
                 beq _15
 
-                sec
-                sbc #$01
-                sta CURSYL
-                bcs _14
+                dec A
+                sta CURSOR_MapY
 
-                dec CURSYH
 _14             inx
-                stx SCY
+                stx shSpr0PositionY
                 txa
                 clc
                 adc #$12
@@ -840,13 +845,13 @@ _XIT
 ENDISR          .proc
                 .m16
                 lda Y_POS
+                lsr A                   ; /32
                 lsr A
                 lsr A
                 lsr A
                 lsr A
-                lsr A
-                .m8
 
+                .m8
                 cmp #$11
                 bcs _1
 
@@ -866,7 +871,6 @@ _2              sta TEMPI
                 sbc TEMPI
 
 _3              rti
-
                 .endproc
 
 
@@ -967,7 +971,6 @@ SwitchCorps     .proc
 
                 lda #$00                ; not a unit counter -- clear the tile
                 sta (TEMPLO),Y
-
                 bra _XIT
 
 _1              sta (TEMPLO),Y          ; place the unit on the UNIT tile map
@@ -988,7 +991,6 @@ ClearArrow      .proc
                 tax
 
                 .setbank $05
-
 _next1          cpy #$80
                 bcs _1
 
@@ -999,7 +1001,6 @@ _1              iny
                 bne _next1
 
                 .setbank $03
-
                 rts
                 .endproc
 
@@ -1023,7 +1024,6 @@ _1              iny
                 bne _next1
 
                 .setbank $03
-
                 rts
                 .endproc
 
@@ -1044,7 +1044,6 @@ _next1          lda ERRMSG,X
                 bne _next1
 
                 .setbank $03
-
                 lda #$68
                 sta SID_CTRL1           ; TODO: distortion-3; half volume
                 lda #$50
@@ -1067,7 +1066,6 @@ ClearError      .proc
                 sta ERRFLG
 
                 .setbank $04
-
                 ldy #$00
                 ldx #$1F
 _next1          sta FooterText3+4,Y
@@ -1076,7 +1074,6 @@ _next1          sta FooterText3+4,Y
                 bpl _next1
 
                 .setbank $03
-
 _XIT            rts
                 .endproc
 
@@ -1143,14 +1140,11 @@ _next1          lda WordsTbl+256,X      ; COMBAT|STRENGTH
                 bne _next1
 
                 .setbank $03
-
 _1              iny
                 rts
 
 ENTRY2          tax                     ; this is another entry point
-
                 .setbank $04
-
 _next1          lda WordsTbl,X
                 cmp #$20                ; finished once we hit the first space character
                 beq _1
@@ -1163,7 +1157,6 @@ _next1          lda WordsTbl,X
                 bne _next1
 
                 .setbank $03
-
 _1              iny
                 rts
                 .endproc

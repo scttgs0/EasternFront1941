@@ -2,6 +2,18 @@
 ; System Equates for Foenix C256
 ;---------------------------------------
 
+INT_MASK_REG0           = $00_014C
+FNX0_INT00_SOF      = $01
+
+vecCOP                  = $00_FFE4
+vecBRK                  = $00_FFE6
+vecABORT                = $00_FFE8
+vecNMI                  = $00_FFEA
+vecEmuRESET             = $00_FFFC
+vecIRQ                  = $00_FFEE
+
+;---------------------------------------
+
 MASTER_CTRL_L           = $AF_0000
 mcTextOn            = $01               ; Enable the Text Mode
 mcOverlayOn         = $02               ; Enable the Overlay of the text mode on top of Graphic Mode (the Background Color is ignored)

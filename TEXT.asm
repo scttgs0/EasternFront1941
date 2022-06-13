@@ -1,6 +1,6 @@
-TXTWDW          .text '            EASTERN FRONT 1941          '
-                .text '       COPYRIGHT 1981 CHRIS CRAWFORD    '
-                .text '       PLEASE ENTER YOUR ORDERS NOW     '
+TXTWDW          .text '           EASTERN FRONT 1941           '
+                .text '      COPYRIGHT 1981 CHRIS CRAWFORD     '
+                .text '      PLEASE ENTER YOUR ORDERS NOW      '
 TXTWDWTOP       .text '                                        '
 
 HeaderText      = TXTWDWTOP
