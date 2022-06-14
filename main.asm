@@ -9,22 +9,16 @@
 ; Start of Code
 ;--------------------------------------
 START           ldx #$08
-_next1          lda ZPVAL,X             ; initialize page zero values
-                sta DLSTPT,X
-                lda COLTAB,X            ; initialize sprite and playfield colors
+_next1          lda COLTAB,X            ; initialize sprite and playfield colors
                 sta LUTSprColor0,X      ; TODO: Sprite-0+ color
                 dex
                 bpl _next1
 
-                ldx #$11
-_next2          lda PSXVAL,X            ; initialize page six values
-                sta XPOSL,X
+                ldx #$14
+_next2          lda DPINITVALS,X       ; initialize direct-page values
+                sta pMap,X
                 dex
                 bpl _next2
-
-                lda #$00
-                sta X_POS
-                sta Y_POS
 
                 .frsGraphics mcGraphicsOn|mcBitmapOn|mcTileMapOn|mcSpriteOn,mcVideoMode640
                 .frsMouse_off
@@ -41,9 +35,11 @@ _next2          lda PSXVAL,X            ; initialize page six values
 
                 .m16i16
                 lda #$00
+                sta X_POS
                 sta TILE3_WINDOW_X_POS  ; fine scroll
                 sta TILE2_WINDOW_X_POS  ; fine scroll
                 ;lda #$120
+                sta Y_POS
                 sta TILE3_WINDOW_Y_POS
                 sta TILE2_WINDOW_Y_POS
 
@@ -62,8 +58,10 @@ _next3          lda MusterStrength,X    ; combat strength = muster strength
 
 ;   position sprites
                 lda #7*$10-8
+                sta shSpr0PositionX
                 sta SP00_X_POS
                 lda #6*$10-8
+                sta shSpr0PositionY
                 sta SP00_Y_POS
 
                 lda #12*$10-8
@@ -90,7 +88,8 @@ _next3          lda MusterStrength,X    ; combat strength = muster strength
 ;                 beq _reset
 ; _setPos         sta TILE3_WINDOW_X_POS
 ;                 sta TILE3_WINDOW_Y_POS
-
+;                 sta TILE2_WINDOW_X_POS
+;                 sta TILE2_WINDOW_Y_POS
 ;                 ;ldy #$04
 ; _again          ldx #$800
 ; _wait           inx
@@ -186,7 +185,7 @@ _FINI           bra _FINI               ; freeze up... endless loop
 ;   begin phase
 _0              lda #$00                ; allow input
                 sta BUTTON_MASK
-                sta CORPS
+                sta activeCorps
                 jsr TextMessage
 
 ;_endless        bra _endless
@@ -272,12 +271,12 @@ _Combat         jsr COMBAT
                 bne _4
 
 _DoMove         ldx ARMY
-                stx CORPS
+                stx activeCorps
                 lda CorpsY,X
-                sta CHUNKY
+                sta activeCorpsY
                 sta LATITUDE
                 lda CorpsX,X
-                sta CHUNKX
+                sta activeCorpsX
                 sta LONGITUDE
                 jsr CheckZOC
 
@@ -297,12 +296,12 @@ _DoMove         ldx ARMY
 
 _4              jsr SwitchCorps
 
-                ldx CORPS
+                ldx activeCorps
                 lda LATITUDE
-                sta CHUNKY
+                sta activeCorpsY
                 sta CorpsY,X
                 lda LONGITUDE
-                sta CHUNKX
+                sta activeCorpsX
                 sta CorpsX,X
                 jsr SwitchCorps
 
@@ -436,7 +435,7 @@ _1              sec
 
 _2              stx MONTH
                 ldy TreeColors,X        ; seasonal tree color
-                sty TRCOLR
+
 _3              sta DAY
                 rts
                 .endproc
@@ -586,10 +585,10 @@ _11             cmp #$27
                 lda #$27
 _12             sta ICELAT
                 lda #$01
-                sta CHUNKX
+                sta activeCorpsX
                 sta LONGITUDE
                 lda OLDLAT
-                sta CHUNKY
+                sta activeCorpsY
                 sta LATITUDE
 
 _next2          jsr Terrain
@@ -601,7 +600,7 @@ _next2          jsr Terrain
                 cmp #$29
                 bcs _15
 
-                ldx CHUNKY
+                ldx activeCorpsY
                 cpx #$0E
                 bcs _13
 
@@ -616,22 +615,22 @@ _13             ora SEASN1
                 bra _15
 
 _14             sta (MAPPTR),Y
-_15             inc CHUNKX
-                lda CHUNKX
+_15             inc activeCorpsX
+                lda activeCorpsX
                 sta LONGITUDE
                 cmp #46
                 bne _next2
 
                 lda #$00
-                sta CHUNKX
+                sta activeCorpsX
                 sta LONGITUDE
-                lda CHUNKY
+                lda activeCorpsY
                 cmp ICELAT
                 beq _XIT
 
                 sec
                 sbc SEASN3
-                sta CHUNKY
+                sta activeCorpsY
                 sta LATITUDE
                 bra _next2
 
@@ -649,15 +648,15 @@ _next1          lda ArrivalTurn,X
                 bne _nextItem           ; skip if arrival != this turn
 
                 lda CorpsX,X
-                sta CHUNKX
+                sta activeCorpsX
                 sta LONGITUDE
 
                 lda CorpsY,X
-                sta CHUNKY
+                sta activeCorpsY
                 sta LATITUDE
 
 ;   determine terrain type
-                stx CORPS
+                stx activeCorps
                 jsr TerrainB
                 beq _2                  ; when =0, must delay arrival by one turn
 

@@ -405,17 +405,12 @@ MOSCOW          .byte 0,0,0,0
 ;--------------------------------------
 ;--------------------------------------
 
-ZPVAL           .word $6400             ; display list address
-                .word $0000             ; map address
+DPINITVALS      .word $0000             ; map address
                 .byte $00               ; active corp
-                .word $0122             ; cursor x
-                .word $0230             ; cursor y
-
-PSXVAL          .byte $E0               ; position x
-                .word $0000             ; position y
-                .byte $0038             ; screen cursor y
-                .byte $0078             ; player-0 position
-                .byte $D6               ; tree color
+                .word $0278             ; cursor x
+                .word $0218             ; cursor y
+                .word $0068             ; player-0 position x
+                .word $0058             ; player-0 position y
                 .byte $10               ; earth color
                 .byte $27               ; ice latitude
                 .byte $40,$00,$01       ; season 1-3

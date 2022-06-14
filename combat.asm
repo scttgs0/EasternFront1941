@@ -31,11 +31,12 @@ _1              ldy UNITNO
 
                 lda #$7F                ; make it white for Germans
 _2              sta SWAP,X
-                stx CORPS
+                stx activeCorps
+
                 lda CorpsX,X
-                sta CHUNKX
+                sta activeCorpsX
                 lda CorpsY,X
-                sta CHUNKY
+                sta activeCorpsY
                 jsr SwitchCorps
 
                 .setbank $AF
@@ -172,28 +173,28 @@ _11             jsr Retreat
                 bcc _vickory
                 bne _endCombat
 
-_12             stx CORPS               ; retreat the defender
+_12             stx activeCorps         ; retreat the defender
                 lda CorpsX,X
-                sta CHUNKX
+                sta activeCorpsX
                 lda CorpsY,X
-                sta CHUNKY
+                sta activeCorpsY
                 jsr SwitchCorps
 
-                ldx CORPS
+                ldx activeCorps
                 lda LATITUDE
                 sta CorpsY,X
-                sta CHUNKY
+                sta activeCorpsY
                 lda LONGITUDE
                 sta CorpsX,X
-                sta CHUNKX
+                sta activeCorpsX
                 jsr SwitchCorps
 
 _vickory        ldx ARMY
-                stx CORPS
+                stx activeCorps
                 lda CorpsX,X
-                sta CHUNKX
+                sta activeCorpsX
                 lda CorpsY,X
-                sta CHUNKY
+                sta activeCorpsY
                 lda ACCLO               ;defender's coordinates
                 sta LONGITUDE
                 lda ACCHI
@@ -481,11 +482,11 @@ Dead            .proc
                 sta EXEC,X
                 sta ArrivalTurn,X
 
-                stx CORPS
+                stx activeCorps
                 lda CorpsX,X
-                sta CHUNKX
+                sta activeCorpsX
                 lda CorpsY,X
-                sta CHUNKY
+                sta activeCorpsY
                 jsr SwitchCorps
 
                 rts

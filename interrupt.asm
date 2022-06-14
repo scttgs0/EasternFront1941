@@ -102,11 +102,12 @@ _next2          sta TXTWDW,X            ; clear text window
                 sta DELAY
                 clc
                 adc JIFFYCLOCK
-                sta TIMSCL
+                sta scrollTimer
+
                 jsr SwitchCorps
 
                 lda #$00
-                sta CORPS
+                sta activeCorps
                 jsr ClearArrow
                 jsr ClearMaltakreuze
 
@@ -140,7 +141,7 @@ _8              lda KEYCHAR             ; last key pressed
                 cmp #$21
                 bne _9                  ; space bar pressed?
 
-                ldx CORPS               ; yes, check for Russian
+                ldx activeCorps         ; yes, check for Russian
                 cpx #$37                ; when Russian
                 bcs _9
 
@@ -290,19 +291,19 @@ FirstBtnPass    .proc
 
 ;   first get coords of center of cursor (map frame)
                 .m16
-                lda CURSOR_MapX
+                lda cursorMapX
                 clc
                 adc #$06
                 sta TXL                 ; 16-bit intentional
 
-                lda CURSOR_MapY
+                lda cursorMapY
                 clc
                 adc #$09
                 sta TYL                 ; 16-bit intentional
 
 ;   coords of cursor (pixel frame)
-;   CHUNKX = /8
-;   CHUNKY = /16
+;   activeCorpsX = /8
+;   activeCorpsY = /16
                 .m8
                 lda TXH
                 lsr A                   ; /8
@@ -310,7 +311,7 @@ FirstBtnPass    .proc
                 ror A
                 lsr A
                 lsr A
-                sta CHUNKX
+                sta activeCorpsX
 
                 lda TYH
                 lsr A                   ; /2
@@ -327,7 +328,7 @@ FirstBtnPass    .proc
                 ror A                   ; continue /2
                 lsr A                   ; /2
                 lsr A                   ; /2
-                sta CHUNKY
+                sta activeCorpsY
 
 ;   look for a match with unit coordinates
                 ldx #$9E
@@ -337,12 +338,12 @@ _next1          cmp CorpsY,X
 _next2          dex
                 bne _next1
 
-                stx CORPS               ; no match obtained
+                stx activeCorps         ; no match obtained
                 dex
                 stx HITFLG
                 jmp ENDISR
 
-_1              lda CHUNKX
+_1              lda activeCorpsX
                 cmp CorpsX,X
                 bne _2
 
@@ -353,7 +354,7 @@ _1              lda CHUNKX
                 bcc _match
                 beq _match
 
-_2              lda CHUNKY
+_2              lda activeCorpsY
                 jmp _next2
 
 ;   match obtained
@@ -364,13 +365,13 @@ _match          lda #$00
                 sta LUTSprColor0        ; TODO: Sprite-0 color - light up cursor
 
 ;   display unit specs
-                stx CORPS
+                stx activeCorps
                 ldy #$0D
                 lda CorpNumber,X        ; ID number
                 jsr DisplayNumber
 
                 iny
-                ldx CORPS
+                ldx activeCorps
                 lda CorpType,X          ; first name
                 sta TEMPI
                 and #$F0
@@ -384,7 +385,7 @@ _match          lda #$00
                 jsr DisplayWord
 
                 lda #$1E
-                ldx CORPS
+                ldx activeCorps
                 cpx #$37                ; when Russian
                 bcs _3
 
@@ -404,7 +405,7 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
 
                 iny
                 iny
-                ldx CORPS
+                ldx activeCorps
                 lda MusterStrength,X    ; muster strength
                 jsr DisplayNumber
 
@@ -425,12 +426,12 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
 
                 iny
                 iny
-                ldx CORPS
+                ldx activeCorps
                 lda CombatStrength,X    ; combat strength
                 jsr DisplayNumber
                 jsr SwitchCorps         ; flip unit with terrain
 
-                lda CORPS
+                lda activeCorps
                 cmp #$37
                 bcc _4                  ; Russian?
 
@@ -468,7 +469,7 @@ _4              lda #$01
                 sta STEPY
 
 ;   set up page 6 values
-                ldx CORPS
+                ldx activeCorps
                 lda HowManyOrders,X
                 sta HOWMNY
                 lda WhatOrders,X
@@ -487,7 +488,7 @@ ORDERS          .proc
                 lda STKFLG
                 bne FirstBtnPass._XIT
 
-                ldx CORPS
+                ldx activeCorps
                 cpx #$37                ; when Russian
                 bcc _1
 
@@ -536,7 +537,7 @@ _5              tay
                 lda #$FF
                 sta STKFLG
 
-                ldx CORPS
+                ldx activeCorps
                 inc HowManyOrders,X
                 lda HowManyOrders,X
                 sta HOWMNY
@@ -567,7 +568,7 @@ _6              ldy TEMPI
                 eor ORD1,X
                 sta ORD1,X
                 lda ORD1
-                ldx CORPS
+                ldx activeCorps
                 sta WhatOrders,X
                 lda ORD2
                 sta WHORDH,X
@@ -621,11 +622,13 @@ NoButton        .proc
 
                 sta SID_CTRL1           ; TODO: no distortion; volume set based on joystick movement
                 sta STKFLG
+
                 lda #$08
                 sta DELAY
                 clc
                 adc JIFFYCLOCK
-                sta TIMSCL
+                sta scrollTimer
+
                 jsr ClearError
 
                 .endproc
@@ -644,9 +647,11 @@ EXITI           jmp ENDISR
 ;--------------------------------------
 ;   acceleration feature of cursor
 Scroll          .proc
-                lda TIMSCL
+                lda scrollTimer
                 cmp JIFFYCLOCK
                 bne EXITI
+
+                sei
 
                 lda DELAY
                 cmp #$01
@@ -657,41 +662,44 @@ Scroll          .proc
                 sta DELAY
 _1              clc
                 adc JIFFYCLOCK
-                sta TIMSCL
+                sta scrollTimer
 
                 lda #$00
                 sta OFFLO
                 sta OFFHI               ; zero the offset
 
-_checkLeft      .m8
                 lda JOYSTICK0           ; joystick0 read
                 ;lda #$1F    ; HACK:
                 and #$0F
                 pha                     ; save it on stack for other bit checks
-                and #$08                ; joystick left?
+
+_checkLeft      .m8
+                pla
+                pha
+                and #$04                ; joystick left?
                 bne _checkRight         ;   no, move on
 
                 .m16
-                lda CURSOR_MapX         ; already at zero?
-                beq _checkUp            ;   yes, move on
+                ;lda cursorMapX          ; already at zero?
+                ;beq _checkUp            ;   yes, move on
 
-_2              dec A
-                sta CURSOR_MapX
+_2              ;dec A
+                ;sta cursorMapX
 
-_3              lda shSpr0PositionX
-                cmp #$BA
+_3              .m16
+                lda shSpr0PositionX
+                cmp #$28
                 beq _4
 
-                clc
-                adc #$01
+                dec A
                 sta shSpr0PositionX
                 sta SP00_X_POS          ; Sprite-0 x-position
                 bne _checkUp
 
-_4              .m16
-                lda X_POS
-                sec                     ; decrement x-coordinate
-                sbc #$01
+_4              lda X_POS
+                beq _checkUp
+
+                dec A                   ; decrement x-coordinate
                 sta X_POS
                 sta TILE3_WINDOW_X_POS  ; fine scroll
                 sta TILE2_WINDOW_X_POS
@@ -705,26 +713,30 @@ _4              .m16
 _checkRight     .m8
                 pla                     ; get back joystick byte
                 pha                     ; save it again
-                and #$04                ; joystick right?
-                bne _checkUp            ; no, move on
+                and #$08                ; joystick right?
+                bne _checkUp            ;   no, move on
 
                 .m16
-                lda CURSOR_MapX
-                cmp #$64
-                beq _checkUp
+                ;lda cursorMapX
+                ;cmp #$64
+                ;beq _checkUp
 
-_5              inc A
-                sta CURSOR_MapX
-_6              lda shSpr0PositionX
-                cmp #$36
+_5              ;inc A
+                ;sta cursorMapX
+_6              .m16
+                lda shSpr0PositionX
+                cmp #$278
                 beq _7
 
-                dec A
+                inc A
                 sta shSpr0PositionX
                 sta SP00_X_POS          ; Sprite-0 x-position
                 bne _checkUp
 
 _7              lda X_POS
+                cmp #$80
+                beq _checkUp
+
                 inc A                   ; no, increment x-coordinate
                 sta X_POS
                 sta TILE3_WINDOW_X_POS  ; fine scroll
@@ -734,45 +746,44 @@ _7              lda X_POS
 
                 ;dec OFFLO              ; yes, set up offset for character scroll
                 ;dec OFFHI
+
 _checkUp        .m8
-                pla                     ; joystick up?
-                lsr A
-                pha
-                bcs _checkDown          ; no, ramble on
+                pla                     ; get back joystick byte
+                pha                     ; save it again
+                and #$01                ; joystick up?
+                bne _checkDown          ;   no, ramble on
+
+                pla                     ; clean up stack
 
                 .m16
-                lda CURSOR_MapY
-                cmp #$25E
-                beq _checkDown
+                ;lda cursorMapY
+                ;cmp #$25E
+                ;beq _checkDown
 
-_8              inc CURSOR_MapY
-_9              ldx shSpr0PositionY
-                cpx #$1B
+_8              ;inc cursorMapY
+_9              .m16
+                lda shSpr0PositionY
+                cmp #$48
                 beq _11
 
-                inc CURSOR_MapY
+                ;inc cursorMapY
 
-_10             dex
-                stx shSpr0PositionY
-                txa
-                clc
-                adc #$12
-                sta TEMPI
-_next1          lda PLYR0,X             ; move cursor up one line
-                sta PLYR0-1,X
-                inx
-                cpx TEMPI
-                bne _next1
-                beq _checkDown
+_10             dec A
+                sta shSpr0PositionY
+                sta SP00_Y_POS
+                bra _XIT
 
 _11             .m16
                 lda Y_POS
-                sec
-                sbc #$01
+                beq _XIT
+
+                dec A
                 sta Y_POS
                 sta TILE3_WINDOW_Y_POS  ; fine scroll
-                .m8
-                bra _checkDown          ; scroll overflow? If not, amble on
+                sta TILE2_WINDOW_Y_POS
+                bra _XIT
+
+_11skip         ;bra _checkDown          ; scroll overflow? If not, amble on
 
                 lda OFFLO               ; yes, set up offset for character scroll
                 sec
@@ -781,50 +792,41 @@ _11             .m16
                 lda OFFHI
                 sbc #$00
                 sta OFFHI
+
 _checkDown      .m8
-                pla                     ; joystick down?
-                lsr A
-                bcs _XIT                ; no, trudge on
+                pla
+                and #$02                ; joystick down?
+                bne _XIT                ;   no, trudge on
 
-                lda CURSOR_MapY
-                cmp #$02
-                beq _XIT
+                .m16
+                ;lda cursorMapY
+                ;cmp #$02
+                ;beq _XIT
 
-_12             dec A
-                sta CURSOR_MapY
+_12             ;dec A
+                ;sta cursorMapY
 
-_13             ldx shSpr0PositionY
-                cpx #$4E
+_13             .m16
+                lda shSpr0PositionY
+                cmp #$188
                 beq _15
 
-                dec A
-                sta CURSOR_MapY
+_14             inc A
+                sta shSpr0PositionY
+                sta SP00_Y_POS
+                bra _XIT
 
-_14             inx
-                stx shSpr0PositionY
-                txa
-                clc
-                adc #$12
-                dex
-                dex
-                stx TEMPI
-                tax
-_next2          lda PLYR0-1,X           ; move cursor down one line
-                sta PLYR0,X
-                dex
-                cpx TEMPI
-                bne _next2
+_15             lda Y_POS
+                cmp #$120
                 beq _XIT
 
-_15             .m16
-                lda Y_POS
-                clc                     ; no, decrement y-coordinate
-                adc #$01
+                inc A                   ; no, decrement y-coordinate
                 sta Y_POS
                 sta TILE3_WINDOW_Y_POS  ; fine scroll
-                .m8
-                bne _XIT                ; no, move on
+                sta TILE2_WINDOW_Y_POS
+                bra _XIT                ; no, move on
 
+                .m8
                 lda OFFLO               ; yes, mark offset
                 clc
                 adc #$30
@@ -833,7 +835,8 @@ _15             .m16
                 adc #$00
                 sta OFFHI
 
-_XIT
+_XIT            .m8
+                cli
                 .endproc
 
                 ;[fall-through]
@@ -862,7 +865,7 @@ _1              cmp #$1A
                 bcc _2
 
                 lda #$02
-                bpl _3
+                bra _3
 
 _2              sta TEMPI
                 inx
@@ -891,11 +894,11 @@ SwitchCorps     .proc
 ;   MAP origin is lower-right
 ;   TEMPLO origin is upper-left
 ;   conver the coordinate systems
-;   TEMPLO = 38-CHUNKY*49
+;   TEMPLO = 38-activeCorpsY*49
                 lda #38                 ; MAP HEIGHT excluding border
                 .m8
                 sec
-                sbc CHUNKY
+                sbc activeCorpsY
                 .m16
 ;   multiple by 49 -- *32 + *16 + *1 = *49
                 pha
@@ -920,13 +923,13 @@ SwitchCorps     .proc
 
                 clc
                 adc #$E000+MAPWIDTH*3   ; MAP address + top border
-                sta MAPLO
+                sta pMap
 
-;   offset = 45-CHUNKX+2
+;   offset = 45-activeCorpsX+2
                 lda #45                 ; MAP WIDTH excluding border
                 .m8
                 sec
-                sbc CHUNKX
+                sbc activeCorpsX
                 .m16
                 clc
                 adc #2
@@ -934,26 +937,26 @@ SwitchCorps     .proc
 ;   retrieve the terrain type
                 .m8
                 tay
-                lda (MAPLO),Y
+                lda (pMap),Y
 
-                ldx CORPS               ; index 0 is unused -- indicates the end of the list
+                ldx activeCorps         ; index 0 is unused -- indicates the end of the list
                 beq _XIT
 
                 pha
                 lda SWAP,X
-                sta (MAPLO),Y
+                sta (pMap),Y
                 pla
                 sta SWAP,X
 
 ;   place unit tile
                 .m16
-                lda MAPLO
+                lda pMap
                 clc
                 adc #$1000              ; UNIT tile map is $1000 bytes ahead of MAP
                 sta TEMPLO
 
                 .m8
-                lda (MAPLO),Y
+                lda (pMap),Y
                 cmp #$3D                ; german
                 beq _1
                 cmp #$3E
