@@ -15,7 +15,7 @@ SprColor4       .dword $00480800
 SprColor5       .dword $00002000
 SprColor6       .dword $00002020
 SprColor7       .dword $00201c00
-GrmnUnit        .dword $009dd6e9    ; [11]
+GrmnUnit        .dword $0053b8da    ; [11]
 FinnUnit        .dword $00d1d1d1    ; [12]
 ItlnUnit        .dword $00a6a4a5    ; [13]
 AxisUnit        .dword $0065c556    ; [14]
