@@ -644,7 +644,6 @@ _44             sta OBJX-55,X
 _45             sta MoraleCheck2._OBJY-55,X
 
 _TOGSCN         lda JOYSTICK0           ; read joystick0 button
-                ;lda #$1F    ; HACK:
                 and #$10
                 beq _46                 ; ignore game console if red button is down
 

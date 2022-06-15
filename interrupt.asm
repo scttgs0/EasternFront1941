@@ -50,7 +50,6 @@ _1              lda HANDICAP
                 beq _3                  ; skip when handicap is active
 
                 lda JOYSTICK0           ; read joystick0 button
-                ;lda #$1F    ; HACK:
                 and #$10
                 beq _3                  ; skip when button is pressed
 
@@ -75,12 +74,12 @@ _2              sta MusterStrength,X
                 bne _next1
 
 _3              lda JOYSTICK0           ; read joystick0 button
-                ;lda #$1F    ; HACK:
                 and #$10
                 ora BUTTON_MASK         ; button allowed?
-                beq _5
+                bne _3a
+                jmp _5
 
-                lda BUTTON_FLAG         ; no button now; previous status
+_3a             lda BUTTON_FLAG         ; no button now; previous status
                 bne _4
 
                 jmp NoButton
@@ -107,11 +106,17 @@ _4a             .setbank $03
                 sta KRZFLG
                 sta SID_CTRL1           ; TODO: no distortion; no volume
 
+                .setbank $04
                 ldx #79
 _next2          sta TXTWDW,X            ; clear text window
                 dex
-                bpl _next2
+                cpx #4
+                bne _next2
 
+                .RenderText $7A,$72,FooterText1,BITMAPTXT0
+                .RenderText $7A,$72,FooterText2,BITMAPTXT1
+
+                .setbank $03
                 lda #$08
                 sta DELAY
                 clc
@@ -128,7 +133,6 @@ _next2          sta TXTWDW,X            ; clear text window
                 jmp ENDISR
 
 _5              lda JOYSTICK0           ; button is pressed - joystick0 read
-                ;lda #$1F    ; HACK:
                 and #$0F
                 eor #$0F
                 beq _6                  ; joystick deflection?
@@ -365,6 +369,8 @@ _match          lda #$00
                 sta HITFLG              ; note match
                 sta KEYCHAR             ; last key pressed
 
+                stx activeCorps
+
                 .setbank $04
                 ldy #2                  ; brighten up the cursor
 _nextChannel    lda SprColor0,Y
@@ -375,11 +381,20 @@ _nextChannel    lda SprColor0,Y
                 bpl _nextChannel
 
                 jsr InitLUT
-                .setbank $03
+
+;   clear text window
+                lda #$00
+                ldy #$06                ; retain score
+_nextChar       sta TXTWDW,Y
+                iny
+                cpy #80                 ; clear two lines
+                bne _nextChar
 
 ;   display unit specs
-                stx activeCorps
-                ldy #$0D
+                .setbank $03
+
+                ldy #$08
+                ldx activeCorps
                 lda CorpNumber,X        ; ID number
                 jsr DisplayNumber
 
@@ -405,13 +420,13 @@ _nextChannel    lda SprColor0,Y
                 lda #$1D
 _3              jsr DisplayWord         ; display unit size (corps or army)
 
-                ldy #$38
+                ldy #$2B
                 lda #$1F                ; "MUSTER"
                 jsr DisplayWord
 
                 .setbank $04
                 dey
-                lda #$1A                ; ":"
+                lda #$3A                ; ":"
                 sta TXTWDW,Y
                 .setbank $03
 
@@ -440,6 +455,11 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
                 ldx activeCorps
                 lda CombatStrength,X    ; combat strength
                 jsr DisplayNumber
+
+                .RenderText $7A,$72,FooterText1,BITMAPTXT0
+                .RenderText $7A,$72,FooterText2,BITMAPTXT1
+                .m8i8
+
                 jsr SwitchCorps         ; flip unit with terrain
 
                 lda activeCorps
@@ -529,7 +549,6 @@ _3              inc DEBOUNCE_TIMER
 _4              lda #$00
                 sta DEBOUNCE_TIMER      ; reset debounce timer
                 lda JOYSTICK0           ; joystick0 read
-                ;lda #$1F    ; HACK:
                 and #$0F
                 tax
                 lda STKTAB,X
@@ -627,7 +646,6 @@ NoButton        .proc
                 sta DEBOUNCE_TIMER
 
                 lda JOYSTICK0           ; joystick0 read
-                ;lda #$1F    ; HACK:
                 and #$0F
                 eor #$0F
                 bne Scroll
@@ -681,7 +699,6 @@ _1              clc
                 sta OFFHI               ; zero the offset
 
                 lda JOYSTICK0           ; joystick0 read
-                ;lda #$1F    ; HACK:
                 and #$0F
                 pha                     ; save it on stack for other bit checks
 
@@ -1154,7 +1171,7 @@ DisplayWord     .proc
                 .setbank $04
                 tax
 _next1          lda WordsTbl+256,X      ; COMBAT|STRENGTH
-                beq _1
+                beq _1                  ; finished once we hit the first space character
 
                 sta TXTWDW,Y
                 iny
@@ -1170,8 +1187,7 @@ _1              iny
 ENTRY2          tax                     ; this is another entry point
                 .setbank $04
 _next1          lda WordsTbl,X
-                cmp #$20                ; finished once we hit the first space character
-                beq _1
+                beq _1                  ; finished once we hit the first space character
 
                 sta TXTWDW,Y
                 iny
