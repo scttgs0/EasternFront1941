@@ -125,6 +125,10 @@ CorpNumber      .byte 0     ; unused
                 .byte 39,59,60,61,2,1,1,5,2,6,3,4,38,36,35,28
                 .byte 25,23,17,8,10,3,5,6
 
+            .enc "screen-code"
+                .cdef "  ", $00
+                .cdef "AZ", $41
+
 ;   various words for messages
 WordsTbl        .text "        "    ;0
                 .text "SS      "    ;1
@@ -160,6 +164,7 @@ WordsTbl        .text "        "    ;0
                 .text "MUSTER  "    ;31
                 .text "COMBAT  "    ;32
                 .text "STRENGTH"    ;33
+            .enc "none"
 
 ;   HERE COME NUMBER CODES
 HundredDigit    .byte 0,0,0,0,0,0,0,0
