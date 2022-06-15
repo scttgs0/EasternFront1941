@@ -765,7 +765,7 @@ _checkUp        .m8
                 .m16
                 lda cursorMapY
                 cmp #$48
-                beq _checkDown
+                beq _XIT
 
 _8              dec A
                 dec A
