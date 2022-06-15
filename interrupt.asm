@@ -119,11 +119,11 @@ _5              lda JOYSTICK0           ; button is pressed - joystick0 read
                 eor #$0F
                 beq _6                  ; joystick deflection?
 
-                jmp ORDERS              ; yes
+                jmp ORDERS              ;   yes
 
 _6              sta DEBOUNCE_TIMER      ;   no, clear debounce
                 sta SID_CTRL1           ; TODO: distortion/volume
-                sta STKFLG
+                sta JoystickFlag
 
                 lda BUTTON_FLAG
                 bne _7                  ; is this the first button pass
@@ -141,7 +141,7 @@ _8              lda KEYCHAR             ; last key pressed
                 cmp #$21
                 bne _9                  ; space bar pressed?
 
-                ldx activeCorps         ; yes, check for Russian
+                ldx activeCorps         ;   yes, check for Russian
                 cpx #$37                ; when Russian
                 bcs _9
 
@@ -163,14 +163,14 @@ _9              lda JIFFYCLOCK
                 and #$03
                 beq _10                 ; time to move arrow?
 
-                jmp ENDISR              ; no
+                jmp ENDISR              ;   no
 
-_10             ldy HOWMNY              ; yes
+_10             ldy HOWMNY              ;   yes
                 bne _11                 ; any orders to show?
 
-                jmp _printCursor        ; no, go ahead to maltakreuze
+                jmp _printCursor        ;   no, go ahead to maltakreuze
 
-_11             jsr ClearArrow          ; yes, clear old arrow
+_11             jsr ClearArrow          ;   yes, clear old arrow
 
                 lda ORDCNT
                 ldx #$00                ; assume first byte
@@ -239,11 +239,11 @@ _15             inx
                 inc ORDCNT              ; next order
                 lda ORDCNT
                 cmp HOWMNY              ; last order?
-                bcc _XIT                ; no, out
-                beq _XIT                ; no, out
+                bcc _XIT                ;   no, out
+                beq _XIT                ;   no, out
 
                 lda #$01
-                sta ORDCNT              ; yes, reset to start of arrow's path
+                sta ORDCNT              ;   yes, reset to start of arrow's path
 
 ;   display maltese cross ('maltakreuze' or KRZ)
 _printCursor    ldy STEPY
@@ -293,16 +293,16 @@ FirstBtnPass    .proc
                 .m16
                 lda cursorMapX
                 clc
-                adc #$06
+                adc #$10
                 sta TXL                 ; 16-bit intentional
 
                 lda cursorMapY
                 clc
-                adc #$09
+                adc #$10
                 sta TYL                 ; 16-bit intentional
 
 ;   coords of cursor (pixel frame)
-;   activeCorpsX = /8
+;   activeCorpsX = /16
 ;   activeCorpsY = /16
                 .m8
                 lda TXH
@@ -485,7 +485,7 @@ _XIT            jmp ENDISR
 ; Orders input routine
 ;--------------------------------------
 ORDERS          .proc
-                lda STKFLG
+                lda JoystickFlag
                 bne FirstBtnPass._XIT
 
                 ldx activeCorps
@@ -535,7 +535,7 @@ _5              tay
                 lda #$A8
                 sta SID_CTRL1           ; TODO: distortion-5; half volume
                 lda #$FF
-                sta STKFLG
+                sta JoystickFlag
 
                 ldx activeCorps
                 inc HowManyOrders,X
@@ -614,6 +614,7 @@ _7              iny
 ;--------------------------------------
 NoButton        .proc
                 sta DEBOUNCE_TIMER
+
                 lda JOYSTICK0           ; joystick0 read
                 ;lda #$1F    ; HACK:
                 and #$0F
@@ -621,7 +622,7 @@ NoButton        .proc
                 bne Scroll
 
                 sta SID_CTRL1           ; TODO: no distortion; volume set based on joystick movement
-                sta STKFLG
+                sta JoystickFlag
 
                 lda #$08
                 sta DELAY
@@ -657,9 +658,9 @@ Scroll          .proc
                 cmp #$01
                 beq _1
 
-                sec
-                sbc #$01
+                dec A
                 sta DELAY
+
 _1              clc
                 adc JIFFYCLOCK
                 sta scrollTimer
@@ -680,17 +681,19 @@ _checkLeft      .m8
                 bne _checkRight         ;   no, move on
 
                 .m16
-                ;lda cursorMapX          ; already at zero?
-                ;beq _checkUp            ;   yes, move on
+                lda cursorMapX          ; already at limit?
+                cmp #$28
+                beq _checkUp            ;   yes, move on
 
-_2              ;dec A
-                ;sta cursorMapX
+_2              dec A
+                dec A
+                sta cursorMapX
 
-_3              .m16
-                lda shSpr0PositionX
+_3              lda shSpr0PositionX
                 cmp #$28
                 beq _4
 
+                dec A
                 dec A
                 sta shSpr0PositionX
                 sta SP00_X_POS          ; Sprite-0 x-position
@@ -700,6 +703,7 @@ _4              lda X_POS
                 beq _checkUp
 
                 dec A                   ; decrement x-coordinate
+                dec A
                 sta X_POS
                 sta TILE3_WINDOW_X_POS  ; fine scroll
                 sta TILE2_WINDOW_X_POS
@@ -717,17 +721,19 @@ _checkRight     .m8
                 bne _checkUp            ;   no, move on
 
                 .m16
-                ;lda cursorMapX
-                ;cmp #$64
-                ;beq _checkUp
+                lda cursorMapX
+                cmp #$2F8
+                beq _checkUp
 
-_5              ;inc A
-                ;sta cursorMapX
-_6              .m16
-                lda shSpr0PositionX
+_5              inc A
+                inc A
+                sta cursorMapX
+
+_6              lda shSpr0PositionX
                 cmp #$278
                 beq _7
 
+                inc A
                 inc A
                 sta shSpr0PositionX
                 sta SP00_X_POS          ; Sprite-0 x-position
@@ -738,6 +744,7 @@ _7              lda X_POS
                 beq _checkUp
 
                 inc A                   ; no, increment x-coordinate
+                inc A
                 sta X_POS
                 sta TILE3_WINDOW_X_POS  ; fine scroll
                 sta TILE2_WINDOW_X_POS
@@ -756,27 +763,28 @@ _checkUp        .m8
                 pla                     ; clean up stack
 
                 .m16
-                ;lda cursorMapY
-                ;cmp #$25E
-                ;beq _checkDown
+                lda cursorMapY
+                cmp #$48
+                beq _checkDown
 
-_8              ;inc cursorMapY
-_9              .m16
-                lda shSpr0PositionY
+_8              dec A
+                dec A
+                sta cursorMapY
+
+_9              lda shSpr0PositionY
                 cmp #$48
                 beq _11
 
-                ;inc cursorMapY
-
 _10             dec A
+                dec A
                 sta shSpr0PositionY
                 sta SP00_Y_POS
                 bra _XIT
 
-_11             .m16
-                lda Y_POS
+_11             lda Y_POS
                 beq _XIT
 
+                dec A
                 dec A
                 sta Y_POS
                 sta TILE3_WINDOW_Y_POS  ; fine scroll
@@ -785,13 +793,13 @@ _11             .m16
 
 _11skip         ;bra _checkDown          ; scroll overflow? If not, amble on
 
-                lda OFFLO               ; yes, set up offset for character scroll
-                sec
-                sbc #$30
-                sta OFFLO
-                lda OFFHI
-                sbc #$00
-                sta OFFHI
+                ; lda OFFLO               ; yes, set up offset for character scroll
+                ; sec
+                ; sbc #$30
+                ; sta OFFLO
+                ; lda OFFHI
+                ; sbc #$00
+                ; sta OFFHI
 
 _checkDown      .m8
                 pla
@@ -799,19 +807,20 @@ _checkDown      .m8
                 bne _XIT                ;   no, trudge on
 
                 .m16
-                ;lda cursorMapY
-                ;cmp #$02
-                ;beq _XIT
+                lda cursorMapY
+                cmp #$2A8
+                beq _XIT
 
-_12             ;dec A
-                ;sta cursorMapY
+_12             inc A
+                inc A
+                sta cursorMapY
 
-_13             .m16
-                lda shSpr0PositionY
+_13             lda shSpr0PositionY
                 cmp #$188
                 beq _15
 
 _14             inc A
+                inc A
                 sta shSpr0PositionY
                 sta SP00_Y_POS
                 bra _XIT
@@ -821,19 +830,20 @@ _15             lda Y_POS
                 beq _XIT
 
                 inc A                   ; no, decrement y-coordinate
+                inc A
                 sta Y_POS
                 sta TILE3_WINDOW_Y_POS  ; fine scroll
                 sta TILE2_WINDOW_Y_POS
                 bra _XIT                ; no, move on
 
-                .m8
-                lda OFFLO               ; yes, mark offset
-                clc
-                adc #$30
-                sta OFFLO
-                lda OFFHI
-                adc #$00
-                sta OFFHI
+                ; .m8
+                ; lda OFFLO               ; yes, mark offset
+                ; clc
+                ; adc #$30
+                ; sta OFFLO
+                ; lda OFFHI
+                ; adc #$00
+                ; sta OFFHI
 
 _XIT            .m8
                 cli

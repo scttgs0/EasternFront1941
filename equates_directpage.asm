@@ -56,7 +56,7 @@ DEBOUNCE_TIMER  .byte ?                 ; joystick debounce timer
 STICKI          .byte ?                 ; coded value of stick direction (0-3)
 ERRFLG          .byte ?
 KRZFLG          .byte ?
-STKFLG          .byte ?
+JoystickFlag    .byte ?
 HITFLG          .byte ?
 TXL             .byte ?                 ; temporary values---slightly shifted
 TXH             .byte ?         ; [$30]
