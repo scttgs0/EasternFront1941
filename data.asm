@@ -407,8 +407,10 @@ MOSCOW          .byte 0,0,0,0
 
 DPINITVALS      .word $0000             ; map address
                 .byte $00               ; active corp
-                .word $0068             ; cursor x
-                .word $0058             ; cursor y
+                .word $02A8             ; cursor x  $310 - player-0-x
+                                        ;   =735 - player-0-x - left-border... =735-104-48... =583
+                .word $0268             ; cursor y  $2C0 - player-0-y      
+                                        ;   =623 - player-0-y - top-border...  =623-88-32...  =503
                 .word $0068             ; player-0 position x
                 .word $0058             ; player-0 position y
                 .byte $10               ; earth color

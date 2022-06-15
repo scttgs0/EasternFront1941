@@ -85,9 +85,23 @@ _3              lda JOYSTICK0           ; read joystick0 button
 
                 jmp NoButton
 
-_4              lda #$58                ; button just released
-                sta LUTSprColor0        ; TODO: Sprite-0 color
+_4              .setbank $04            ; button just released
+                lda SprColor0
+                cmp #$84
+                beq _4a
 
+;   cursor is highlighted, so restore to normal
+                ldy #2
+_nextChannel    lda SprColor0,Y         ; remove brightening on the cursor
+                sec
+                sbc #$30
+                sta SprColor0,Y
+                dey
+                bpl _nextChannel
+
+                jsr InitLUT
+
+_4a             .setbank $03
                 lda #$00
                 sta BUTTON_FLAG         ; =false
                 sta KRZFLG
@@ -292,77 +306,76 @@ FirstBtnPass    .proc
 ;   first get coords of center of cursor (map frame)
                 .m16
                 lda cursorMapX
-                clc
-                adc #$10
+                sec
+                sbc #$10
                 sta TXL                 ; 16-bit intentional
 
                 lda cursorMapY
-                clc
-                adc #$10
+                sec
+                sbc #$10
                 sta TYL                 ; 16-bit intentional
 
-;   coords of cursor (pixel frame)
+;   coords of cursor (map frame)
 ;   activeCorpsX = /16
 ;   activeCorpsY = /16
-                .m8
-                lda TXH
-                lsr A                   ; /8
                 lda TXL
-                ror A
+                lsr A                   ; /16
+                lsr A
                 lsr A
                 lsr A
                 sta activeCorpsX
 
-                lda TYH
-                lsr A                   ; /2
-                tax                     ; save in X
-
-                lda TYL                 ; continue /2
-                ror A
-                tay                     ; save in Y
-
-                txa                     ; restore high-byte
-                lsr A                   ; /2
-
-                tya                     ; restore low-byte
-                ror A                   ; continue /2
-                lsr A                   ; /2
-                lsr A                   ; /2
+                lda TYL
+                lsr A                   ; /16
+                lsr A
+                lsr A
+                lsr A
                 sta activeCorpsY
 
 ;   look for a match with unit coordinates
+                .m8
                 ldx #$9E
-_next1          cmp CorpsY,X
+_next1          lda CorpsY,X
+                cmp activeCorpsY
                 beq _1
 
 _next2          dex
                 bne _next1
 
-                stx activeCorps         ; no match obtained
+                stx activeCorps         ; 0= no match obtained
                 dex
-                stx HITFLG
+                stx HITFLG              ; -1= no hit
                 jmp ENDISR
 
-_1              lda activeCorpsX
-                cmp CorpsX,X
-                bne _2
+_1              lda CorpsX,X
+                cmp activeCorpsX
+                bne _next2
 
                 lda ArrivalTurn,X
                 bmi _2
 
-                cmp TURN
+                cmp TURN                ; confirm unit is on the board
                 bcc _match
                 beq _match
 
-_2              lda activeCorpsY
-                jmp _next2
+_2              bra _next2
 
 ;   match obtained
 _match          lda #$00
                 sta HITFLG              ; note match
                 sta KEYCHAR             ; last key pressed
-                lda #$5C
-                sta LUTSprColor0        ; TODO: Sprite-0 color - light up cursor
+
+                .setbank $04
+                ldy #2                  ; brighten up the cursor
+_nextChannel    lda SprColor0,Y
+                clc
+                adc #$30
+                sta SprColor0,Y
+                dey
+                bpl _nextChannel
+
+                jsr InitLUT
+                .setbank $03
 
 ;   display unit specs
                 stx activeCorps
@@ -396,9 +409,8 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
                 lda #$1F                ; "MUSTER"
                 jsr DisplayWord
 
-                dey
-
                 .setbank $04
+                dey
                 lda #$1A                ; ":"
                 sta TXTWDW,Y
                 .setbank $03
@@ -417,9 +429,8 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
                 lda #$21                ; "STRENGTH"
                 jsr DisplayWord
 
-                dey
-
                 .setbank $04
+                dey
                 lda #$3A                ; ":"
                 sta TXTWDW,Y
                 .setbank $03
@@ -682,11 +693,11 @@ _checkLeft      .m8
 
                 .m16
                 lda cursorMapX          ; already at limit?
-                cmp #$28
+                cmp #$2E8
                 beq _checkUp            ;   yes, move on
 
-_2              dec A
-                dec A
+_2              inc A
+                inc A
                 sta cursorMapX
 
 _3              lda shSpr0PositionX
@@ -722,11 +733,11 @@ _checkRight     .m8
 
                 .m16
                 lda cursorMapX
-                cmp #$2F8
+                cmp #$18
                 beq _checkUp
 
-_5              inc A
-                inc A
+_5              dec A
+                dec A
                 sta cursorMapX
 
 _6              lda shSpr0PositionX
@@ -764,11 +775,11 @@ _checkUp        .m8
 
                 .m16
                 lda cursorMapY
-                cmp #$48
+                cmp #$278
                 beq _XIT
 
-_8              dec A
-                dec A
+_8              inc A
+                inc A
                 sta cursorMapY
 
 _9              lda shSpr0PositionY
@@ -808,11 +819,11 @@ _checkDown      .m8
 
                 .m16
                 lda cursorMapY
-                cmp #$2A8
+                cmp #$18
                 beq _XIT
 
-_12             inc A
-                inc A
+_12             dec A
+                dec A
                 sta cursorMapY
 
 _13             lda shSpr0PositionY

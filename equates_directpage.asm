@@ -15,8 +15,9 @@ activeCorpsY    .byte ?
 ;   initialized at start
 pMap            .word ?
 activeCorps     .byte ?                 ; number of unit under window
-cursorMapX      .word ?                 ; cursor coordinates on screen (map pixel frame)
-cursorMapY      .word ?         ; [$07]
+cursorMapX      .word ?                 ; cursor position in map coordinates (lower-right origin)
+                                        ; range [735:0]     46*16=736
+cursorMapY      .word ?         ; [$07]   range [623:0]     39*16=624
 shSpr0PositionX .word ?                 ; shadows player-0 position (player frame)
 shSpr0PositionY .word ?
 
