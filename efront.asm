@@ -11,19 +11,19 @@
 ;                   0800-08cd           direct-page
 ;   02      code
 ;                   0fd8-0ffb           PGX bootstrap
-;                   1000-17a4           thinking (AI)
+;                   1000-17a2           thinking (AI)
 ;                   2000-280f           main
 ;                   3000-3509           combat
-;                   4000-47d6           interrupt
+;                   4000-48d5           interrupt
 ;                   5000-527b           platform_c256
 ;   03      data
-;                   0000-1280           data
+;                   0000-127c           data
 ;   04      palette, font, text, map
 ;                   0000-01fb           PALETTE
 ;                   1000-afff           FONT
 ;                   b000-d9aa           TEXT
-;                   e000-e83a           MAP
-;                   f000-f83a           units
+;                   e000-e865           MAP
+;                   f000-f865           units
 ;   05      tiles, sprites
 ;                   0000-82ff           TILES
 ;                   9000-abff           STAMPS

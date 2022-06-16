@@ -647,9 +647,7 @@ _TOGSCN         lda JOYSTICK0           ; read joystick0 button
                 and #$10
                 beq _46                 ; ignore game console if red button is down
 
-                lda #$07
-                sta CONSOL              ; TODO:platform     ; reset function keys
-                lda CONSOL              ; TODO:platform     ; read function keys
+                lda CONSOL              ; read function keys
                 and #$01                ; START key
                 beq _WRAPUP
 

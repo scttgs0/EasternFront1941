@@ -110,9 +110,9 @@ _next3          lda MusterStrength,X    ; combat strength = muster strength
 ;   enable vertical blank interrupt
 
                 .m8i8
-                ldx #$03
-_relocate       lda HandleIrq,X
-                sta @l $002000,X
+                ldx #HandleIrq_END-HandleIrq
+_relocate       lda @l $024000,X        ; HandleIrq address
+                sta @l $002000,X        ; new address within Bank 00
                 dex
                 bpl _relocate
 
@@ -126,9 +126,16 @@ _relocate       lda HandleIrq,X
                 sta @l vecIRQ
 
                 .m8
+                lda #$07                ; reset consol
+                sta CONSOL
+
                 lda @l INT_MASK_REG0
                 and #~FNX0_INT00_SOF    ; enable Start-of-Frame IRQ
                 sta @l INT_MASK_REG0
+
+                ; lda @l INT_MASK_REG1
+                ; and #~FNX1_INT00_KBD    ; enable Keyboard IRQ
+                ; sta @l INT_MASK_REG1
 
                 cli                     ; enable IRQ
                 wai

@@ -8,14 +8,145 @@
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; To be relocated to 00:2000
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-HandleIrq       jml DVBI
+                .logical $00_2000
+
+HandleIrq       ;sei
+
+                ; lda @l INT_PENDING_REG1
+                ; and #FNX1_INT00_KBD
+                ; cmp #FNX1_INT00_KBD
+                ; bne _1
+
+                ; jsl KeyboardHandler
+
+                ; lda @l INT_PENDING_REG1
+                ; sta @l INT_PENDING_REG1
+
+_1              lda INT_PENDING_REG0
+                and #FNX0_INT00_SOF
+                cmp #FNX0_INT00_SOF
+                bne _XIT
+
+                jsl DVBI
+
+                lda @l INT_PENDING_REG0
+                sta @l INT_PENDING_REG0
+
+_XIT            ;cli
+HandleIrq_END   rti
                 ;jmp IRQ_PRIOR
+
+                .endlogical
+
+
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Handle Key notifications
+;--------------------------------------
+;   ESC         $01/$81  press/release
+;   R-Ctrl      $1D/$9D
+;   Space       $39/$B9
+;   F2          $3C/$BC
+;   F3          $3D/$BD
+;   F4          $3E/$BE
+;   Up          $48/$C8
+;   Left        $4B/$CB
+;   Right       $4D/$CD
+;   Down        $50/$D0
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+KeyboardHandler .proc
+KEY_F2          = $3C
+KEY_F3          = $3D
+KEY_F4          = $3E
+;---
+
+                pha
+                phx
+                phy
+
+                .m8i8
+                .setbank $03
+
+                stz KEYCHAR             ; reset
+
+                lda KBD_INPT_BUF
+                pha
+                and #$80                ; is it a key release?
+                bne _1r                 ;   yes
+
+_1              pla                     ;   no
+                pha
+                sta KEYCHAR
+
+                cmp #KEY_F2
+                bne _2
+
+                lda CONSOL
+                eor #$04
+                sta CONSOL
+                stz KEYCHAR
+
+_2              pla
+                pha
+                cmp #KEY_F3
+                bne _3
+
+                lda CONSOL
+                eor #$02
+                sta CONSOL
+                stz KEYCHAR
+
+_3              pla
+                cmp #KEY_F4
+                bne _XIT
+
+                lda CONSOL
+                eor #$01
+                sta CONSOL
+                stz KEYCHAR
+
+                bra _XIT
+
+_1r             pla
+                pha
+                cmp #KEY_F2|$80
+                bne _2r
+
+                lda CONSOL
+                ora #$04
+                sta CONSOL
+
+_2r             pla
+                pha
+                cmp #KEY_F3|$80
+                bne _3r
+
+                lda CONSOL
+                ora #$02
+                sta CONSOL
+
+_3r             pla
+                cmp #KEY_F4|$80
+                bne _XIT
+
+                lda CONSOL
+                ora #$01
+                sta CONSOL
+
+_XIT            ply
+                plx
+                pla
+                rtl
+                .endproc
 
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Deferred vertical blank interrupt
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DVBI            .proc
+                pha
+                phx
+                phy
+
                 .m8i8
                 .setbank $03
 
@@ -53,9 +184,7 @@ _1              lda HANDICAP
                 and #$10
                 beq _3                  ; skip when button is pressed
 
-                lda #$07
-                sta CONSOL              ; TODO: reset function keys
-                lda CONSOL              ; TODO: read function keys
+                lda CONSOL              ; read function keys
                 and #$04                ; OPTION key
                 bne _3
 
@@ -156,7 +285,7 @@ _7              jsr ClearError          ; no, clear errors
                 jmp ENDISR              ; no
 
 _8              lda KEYCHAR             ; last key pressed
-                cmp #$21
+                cmp #$39
                 bne _9                  ; space bar pressed?
 
                 ldx activeCorps         ;   yes, check for Russian
@@ -164,7 +293,6 @@ _8              lda KEYCHAR             ; last key pressed
                 bcs _9
 
                 lda #$00
-                sta KEYCHAR             ; last key pressed
                 sta HowManyOrders,X     ; clear out orders
                 sta HOWMNY
                 sta STPCNT
@@ -367,7 +495,6 @@ _2              bra _next2
 ;   match obtained
 _match          lda #$00
                 sta HITFLG              ; note match
-                sta KEYCHAR             ; last key pressed
 
                 stx activeCorps
 
@@ -681,8 +808,6 @@ Scroll          .proc
                 cmp JIFFYCLOCK
                 bne EXITI
 
-                sei
-
                 lda DELAY
                 cmp #$01
                 beq _1
@@ -874,7 +999,6 @@ _15             lda Y_POS
                 ; sta OFFHI
 
 _XIT            .m8
-                cli
                 .endproc
 
                 ;[fall-through]
@@ -911,7 +1035,10 @@ _2              sta TEMPI
                 sec
                 sbc TEMPI
 
-_3              rti
+_3              ply
+                plx
+                pla
+                rtl
                 .endproc
 
 
@@ -931,14 +1058,14 @@ SwitchCorps     .proc
 
 ;   MAP origin is lower-right
 ;   TEMPLO origin is upper-left
-;   conver the coordinate systems
-;   TEMPLO = 38-activeCorpsY*49
+;   convert the coordinate systems
+;   TEMPLO = 38-activeCorpsY*50
                 lda #38                 ; MAP HEIGHT excluding border
                 .m8
                 sec
                 sbc activeCorpsY
                 .m16
-;   multiple by 49 -- *32 + *16 + *1 = *49
+;   multiple by 50 -- *32 + *16 + *2 = *50
                 pha
                 asl A                   ; *32
                 asl A
@@ -955,7 +1082,8 @@ SwitchCorps     .proc
                 clc
                 adc TEMPLO
                 sta TEMPLO
-                pla                     ; *1
+                pla
+                asl A                   ; *2
                 clc
                 adc TEMPLO
 
