@@ -8,7 +8,13 @@ FooterText1     = TXTWDW
 FooterText2     = TXTWDW+40
 FooterText3     = TXTWDW+80
 
+
+;--------------------------------------
+;--------------------------------------
+                .align $40
+;--------------------------------------
 Text2Bitmap     .fill 640*16,$00
+
 ColumnOffset    .word ?
 GlyphOffset     .word ?
 ForeColor       .byte ?
@@ -18,7 +24,6 @@ BackColor       .byte ?
 ;--------------------------------------
 ;--------------------------------------
                 .align $100
-;--------------------------------------
 
 ;======================================
 ; Convert ASCII text to Bitmap
