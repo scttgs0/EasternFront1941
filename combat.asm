@@ -66,7 +66,7 @@ _next1          stx SID_CTRL1           ; TODO: no distortion; max volume
 
                 jsr TerrainType         ; terrain in defender's square
 
-                ldx DEFNC,Y             ; defensive bonus factor
+                ldx DefenseBonus,Y      ; defensive bonus factor
                 lda CombatStrength,Y    ; defender's strength
                 lsr A
 _next2          dex                     ; adjust for terrain
@@ -98,7 +98,7 @@ _doBattle       cmp SID_RANDOM
 
 _4              jmp Dead                ; attacker dies
 
-_5              jsr MoraleCheck              ; attacker lives; does he break?
+_5              jsr MoraleCheck         ; attacker lives; does he break?
 
 ;   evaluate attacker's strike
 _attacker       ldx ARMY
@@ -109,7 +109,7 @@ _attacker       ldx ARMY
                 jsr Terrain
                 jsr TerrainType
 
-                lda OFFNC,Y
+                lda OffenseBonus,Y
                 tay
                 ldx ARMY
                 lda CombatStrength,X
@@ -537,7 +537,7 @@ _XIT            rts
 
 ;======================================
 ; Evaluates whether a unit under
-; attack breaks
+; attack will break
 ;======================================
 MoraleCheck2    .proc
                 cpx #$47
@@ -552,7 +552,7 @@ MoraleCheck2    .proc
                 jmp _2
 
 _1              lda MusterStrength,X
-                lsr A
+                lsr A                   ; /8
                 lsr A
                 lsr A
 _OBJY           sta TEMPR
@@ -574,7 +574,7 @@ _XIT            rts
 
 ;======================================
 ; Evaluates whether a unit under
-; attack breaks
+; attack will break
 ;======================================
 MoraleCheck4    .proc
                 cpx #$47

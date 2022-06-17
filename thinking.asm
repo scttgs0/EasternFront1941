@@ -5,7 +5,7 @@
 ;==================================================================
 
 ;
-;Russian artificial intelligence routine
+; Russian artificial intelligence routine
 ;
 
 ;======================================
@@ -15,6 +15,7 @@ INIT            ldx #$01
                 sta TEMPR
                 sta TOTRS
                 sta TOTGS
+
                 ldy #$9E
 _next1          lda ArrivalTurn,Y
                 cmp TURN
@@ -524,7 +525,7 @@ _33             ldy NBVAL
                 jmp _41
 
 _34             ldy TRNTYP
-                lda DEFNC,Y
+                lda DefenseBonus,Y
                 clc
                 adc NBVAL
                 tay

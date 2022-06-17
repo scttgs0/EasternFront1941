@@ -12,27 +12,38 @@
 
 HandleIrq       ;sei
 
-                ; lda @l INT_PENDING_REG1
-                ; and #FNX1_INT00_KBD
-                ; cmp #FNX1_INT00_KBD
-                ; bne _1
+                .m16i16
+                pha
+                phx
+                phy
 
-                ; jsl KeyboardHandler
+                lda @l INT_PENDING_REG1
+                and #FNX1_INT00_KBD
+                cmp #FNX1_INT00_KBD
+                bne _1
 
-                ; lda @l INT_PENDING_REG1
-                ; sta @l INT_PENDING_REG1
+                jsl KeyboardHandler
+
+                lda @l INT_PENDING_REG1
+                sta @l INT_PENDING_REG1
 
 _1              lda INT_PENDING_REG0
                 and #FNX0_INT00_SOF
                 cmp #FNX0_INT00_SOF
                 bne _XIT
 
-                jsl DVBI
+                jsl VbiHandler
 
                 lda @l INT_PENDING_REG0
                 sta @l INT_PENDING_REG0
 
-_XIT            ;cli
+_XIT            .m16i16
+                ply
+                plx
+                pla
+
+                .m8i8
+                ;cli
 HandleIrq_END   rti
                 ;jmp IRQ_PRIOR
 
@@ -58,7 +69,7 @@ KEY_F2          = $3C
 KEY_F3          = $3D
 KEY_F4          = $3E
 ;---
-
+                .m16i16
                 pha
                 phx
                 phy
@@ -132,17 +143,21 @@ _3r             pla
                 ora #$01
                 sta CONSOL
 
-_XIT            ply
+_XIT            .m16i16
+                ply
                 plx
                 pla
+
+                .m8i8
                 rtl
                 .endproc
 
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; Deferred vertical blank interrupt
+; Handle Vertical Blank Interrupt (SOF)
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-DVBI            .proc
+VbiHandler      .proc
+                .m16i16
                 pha
                 phx
                 phy
@@ -215,11 +230,11 @@ _3a             lda BUTTON_FLAG         ; no button now; previous status
 
 _4              .setbank $04            ; button just released
                 lda SprColor0
-                cmp #$84
-                beq _4a
+                cmp #$84                ; is the cursor highlighted?
+                beq _4a                 ;   no, skip
 
 ;   cursor is highlighted, so restore to normal
-                ldy #2
+                ldy #2                  ;   yes, restore it
 _nextChannel    lda SprColor0,Y         ; remove brightening on the cursor
                 sec
                 sbc #$30
@@ -232,7 +247,7 @@ _nextChannel    lda SprColor0,Y         ; remove brightening on the cursor
 _4a             .setbank $03
                 lda #$00
                 sta BUTTON_FLAG         ; =false
-                sta KRZFLG
+                sta CrossFlag
                 sta SID_CTRL1           ; TODO: no distortion; no volume
 
                 .setbank $04
@@ -279,25 +294,26 @@ _6              sta DEBOUNCE_TIMER      ;   no, clear debounce
 
 _7              jsr ClearError          ; no, clear errors
 
-                lda HITFLG
+                lda HitFlag
                 beq _8                  ; anybody in the window?
 
-                jmp ENDISR              ; no
+                jmp ENDISR              ;   no
 
 _8              lda KEYCHAR             ; last key pressed
-                cmp #$39
-                bne _9                  ; space bar pressed?
+                cmp #$39                ; space bar pressed?
+                bne _9                  ;   no, skip
 
                 ldx activeCorps         ;   yes, check for Russian
-                cpx #$37                ; when Russian
+                cpx #$37                ; when Russian, skip
                 bcs _9
 
                 lda #$00
                 sta HowManyOrders,X     ; clear out orders
                 sta HOWMNY
-                sta STPCNT
+                sta StepCount
+
                 lda #$01
-                sta ORDCNT
+                sta OrderCount
                 jsr ClearArrow
                 jsr ClearMaltakreuze
 
@@ -305,6 +321,7 @@ _8              lda KEYCHAR             ; last key pressed
                 sta STEPX
                 lda BASEY
                 sta STEPY
+
 _9              lda JIFFYCLOCK
                 and #$03
                 beq _10                 ; time to move arrow?
@@ -318,7 +335,7 @@ _10             ldy HOWMNY              ;   yes
 
 _11             jsr ClearArrow          ;   yes, clear old arrow
 
-                lda ORDCNT
+                lda OrderCount
                 ldx #$00                ; assume first byte
                 cmp #$05
                 bcc _12                 ; second byte or first?
@@ -336,37 +353,50 @@ _12             and #$03                ; isolate bit pair index
                 ldy #$03
 _13             beq _14
 
-_next3          lsr A
+_next3          lsr A                   ; /4
                 lsr A
                 dey
                 bne _next3
 
-_14             sta ARRNDX
+;---
+                .m16i16
+_14             sta ArrowIndex
+;   multiple by 1024 (size of the arrow stamp)
+                xba                     ; *256
+                and #$FF00
+                asl A                   ; *4
                 asl A
-                asl A
-                asl A
+                sta wTEMP
 
 ;   get arrow image and store it to player RAM
                 tax
-                ldy STEPY
-_next4          lda ArrowTbl,X
-                cpy #$80
-                bcs _15
 
-                .setbank $05
-                sta PLYR1,Y
-                .setbank $03
-_15             inx
-                iny
-                txa
-                and #$07
-                bne _next4
+                lda #<>(SPRITES+$800-VRAM)  ; PLYR1_UP is the base address
+                clc
+                adc wTEMP               ; add the displacement for the appropriate arrow
+                sta SP01_ADDR
+
+;                 .setbank $05
+;                 ldy #$00
+; _14a            lda PLYR1_UP,X
+;                 sta PLYR1,Y
+;                 inx
+;                 inx
+;                 iny
+;                 iny
+;                 cpy #$0400
+;                 bne _14a
+
+;                 .setbank $03
 
                 lda STEPX               ; position arrow
-                sta SP01_X_POS          ; Sprite-1 x-position
+                sta SP01_X_POS
+                lda STEPY
+                sta SP01_Y_POS
 
+                .m8i8
 ;   now step arrow
-                ldx ARRNDX
+                ldx ArrowIndex
                 lda STEPX
                 clc
                 adc XADD,X
@@ -376,44 +406,34 @@ _15             inx
                 adc YADD,X
                 sta STEPY
 
-                inc STPCNT              ; next step
-                lda STPCNT
+                inc StepCount           ; next step
+                lda StepCount
                 and #$07
                 bne _XIT                ; if not done end ISR
 
-                sta STPCNT              ; end of steps
-                inc ORDCNT              ; next order
-                lda ORDCNT
+                sta StepCount           ; end of steps
+                inc OrderCount          ; next order
+                lda OrderCount
                 cmp HOWMNY              ; last order?
                 bcc _XIT                ;   no, out
                 beq _XIT                ;   no, out
 
                 lda #$01
-                sta ORDCNT              ;   yes, reset to start of arrow's path
+                sta OrderCount          ;   yes, reset to start of arrow's path
 
 ;   display maltese cross ('maltakreuze' or KRZ)
 _printCursor    ldy STEPY
-                sty KRZY
-                lda #$FF
-                sta KRZFLG
-                ldx #$00
-_next5          lda MLTKRZ,X
-                cpy #$80
-                bcs _16
-
-                .setbank $05
-                sta PLYR2,Y
-                .setbank $03
-_16             iny
-                inx
-                cpx #$08
-                bne _next5
+                sty CrossY
+                sta SP02_Y_POS
 
                 lda STEPX
-                sec
-                sbc #$01
-                sta KRZX
+                dec A
+                sta CrossX
                 sta SP02_X_POS          ; Sprite-2 x-position
+
+                lda #$FF                ; cross is visible
+                sta CrossFlag
+
                 jsr ClearArrow
 
                 lda BASEX               ; reset arrow's coords
@@ -440,24 +460,24 @@ FirstBtnPass    .proc
                 lda cursorMapX
                 sec
                 sbc #$10
-                sta TXL                 ; 16-bit intentional
+                sta wTX
 
                 lda cursorMapY
                 sec
                 sbc #$10
-                sta TYL                 ; 16-bit intentional
+                sta wTY
 
 ;   coords of cursor (map frame)
 ;   activeCorpsX = /16
 ;   activeCorpsY = /16
-                lda TXL
+                lda wTX
                 lsr A                   ; /16
                 lsr A
                 lsr A
                 lsr A
                 sta activeCorpsX
 
-                lda TYL
+                lda wTY
                 lsr A                   ; /16
                 lsr A
                 lsr A
@@ -476,7 +496,7 @@ _next2          dex
 
                 stx activeCorps         ; 0= no match obtained
                 dex
-                stx HITFLG              ; -1= no hit
+                stx HitFlag             ; -1= no hit
                 jmp ENDISR
 
 _1              lda CorpsX,X
@@ -494,7 +514,7 @@ _2              bra _next2
 
 ;   match obtained
 _match          lda #$00
-                sta HITFLG              ; note match
+                sta HitFlag             ; note match
 
                 stx activeCorps
 
@@ -594,7 +614,7 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
                 bcc _4                  ; Russian?
 
                 lda #$FF                ; yes, mask orders and exit
-                sta HITFLG
+                sta HitFlag
                 bra _XIT
 
 ;
@@ -603,30 +623,32 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
 ;first calculate starting coords (BASEX, BASEY)
 ;
 _4              lda #$01
-                sta ORDCNT
+                sta OrderCount
                 lda #$00
-                sta STPCNT
+                sta StepCount
 
-                lda TXL
+                .m16
+                lda wTX
                 and #$07
                 clc
                 adc #$01
                 clc
-                adc shSpr0PositionX     ; TODO: 16-bit
+                adc shSpr0PositionX
                 sta BASEX
                 sta STEPX
 
-                lda TYL
+                lda wTY
                 and #$0F
                 lsr A
                 sec
                 sbc #$01
                 clc
-                adc shSpr0PositionY     ; TODO: 16-bit'
+                adc shSpr0PositionY
                 sta BASEY
                 sta STEPY
 
 ;   set up page 6 values
+                .m8
                 ldx activeCorps
                 lda HowManyOrders,X
                 sta HOWMNY
@@ -660,7 +682,7 @@ _1              lda HowManyOrders,X
                 ldx #$20
                 jmp Squawk
 
-_2              lda KRZFLG
+_2              lda CrossFlag
                 bne _3                  ; must wait for maltakreuze
 
                 ldx #$40
@@ -678,7 +700,7 @@ _4              lda #$00
                 lda JOYSTICK0           ; joystick0 read
                 and #$0F
                 tax
-                lda STKTAB,X
+                lda JOYSTICK_TBL,X
                 bpl _5
 
                 ldx #$60                ; no diagonal orders allowed
@@ -734,32 +756,21 @@ _6              ldy TEMPI
                 jsr ClearMaltakreuze
 
                 ldx STICKI
-                lda KRZX
+                lda CrossX
                 clc
                 adc XOFF,X
-                sta KRZX
-                lda KRZY
+                sta CrossX
+
+                lda CrossY
                 clc
                 adc YOFF,X
-                sta KRZY
-                lda KRZX                ; display it
+                sta CrossY
+
+                lda CrossX              ; display it
                 sta SP02_X_POS          ; Sprite-2 x-position
-                ldy KRZY
-                ldx #$00
 
-                .setbank $05
-
-_next2          lda MLTKRZ,X
-                cpy #$80
-                bcs _7
-
-                sta PLYR2,Y
-_7              iny
-                inx
-                cpx #$08
-                bne _next2
-
-                .setbank $03
+                lda CrossY
+                sta SP02_Y_POS
 
                 bra EXITI
 
@@ -1035,9 +1046,12 @@ _2              sta TEMPI
                 sec
                 sbc TEMPI
 
-_3              ply
+_3              .m16i16
+                ply
                 plx
                 pla
+
+                .m8i8
                 rtl
                 .endproc
 
@@ -1057,9 +1071,9 @@ SwitchCorps     .proc
                 .m16i8
 
 ;   MAP origin is lower-right
-;   TEMPLO origin is upper-left
+;   wTEMP origin is upper-left
 ;   convert the coordinate systems
-;   TEMPLO = 38-activeCorpsY*50
+;   wTEMP = 38-activeCorpsY*50
                 lda #38                 ; MAP HEIGHT excluding border
                 .m8
                 sec
@@ -1072,7 +1086,7 @@ SwitchCorps     .proc
                 asl A
                 asl A
                 asl A
-                sta TEMPLO
+                sta wTEMP
                 pla
                 pha
                 asl A                   ; *16
@@ -1080,12 +1094,12 @@ SwitchCorps     .proc
                 asl A
                 asl A
                 clc
-                adc TEMPLO
-                sta TEMPLO
+                adc wTEMP
+                sta wTEMP
                 pla
                 asl A                   ; *2
                 clc
-                adc TEMPLO
+                adc wTEMP
 
                 clc
                 adc #$E000+MAPWIDTH*3   ; MAP address + top border
@@ -1119,7 +1133,7 @@ SwitchCorps     .proc
                 lda pMap
                 clc
                 adc #$1000              ; UNIT tile map is $1000 bytes ahead of MAP
-                sta TEMPLO
+                sta wTEMP
 
                 .m8
                 lda (pMap),Y
@@ -1139,10 +1153,10 @@ SwitchCorps     .proc
                 beq _1
 
                 lda #$00                ; not a unit counter -- clear the tile
-                sta (TEMPLO),Y
+                sta (wTEMP),Y
                 bra _XIT
 
-_1              sta (TEMPLO),Y          ; place the unit on the UNIT tile map
+_1              sta (wTEMP),Y           ; place the unit on the UNIT tile map
 
 _XIT            .setbank $03
                 plp
@@ -1154,22 +1168,12 @@ _XIT            .setbank $03
 ; Clear the arrow player
 ;======================================
 ClearArrow      .proc
-                lda #$00
-                ldy STEPY
-                dey
-                tax
+                .m16
+                lda #$00                ; move to off-screen
+                sta SP01_X_POS
+                sta SP01_Y_POS
 
-                .setbank $05
-_next1          cpy #$80
-                bcs _1
-
-                sta PLYR1,Y
-_1              iny
-                inx
-                cpx #$0B
-                bne _next1
-
-                .setbank $03
+                .m8
                 rts
                 .endproc
 
@@ -1178,21 +1182,14 @@ _1              iny
 ; Clear the Maltakreuze
 ;======================================
 ClearMaltakreuze .proc
-                lda #$00
-                ldy KRZY
-                tax
+                .m16
+                lda #$00                ; move to off-screen
+                sta SP02_X_POS
+                sta SP02_Y_POS
 
-                .setbank $05
-_next1          cpy #$80
-                bcs _1
-
-                sta PLYR2,Y
-_1              iny
-                inx
-                cpx #$0A
-                bne _next1
-
-                .setbank $03
+                .m8
+                lda #$00                ; cross is not visible
+                sta CrossFlag
                 rts
                 .endproc
 

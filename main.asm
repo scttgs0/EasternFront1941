@@ -57,6 +57,7 @@ _next3          lda MusterStrength,X    ; combat strength = muster strength
                 bne _next3
 
 ;   position sprites
+                .m16
                 lda #7*$10-8
                 sta shSpr0PositionX
                 sta SP00_X_POS
@@ -64,14 +65,10 @@ _next3          lda MusterStrength,X    ; combat strength = muster strength
                 sta shSpr0PositionY
                 sta SP00_Y_POS
 
-                lda #12*$10-8
+                lda #$00                ; move to off-screen
                 sta SP01_X_POS
-                lda #8*$10-8
                 sta SP01_Y_POS
-
-                lda #12*$10-8
                 sta SP02_X_POS
-                lda #9*$10-8
                 sta SP02_Y_POS
 
 ;   copyright text
@@ -133,9 +130,9 @@ _relocate       lda @l $024000,X        ; HandleIrq address
                 and #~FNX0_INT00_SOF    ; enable Start-of-Frame IRQ
                 sta @l INT_MASK_REG0
 
-                ; lda @l INT_MASK_REG1
-                ; and #~FNX1_INT00_KBD    ; enable Keyboard IRQ
-                ; sta @l INT_MASK_REG1
+                lda @l INT_MASK_REG1
+                and #~FNX1_INT00_KBD    ; enable Keyboard IRQ
+                sta @l INT_MASK_REG1
 
                 cli                     ; enable IRQ
                 wai
@@ -956,7 +953,7 @@ _2              txa
                 adc SSNCOD-1,X          ; add season index
                 adc TRNTYP              ; add terrain index
                 tax
-                lda TRNTAB,X            ; get net delay
+                lda TERRAIN_TBL,X       ; get net delay
                 clc
                 adc TICK
                 ldx ARMY

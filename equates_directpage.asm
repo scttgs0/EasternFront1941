@@ -35,129 +35,126 @@ BUTTON_MASK     .byte ?                 ; 0=allow; 1=prevent
 
 ;--------------------------------------
 
-TYL             .byte ?
-TYH             .byte ?         ; [$18]
+wTY             .word ?         ; [$17]
 DELAY           .byte ?                 ; acceleration delay on scrolling
 scrollTimer     .byte ?                 ; frame to scroll in
-TEMPLO          .byte ?                 ; temporary
-TEMPHI          .byte ?
-BASEX           .byte ?                 ; start position for arrow (player frame)
-BASEY           .byte ?
-STEPX           .byte ?                 ; intermediate position of arrow
-STEPY           .byte ?         ; [$20]
-STPCNT          .byte ?                 ; which intermediate steps arrow is on
-ORDCNT          .byte ?                 ; which order arrow is showing
+wTEMP           .word ?                 ; temporary
+BASEX           .word ?                 ; start position for arrow (player frame)
+BASEY           .word ?         ; [$1F]
+STEPX           .word ?                 ; intermediate position of arrow
+STEPY           .word ?
+StepCount       .byte ?                 ; which intermediate steps arrow is on
+OrderCount      .byte ?                 ; which order arrow is showing
 ORD1            .byte ?                 ; orders record
-ORD2            .byte ?
-ARRNDX          .byte ?                 ; arrow index
+ORD2            .byte ?         ; [$28]
+ArrowIndex      .byte ?
 HOWMNY          .byte ?                 ; how many orders for unit under cursor
-KRZX            .byte ?                 ; maltakreuze coords (player frame)
-KRZY            .byte ?         ; [$28]
+CrossX          .byte ?                 ; maltakreuze coords (player frame)
+CrossY          .byte ?
 DEBOUNCE_TIMER  .byte ?                 ; joystick debounce timer
 STICKI          .byte ?                 ; coded value of stick direction (0-3)
 ERRFLG          .byte ?
-KRZFLG          .byte ?
+CrossFlag       .byte ?         ; [$30]
 JoystickFlag    .byte ?
-HITFLG          .byte ?
-TXL             .byte ?                 ; temporary values---slightly shifted
-TXH             .byte ?         ; [$30]
+HitFlag         .byte ?
+wTX             .word ?                 ; temporary values---slightly shifted
 OLDLAT          .byte ?
 TRNCOD          .byte ?
 TLO             .byte ?
-THI             .byte ?
+THI             .byte ?         ; [$38]
 TICK            .byte ?
 UNTCOD          .byte ?
 UNTCD1          .byte ?
-BVAL            .byte ?         ; [$38]   best value
+BVAL            .byte ?                 ; best value
 BONE            .byte ?                 ; best index
 DIR             .byte ?                 ; direction
 TARGX           .byte ?                 ; square under consideration
-TARGY           .byte ?
+TARGY           .byte ?         ; [$40]
 SQX             .byte ?                 ; adjacent square
 SQY             .byte ?
 JCNT            .byte ?                 ; counter for adjacent squares
-LINCOD          .byte ?         ; [$40]   code value of line configuration
+LINCOD          .byte ?                 ; code value of line configuration
 NBVAL           .byte ?                 ; another best value
 RORD1           .byte ?                 ; Russian orders
 RORD2           .byte ?
-HDIR            .byte ?                 ; horizontal direction
+HDIR            .byte ?         ; [$48]   horizontal direction
 VDIR            .byte ?                 ; vertical direction
 LDIR            .byte ?                 ; larger direction
 SDIR            .byte ?                 ; smaller direction
-HRNGE           .byte ?         ; [$48]   horizontal range
+HRNGE           .byte ?                 ; horizontal range
 VRNGE           .byte ?                 ; vertical range
 LRNGE           .byte ?                 ; larger range
 SRNGE           .byte ?                 ; smaller range
-CHRIS           .byte ?                 ; midway counter
-RANGE           .byte ? ; just that
+CHRIS           .byte ?         ; [$50]   midway counter
+RANGE           .byte ?                 ; just that
 RCNT            .byte ?                 ; counter for Russian orders
 SECDIR          .byte ?                 ; secondary direction
-POTATO          .byte ?         ; [$50]   a stupid temporary
-BAKARR          .fill 25        ; [$51]
-LINARR          .fill 25        ; [$6A]
-IFR0            .byte ?         ; [$83]
-IFR1            .byte ?
+POTATO          .byte ?                 ; a stupid temporary
+BAKARR          .fill 25        ; [$55]
+LINARR          .fill 25        ; [$6E]
+IFR0            .byte ?
+IFR1            .byte ?         ; [$88]
 IFR2            .byte ?
 IFR3            .byte ?
 XLOC            .byte ?
-YLOC            .byte ?         ; [$88]
+YLOC            .byte ?
 TEMPX           .byte ?
 TEMPY           .byte ?
-LV              .fill 5         ; [$8B]
-LPTS            .byte ?         ; [$90]
+LV              .fill 5         ; [$8F]
+LPTS            .byte ?         ; [$94]
 COLUM           .byte ?
 OCOLUM          .byte ?
 IFRHI           .byte ?
-PASSCT          .byte ?
+PASSCT          .byte ?         ; [$98]
 DELAY2          .byte ?
 HANDICAP        .byte ?
 TOTGS           .byte ?
-TOTRS           .byte ?         ; [$98]
+TOTRS           .byte ?
 OFR             .byte ?
 HOMEDIRECTION   .byte ?                 ; Direction toward Home
                                         ; 1 = East (Russian)
                                         ; 3 = West (German)
 ZOC             .byte ?
-TEMPQ           .byte ?
+TEMPQ           .byte ?         ; [$A0]
 LLIM            .byte ?
 VICTRY          .byte ?
 IFR             .byte ?
-JIFFYCLOCK      .byte ?         ; [$A0]
+JIFFYCLOCK      .byte ?
 
 ;   These locations are used by the interrupt service routine
 OFFLO           .byte ?                 ; How far to offset new LMS value
 OFFHI           .byte ?
 TEMPI           .byte ?                 ; An all-purpose temporary register
-IRQ_PRIOR       .word ?
+IRQ_PRIOR       .word ?         ; [$A8]
 
 
 ;   These locations are for the mainline routines
 MAPPTR          .word ?
-ARMY            .byte ?         ; [$A8]
+ARMY            .byte ?
 UNITNO          .byte ?
 DEFNDR          .byte ?
 TEMPR           .byte ?
-TEMPZ           .byte ?
+TEMPZ           .byte ?         ; [$B0]
 ACCLO           .byte ?
 ACCHI           .byte ?
 TURN            .byte ?
-LATITUDE        .byte ?         ; [$B0]
+LATITUDE        .byte ?
 LONGITUDE       .byte ?
 RFR             .byte ?
 TRNTYP          .byte ?
-SQVAL           .byte ?
+SQVAL           .byte ?         ; [$B8]
 KEYCHAR         .byte ?                 ; last key pressed
     ; TODO: Keyboard Interrupt Handler
 CONSOL          .byte ?                 ; state of OPTION,SELECT,START
     ; TODO: Keyboard Interrupt Handler
-SOURCE          .dword ?        ; [$B7]   Starting address for the source data (4 bytes)
-DEST            .dword ?        ; [$BB]   Starting address for the destination block (4 bytes)
-SIZE            .dword ?        ; [$BF]   Number of bytes to copy (4 bytes)
-blockIndex      .byte ?         ; [$C3]   [0-63]
-blockRow        .word ?
+SOURCE          .dword ?        ; [$BB]   Starting address for the source data (4 bytes)
+DEST            .dword ?        ; [$BF]   Starting address for the destination block (4 bytes)
+SIZE            .dword ?        ; [$C3]   Number of bytes to copy (4 bytes)
+blockIndex      .byte ?                 ; [0-63]
+blockRow        .word ?         ; [$C8]
 ptrMap          .word ?
 X_POS           .word ?
 Y_POS           .word ?
-pBuffer         .word ?
+pBuffer         .word ?         ; [$D0]
 pGlyph          .word ?
-pSource         .word ?         ; [$D0]
+pSource         .word ?         ; [$D4]
