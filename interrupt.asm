@@ -10,13 +10,12 @@
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 .logical $00_2000
 
-HandleIrq       ;sei
-
-                .m16i16
+HandleIrq       .m16i16
                 pha
                 phx
                 phy
 
+                .m8i8
                 lda @l INT_PENDING_REG1
                 and #FNX1_INT00_KBD
                 cmp #FNX1_INT00_KBD
@@ -27,7 +26,7 @@ HandleIrq       ;sei
                 lda @l INT_PENDING_REG1
                 sta @l INT_PENDING_REG1
 
-_1              lda INT_PENDING_REG0
+_1              lda @l INT_PENDING_REG0
                 and #FNX0_INT00_SOF
                 cmp #FNX0_INT00_SOF
                 bne _XIT
@@ -43,7 +42,6 @@ _XIT            .m16i16
                 pla
 
                 .m8i8
-                ;cli
 HandleIrq_END   rti
                 ;jmp IRQ_PRIOR
 
@@ -65,10 +63,16 @@ HandleIrq_END   rti
 ;   Down        $50/$D0
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 KeyboardHandler .proc
-KEY_F2          = $3C
-KEY_F3          = $3D
-KEY_F4          = $3E
+KEY_F2          = $3C                   ; Option
+KEY_F3          = $3D                   ; Select
+KEY_F4          = $3E                   ; Start
+KEY_UP          = $48                   ; joystick alternative
+KEY_LEFT        = $4B
+KEY_RIGHT       = $4D
+KEY_DOWN        = $50
+KEY_CTRL        = $1D                   ; fire button
 ;---
+
                 .m16i16
                 pha
                 phx
@@ -77,45 +81,23 @@ KEY_F4          = $3E
                 .m8i8
                 .setbank $03
 
-                stz KEYCHAR             ; reset
-
                 lda KBD_INPT_BUF
                 pha
+                sta KEYCHAR
+
                 and #$80                ; is it a key release?
                 bne _1r                 ;   yes
 
 _1              pla                     ;   no
                 pha
-                sta KEYCHAR
-
                 cmp #KEY_F2
                 bne _2
 
                 lda CONSOL
                 eor #$04
                 sta CONSOL
-                stz KEYCHAR
 
-_2              pla
-                pha
-                cmp #KEY_F3
-                bne _3
-
-                lda CONSOL
-                eor #$02
-                sta CONSOL
-                stz KEYCHAR
-
-_3              pla
-                cmp #KEY_F4
-                bne _XIT
-
-                lda CONSOL
-                eor #$01
-                sta CONSOL
-                stz KEYCHAR
-
-                bra _XIT
+                jmp _CleanUpXIT
 
 _1r             pla
                 pha
@@ -126,6 +108,19 @@ _1r             pla
                 ora #$04
                 sta CONSOL
 
+                jmp _CleanUpXIT
+
+_2              pla
+                pha
+                cmp #KEY_F3
+                bne _3
+
+                lda CONSOL
+                eor #$02
+                sta CONSOL
+
+                jmp _CleanUpXIT
+
 _2r             pla
                 pha
                 cmp #KEY_F3|$80
@@ -135,13 +130,161 @@ _2r             pla
                 ora #$02
                 sta CONSOL
 
+                jmp _CleanUpXIT
+
+_3              pla
+                pha
+                cmp #KEY_F4
+                bne _4
+
+                lda CONSOL
+                eor #$01
+                sta CONSOL
+
+                jmp _CleanUpXIT
+
 _3r             pla
+                pha
                 cmp #KEY_F4|$80
-                bne _XIT
+                bne _4r
 
                 lda CONSOL
                 ora #$01
                 sta CONSOL
+
+                jmp _CleanUpXIT
+
+_4              pla
+                pha
+                cmp #KEY_UP
+                bne _5
+
+                lda InputFlags
+                eor #$01
+                ora #$02                ; cancel KEY_DOWN
+                sta InputFlags
+
+                lda #itKeyboard
+                sta InputType
+
+                jmp _CleanUpXIT
+
+_4r             pla
+                pha
+                cmp #KEY_UP|$80
+                bne _5r
+
+                lda InputFlags
+                ora #$01
+                sta InputFlags
+
+                jmp _CleanUpXIT
+
+_5              pla
+                pha
+                cmp #KEY_DOWN
+                bne _6
+
+                lda InputFlags
+                eor #$02
+                ora #$01                ; cancel KEY_UP
+                sta InputFlags
+
+                lda #itKeyboard
+                sta InputType
+
+                jmp _CleanUpXIT
+
+_5r             pla
+                pha
+                cmp #KEY_DOWN|$80
+                bne _6r
+
+                lda InputFlags
+                ora #$02
+                sta InputFlags
+
+                jmp _CleanUpXIT
+
+_6              pla
+                pha
+                cmp #KEY_LEFT
+                bne _7
+
+                lda InputFlags
+                eor #$04
+                ora #$08                ; cancel KEY_RIGHT
+                sta InputFlags
+
+                lda #itKeyboard
+                sta InputType
+
+                bra _CleanUpXIT
+
+_6r             pla
+                pha
+                cmp #KEY_LEFT|$80
+                bne _7r
+
+                lda InputFlags
+                ora #$04
+                sta InputFlags
+
+                bra _CleanUpXIT
+
+_7              pla
+                pha
+                cmp #KEY_RIGHT
+                bne _8
+
+                lda InputFlags
+                eor #$08
+                ora #$04                ; cancel KEY_LEFT
+                sta InputFlags
+
+                lda #itKeyboard
+                sta InputType
+
+                bra _CleanUpXIT
+
+_7r             pla
+                pha
+                cmp #KEY_RIGHT|$80
+                bne _8r
+
+                lda InputFlags
+                ora #$08
+                sta InputFlags
+
+                bra _CleanUpXIT
+
+_8              pla
+                cmp #KEY_CTRL
+                bne _XIT
+
+                lda InputFlags
+                eor #$10
+                sta InputFlags
+
+                lda #itKeyboard
+                sta InputType
+
+                stz KEYCHAR
+                bra _XIT
+
+_8r             pla
+                cmp #KEY_CTRL|$80
+                bne _XIT
+
+                lda InputFlags
+                ora #$10
+                sta InputFlags
+
+                stz KEYCHAR
+                bra _XIT
+
+_CleanUpXIT     stz KEYCHAR
+                pla
 
 _XIT            .m16i16
                 ply
@@ -169,6 +312,21 @@ VbiHandler      .proc
                 inc A
                 sta JIFFYCLOCK
 
+                lda JOYSTICK0           ; read joystick0
+                and #$1F
+                cmp #$1F
+                beq _0                  ; when no activity, keyboard is alternative
+
+                sta InputFlags          ; joystick activity -- override keyboard input
+                lda #itJoystick
+                sta InputType
+                bra _1
+
+_0              ldx InputType
+                bne _1                  ; keyboard, move on
+
+                sta InputFlags
+
 ;--------------------------------------
 
 ;   debug entry
@@ -195,7 +353,7 @@ VbiHandler      .proc
 _1              lda HANDICAP
                 beq _3                  ; skip when handicap is active
 
-                lda JOYSTICK0           ; read joystick0 button
+                lda InputFlags          ; read fire button
                 and #$10
                 beq _3                  ; skip when button is pressed
 
@@ -217,7 +375,7 @@ _2              sta MusterStrength,X
                 dex
                 bne _next1
 
-_3              lda JOYSTICK0           ; read joystick0 button
+_3              lda InputFlags          ; read fire button
                 and #$10
                 ora BUTTON_MASK         ; button allowed?
                 bne _3a
@@ -276,7 +434,7 @@ _next2          sta TXTWDW,X            ; clear text window
 
                 jmp ENDISR
 
-_5              lda JOYSTICK0           ; button is pressed - joystick0 read
+_5              lda InputFlags          ; button is pressed - joystick0 read
                 and #$0F
                 eor #$0F
                 beq _6                  ; joystick deflection?
@@ -697,7 +855,7 @@ _3              inc DEBOUNCE_TIMER
 
 _4              lda #$00
                 sta DEBOUNCE_TIMER      ; reset debounce timer
-                lda JOYSTICK0           ; joystick0 read
+                lda InputFlags          ; joystick0 read
                 and #$0F
                 tax
                 lda JOYSTICK_TBL,X
@@ -783,7 +941,7 @@ _6              ldy TEMPI
 NoButton        .proc
                 sta DEBOUNCE_TIMER
 
-                lda JOYSTICK0           ; joystick0 read
+                lda InputFlags          ; joystick0 read
                 and #$0F
                 eor #$0F
                 bne Scroll
@@ -834,7 +992,7 @@ _1              clc
                 sta OFFLO
                 sta OFFHI               ; zero the offset
 
-                lda JOYSTICK0           ; joystick0 read
+                lda InputFlags          ; joystick0 read
                 and #$0F
                 pha                     ; save it on stack for other bit checks
 

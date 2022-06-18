@@ -126,6 +126,10 @@ _relocate       lda @l $024000,X        ; HandleIrq address
                 lda #$07                ; reset consol
                 sta CONSOL
 
+                lda #$1F
+                sta InputFlags
+                stz InputType           ; joystick
+
                 lda @l INT_MASK_REG0
                 and #~FNX0_INT00_SOF    ; enable Start-of-Frame IRQ
                 sta @l INT_MASK_REG0

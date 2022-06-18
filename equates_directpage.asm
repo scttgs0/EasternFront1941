@@ -157,4 +157,8 @@ X_POS           .word ?
 Y_POS           .word ?
 pBuffer         .word ?         ; [$D0]
 pGlyph          .word ?
-pSource         .word ?         ; [$D4]
+pSource         .word ?
+InputFlags      .byte ?
+InputType       .byte ?         ; [$D7]
+itJoystick  = 0
+itKeyboard  = 1
