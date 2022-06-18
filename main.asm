@@ -205,14 +205,14 @@ _0              lda #$00                ; allow input
                 lda #$00
                 sta TICK
 
-                ldx #$9E
+                ldx #corpsCount
 _next1          stx ARMY
                 jsr DINGO               ; determine first execution time
 
                 dex
                 bne _next1
 
-_next2          ldx #$9E
+_next2          ldx #corpsCount
 _next3          stx ARMY
                 lda MusterStrength,X
                 sec
@@ -249,16 +249,16 @@ _1              lda EXEC,X
                 lda UNITNO
                 beq _DoMove
 
-                cmp #$37
+                cmp #idxRussianUnits
                 bcc _2
 
                 lda ARMY
-                cmp #$37
+                cmp #idxRussianUnits
                 bcs _nextJam
                 bcc _Combat
 
 _2              lda ARMY                ; German
-                cmp #$37
+                cmp #idxRussianUnits
                 bcs _Combat
 
 _nextJam        ldx ARMY
@@ -329,7 +329,7 @@ _next4          lda CorpsX,X
                 bne _6
 
                 lda #$FF
-                cpx #$37                ; when Russian
+                cpx #idxRussianUnits
                 bcc _5
 
                 lda #$00
@@ -646,7 +646,7 @@ _XIT            rts
 ; any reinforcements?
 ;======================================
 Reinforcements  .proc
-                ldx #$9E
+                ldx #corpsCount
 _next1          lda ArrivalTurn,X
                 cmp TURN
                 bne _nextItem           ; skip if arrival != this turn
@@ -665,7 +665,7 @@ _next1          lda ArrivalTurn,X
                 beq _2                  ; when =0, must delay arrival by one turn
 
 ;   visual indicator
-                cpx #$37                ; when Russian, skip asterisk
+                cpx #idxRussianUnits    ; when Russian, skip asterisk
                 bcs _1
 
                 lda #$2A                ; asterisk character (reinforcements indicator)
@@ -693,7 +693,7 @@ _nextItem       dex
 ; Logistics check
 ;======================================
 CheckSupplyLine .proc
-                ldx #$9E
+                ldx #corpsCount
 _next1          stx ARMY
                 jsr Logistics
 
@@ -736,7 +736,7 @@ _4              dey
                 bne _next4
 
 _5              inx
-                cpx #$37                ; when Russian
+                cpx #idxRussianUnits
                 bne _next3
 
 _next5          lda CorpsX,X
@@ -762,7 +762,7 @@ _6              dey
                 bne _next6
 
 _7              inx
-                cpx #$9E
+                cpx #corpsCount
                 bne _next5
 
                 lda ACCHI
@@ -858,11 +858,11 @@ LOOKUP          .proc
                 lda TRNCOD
                 sta UNTCOD
                 and #$C0
-                ldx #$9E
+                ldx #corpsCount
                 cmp #$40
                 bne _1
 
-                ldx #$37
+                ldx #idxRussianUnits
 _1              lda LATITUDE
 _next1          cmp CorpsY,X
                 beq _2

@@ -304,7 +304,7 @@ _8              lda KEYCHAR             ; last key pressed
                 bne _9                  ;   no, skip
 
                 ldx activeCorps         ;   yes, check for Russian
-                cpx #$37                ; when Russian, skip
+                cpx #idxRussianUnits
                 bcs _9
 
                 lda #$00
@@ -486,7 +486,7 @@ FirstBtnPass    .proc
 
 ;   look for a match with unit coordinates
                 .m8
-                ldx #$9E
+                ldx #corpsCount
 _next1          lda CorpsY,X
                 cmp activeCorpsY
                 beq _1
@@ -561,7 +561,7 @@ _nextChar       sta TXTWDW,Y
 
                 lda #$1E
                 ldx activeCorps
-                cpx #$37                ; when Russian
+                cpx #idxRussianUnits
                 bcs _3
 
                 lda #$1D
@@ -610,7 +610,7 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
                 jsr SwitchCorps         ; flip unit with terrain
 
                 lda activeCorps
-                cmp #$37
+                cmp #idxRussianUnits
                 bcc _4                  ; Russian?
 
                 lda #$FF                ; yes, mask orders and exit
@@ -669,7 +669,7 @@ ORDERS          .proc
                 bne FirstBtnPass._XIT
 
                 ldx activeCorps
-                cpx #$37                ; when Russian
+                cpx #idxRussianUnits
                 bcc _1
 
                 ldx #$00                ; yes, error

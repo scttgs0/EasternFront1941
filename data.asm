@@ -4,6 +4,9 @@
 ; 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
 ;==============================================================
 
+corpsCount      = $9E
+idxRussianUnits = $37
+
 ; x-coordinates = range[45:0]   upper-left  = (45,38)
 ; y-coordinates = range[38:0]   lower-right = (0,0)
 

@@ -16,7 +16,7 @@ INIT            ldx #$01
                 sta TOTRS
                 sta TOTGS
 
-                ldy #$9E
+                ldy #corpsCount
 _next1          lda ArrivalTurn,Y
                 cmp TURN
                 bcs _1
@@ -29,7 +29,7 @@ _next1          lda ArrivalTurn,Y
 
                 inc TOTGS,X
 _1              dey
-                cpy #$37
+                cpy #idxRussianUnits
                 bcs _next1
 
                 ldx #$00
@@ -66,7 +66,7 @@ _next4          iny
 _4              sty OFR
 
 ;   calculate individual force ratios
-                ldx #$9E
+                ldx #corpsCount
 _next5          stx ARMY
                 lda ArrivalTurn,X
                 cmp TURN
@@ -79,14 +79,14 @@ _next5          stx ARMY
                 lda CorpsY,X
                 sta MoraleCheck2._OBJY-55,X
 _5              dex
-                cpx #$37                ; when Russian
+                cpx #idxRussianUnits
                 bcs _next5
 
 
 ;--------------------------------------
 ; Here begins the main loop
 ;--------------------------------------
-MLOOP           ldx #$9E                ; outer loop for entire Russian army
+MLOOP           ldx #corpsCount         ; outer loop for entire Russian army
 _next1          stx ARMY                ; inner loop for individual armies
                 lda ArrivalTurn,X
                 cmp TURN
@@ -106,7 +106,7 @@ _1              lda CorpType,X
                 sta BVAL                ; no, treat as reinforcement
 
 ;   find nearby beleaguered army
-                ldy #$9E
+                ldy #corpsCount
 _next2          lda ArrivalTurn,Y
                 cmp TURN
                 bcs _2
@@ -143,7 +143,7 @@ _next2          lda ArrivalTurn,Y
                 sta BVAL
                 sty BONE
 _2              dey
-                cpy #$37
+                cpy #idxRussianUnits
                 bcs _next2
 
                 ldy BONE                ; beleagueredest army
@@ -227,7 +227,7 @@ _next4          sty JCNT
                 adc YINC,Y
                 sta SQY
 
-                ldx #$9E
+                ldx #corpsCount
 _next5          lda ArrivalTurn,X
                 cmp TURN
                 beq _9
@@ -248,7 +248,7 @@ _9              lda OBJX-55,X
                 bne _12
 
 _10             dex
-                cpx #$37                ; when Russian
+                cpx #idxRussianUnits
                 bcs _next5
 
 _11             lda #$00
@@ -548,7 +548,7 @@ _36             clc
 _37             sta SQVAL
 
 ;   extract penalty if somebody else has dibs on this square
-                ldy #$9E
+                ldy #corpsCount
 _next19         lda OBJX-55,Y
                 cmp TARGX
                 bne _39
@@ -573,7 +573,7 @@ _38             lda SQVAL
                 jmp _41
 
 _39             dey
-                cpy #$37
+                cpy #idxRussianUnits
                 bcs _next19
 
 ;   extract distance penalty
@@ -653,14 +653,14 @@ _TOGSCN         lda JOYSTICK0           ; read joystick0 button
                 beq _WRAPUP
 
 _46             dex
-                cpx #$37                ; when Russian
+                cpx #idxRussianUnits
                 bcc _47
 
                 jmp _next1
 
 _47             jmp MLOOP
 
-_WRAPUP         ldx #$9E
+_WRAPUP         ldx #corpsCount
 _next21         stx ARMY
                 lda ArrivalTurn,X
                 cmp TURN
@@ -774,7 +774,7 @@ _54             ldx ARMY
                 sta HowManyOrders,X
 
 _55             dex
-                cpx #$37                ; when Russian
+                cpx #idxRussianUnits
                 bcc _XIT2
 
                 jmp _next21
@@ -799,7 +799,8 @@ CalculateIFR    .proc
                 sta XLOC
                 lda CorpsY,X
                 sta YLOC
-                ldy #$9E
+
+                ldy #corpsCount
 _next1          lda ArrivalTurn,Y
                 cmp TURN
                 bcs _1
@@ -871,7 +872,7 @@ _5              lda CombatStrength,Y
                 lsr A
                 lsr A
                 lsr A
-                cpy #$37
+                cpy #idxRussianUnits
                 bcc _7
 
                 clc
