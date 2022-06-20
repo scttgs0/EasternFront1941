@@ -144,9 +144,7 @@ RFR             .byte ?         ; [$B8]
 TRNTYP          .byte ?
 SQVAL           .byte ?
 KEYCHAR         .byte ?                 ; last key pressed
-    ; TODO: Keyboard Interrupt Handler
 CONSOL          .byte ?                 ; state of OPTION,SELECT,START
-    ; TODO: Keyboard Interrupt Handler
 SOURCE          .dword ?        ; [$BD]   Starting address for the source data (4 bytes)
 DEST            .dword ?        ; [$C1]   Starting address for the destination block (4 bytes)
 SIZE            .dword ?        ; [$C5]   Number of bytes to copy (4 bytes)
