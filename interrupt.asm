@@ -417,6 +417,7 @@ _next2          sta TXTWDW,X            ; clear text window
 
                 .RenderText $7A,$72,FooterText1,BITMAPTXT0
                 .RenderText $7A,$72,FooterText2,BITMAPTXT1
+                .m8i8
 
                 .setbank $03
                 lda #$08
