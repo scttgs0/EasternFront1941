@@ -476,10 +476,12 @@ _8              lda KEYCHAR             ; last key pressed
                 jsr ClearArrow
                 jsr ClearMaltakreuze
 
+                .m16
                 lda BASEX
                 sta STEPX
                 lda BASEY
                 sta STEPY
+                .m8
 
 _9              lda JIFFYCLOCK
                 and #$03
@@ -553,7 +555,7 @@ _14             sta ArrowIndex
                 lda STEPY
                 sta SP01_Y_POS
 
-                .m8i8
+                .m16i8
 ;   now step arrow
                 ldx ArrowIndex
                 lda STEPX
@@ -565,6 +567,7 @@ _14             sta ArrowIndex
                 adc YADD,X
                 sta STEPY
 
+                .m8
                 inc StepCount           ; next step
                 lda StepCount
                 and #$07
@@ -581,8 +584,12 @@ _14             sta ArrowIndex
                 sta OrderCount          ;   yes, reset to start of arrow's path
 
 ;   display maltese cross ('maltakreuze' or KRZ)
-_printCursor    ldy STEPY
-                sty CrossY
+_printCursor    .m16
+                lda STEPY
+                dec A
+                dec A
+                dec A
+                sta CrossY
                 sta SP02_Y_POS
 
                 lda STEPX
@@ -590,15 +597,18 @@ _printCursor    ldy STEPY
                 sta CrossX
                 sta SP02_X_POS          ; Sprite-2 x-position
 
+                .m8
                 lda #$FF                ; cross is visible
                 sta CrossFlag
 
                 jsr ClearArrow
 
+                .m16
                 lda BASEX               ; reset arrow's coords
                 sta STEPX
                 lda BASEY
                 sta STEPY
+                .m8
 
 _XIT            jmp ENDISR
 
@@ -914,6 +924,7 @@ _6              ldy TEMPI
 ;   move maltakreuze
                 jsr ClearMaltakreuze
 
+                .m16
                 ldx STICKI
                 lda CrossX
                 clc
@@ -930,6 +941,7 @@ _6              ldy TEMPI
 
                 lda CrossY
                 sta SP02_Y_POS
+                .m8
 
                 bra EXITI
 
