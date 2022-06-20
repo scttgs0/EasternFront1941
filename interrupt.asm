@@ -283,7 +283,7 @@ _8r             pla
                 stz KEYCHAR
                 bra _XIT
 
-_CleanUpXIT     stz KEYCHAR
+_CleanUpXIT     ;stz KEYCHAR    HACK:
                 pla
 
 _XIT            .m16i16
@@ -586,14 +586,14 @@ _14             sta ArrowIndex
 ;   display maltese cross ('maltakreuze' or KRZ)
 _printCursor    .m16
                 lda STEPY
-                dec A
-                dec A
-                dec A
+                and #$F0
+                ora #$08
                 sta CrossY
                 sta SP02_Y_POS
 
                 lda STEPX
-                dec A
+                and #$F0
+                ora #$08
                 sta CrossX
                 sta SP02_X_POS          ; Sprite-2 x-position
 
