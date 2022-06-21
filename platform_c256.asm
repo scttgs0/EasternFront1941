@@ -189,7 +189,7 @@ InitSprites     .proc
                 phb
 
                 .m16i16
-                lda #$1C00              ; Set the size
+                lda #$1800              ; Set the size
                 sta SIZE
                 lda #$00
                 sta SIZE+2
@@ -206,7 +206,7 @@ InitSprites     .proc
                 adc #$400               ; 1024
                 sta SP01_ADDR
                 clc
-                adc #$1400              ; 1024*5
+                adc #$1000              ; 1024*4
                 sta SP02_ADDR
 
                 lda #`(SPRITES-VRAM)
@@ -216,19 +216,6 @@ InitSprites     .proc
                 sta SP00_ADDR+2
                 sta SP01_ADDR+2
                 sta SP02_ADDR+2
-
-; copy right-arrow to SP01
-                .m16
-                .setbank $05
-                ldy #$03FE
-_1              lda PLYR1_RIGHT,Y
-                sta PLYR1,Y
-                dey
-                dey
-                bpl _1
-
-                .setbank $03
-                .m8
 
                 jsr Copy2VRAM
 

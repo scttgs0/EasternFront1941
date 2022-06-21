@@ -532,23 +532,10 @@ _14             sta ArrowIndex
 ;   get arrow image and store it to player RAM
                 tax
 
-                lda #<>(SPRITES+$800-VRAM)  ; PLYR1_UP is the base address
+                lda #<>(SPRITES+$400-VRAM)  ; PLYR1_UP is the base address
                 clc
                 adc wTEMP               ; add the displacement for the appropriate arrow
                 sta SP01_ADDR
-
-;                 .setbank $05
-;                 ldy #$00
-; _14a            lda PLYR1_UP,X
-;                 sta PLYR1,Y
-;                 inx
-;                 inx
-;                 iny
-;                 iny
-;                 cpy #$0400
-;                 bne _14a
-
-;                 .setbank $03
 
                 lda STEPX               ; position arrow
                 sta SP01_X_POS
