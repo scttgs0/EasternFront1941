@@ -21,7 +21,7 @@ _next2          lda DPINITVALS,X       ; initialize direct-page values
                 bpl _next2
 
                 .frsGraphics mcGraphicsOn|mcBitmapOn|mcTileMapOn|mcSpriteOn,mcVideoMode640
-                .frsMouse_off
+                ; .frsMouse_off HACK:
                 .frsBorder_off
 
                 jsr InitLUT
@@ -70,12 +70,6 @@ _next3          lda MusterStrength,X    ; combat strength = muster strength
                 sta SP01_Y_POS
                 sta SP02_X_POS
                 sta SP02_Y_POS
-
-;   copyright text
-                .RenderText $7A,$72,FooterText2,BITMAPTXT1
-
-                .m8
-                .setbank $03
 
 ;---
 ;                .m16i16
@@ -174,8 +168,7 @@ NewTurn         inc TURN
                 .setbank $03
 
 ;   update text window
-                .RenderText $7A,$72,FooterText1,BITMAPTXT0
-                .m8i8
+                jsr RenderFooter        ; default footer text
 
 ;   update unit tile map
                 jsr RefreshUnitOverlay
@@ -369,38 +362,6 @@ _9              jmp NewTurn
 ;--------------------------------------
 
 
-;--------------------------------------
-;
-;--------------------------------------
-Break2Monitor   ;lda #$00
-                ;sta GRACTL
-                ;sta GRAFP0
-                ;sta GRAFP1
-                ;sta GRAFP2
-
-                ;lda #$22
-                ;sta SDMCTL
-                ;lda #$20
-                ;sta SDLSTL
-                ;lda #$BC
-                ;sta SDLSTH
-                ;lda #$40
-                ;sta NMIEN
-                ;lda #$0A
-                ;sta COLOR1
-                ;lda #$00
-                ;sta $5FFF
-                ;sta COLOR4
-                brk                     ; invoke debug monitor
-                nop
-
-
-;--------------------------------------
-;--------------------------------------
-                .align $100
-;--------------------------------------
-
-
 ;======================================
 ;
 ;======================================
@@ -503,8 +464,13 @@ _next1          sta TXTWDWTOP,Y
                 adc #$30
                 sta TXTWDW,Y
 
+;-----------
+                jsr DebugText   ; HACK:
+;-----------
+
                 .RenderText $78,$74,HeaderText,BITMAPTXT3
 
+                .m8i8
                 .setbank $03
                 plp
                 rts
@@ -1074,7 +1040,7 @@ TextMessage     .proc
                 asl A
                 tax
                 ldy #$00
-_next1          lda TxtTbl,X
+_next1          lda TxtTbl+64,X         ; +64 to skip the title and copyright
                 sta FooterText3+4,Y
                 iny
                 inx
@@ -1087,12 +1053,6 @@ _next1          lda TxtTbl,X
                 plp
                 rts
                 .endproc
-
-
-;--------------------------------------
-;--------------------------------------
-                .align $100
-;--------------------------------------
 
 
 ;======================================
@@ -1113,8 +1073,122 @@ _next1          pha
                 .endproc
 
 
+;======================================
+; Display Input Flags in Header
+;======================================
+;   DEBUG text
+DebugText       .proc
+                pha
+                phx
+                phy
+
+                ldx #37
+                lda InputType
+                beq _1a
+
+                lda #'K'
+                bra _1b
+_1a             lda #'J'
+_1b             sta HeaderText,X
+                dex
+                dex
+
+                ldy #3                  ; display the 4 stick deflections
+                lda InputFlags
+                pha
+_nextFlag       pla
+                ror A
+                pha
+                bcc _2a
+
+                lda #'1'
+                bra _2b
+_2a             lda #'0'
+_2b             sta HeaderText,X
+                dex
+                dey
+                bpl _nextFlag
+
+                dex
+                pla                     ; clean up stack
+                ror A
+                bcc _3a
+
+                lda #'1'
+                bra _3b
+_3a             lda #'0'
+_3b             sta HeaderText,X
+                dex
+                dex
+
+                lda KEYCHAR
+                and #$0F
+                cmp #$0A
+                bcs _4a
+
+                clc
+                adc #$30
+                bra _4b
+
+_4a             clc
+                adc #$41-$0A
+
+_4b             sta HeaderText,X
+                dex
+
+                lda KEYCHAR
+                lsr A
+                lsr A
+                lsr A
+                lsr A
+                and #$0F
+                cmp #$0A
+                bcs _5a
+
+                clc
+                adc #$30
+                bra _5b
+
+_5a             clc
+                adc #$41-$0A
+
+_5b             sta HeaderText,X
+
+                ply
+                plx
+                pla
+                rts
+                .endproc
+
+
 ;--------------------------------------
 ; this is the debugging routine
 ; it can't be reached any longer
 ;--------------------------------------
 ForceDebug      jmp CalendarCalc
+
+
+;--------------------------------------
+;
+;--------------------------------------
+Break2Monitor   ;lda #$00
+                ;sta GRACTL
+                ;sta GRAFP0
+                ;sta GRAFP1
+                ;sta GRAFP2
+
+                ;lda #$22
+                ;sta SDMCTL
+                ;lda #$20
+                ;sta SDLSTL
+                ;lda #$BC
+                ;sta SDLSTH
+                ;lda #$40
+                ;sta NMIEN
+                ;lda #$0A
+                ;sta COLOR1
+                ;lda #$00
+                ;sta $5FFF
+                ;sta COLOR4
+                brk                     ; invoke debug monitor
+                nop

@@ -160,11 +160,14 @@ _4              pla
                 bne _5
 
                 lda InputFlags
+                bit #$01
+                beq _4a
+
                 eor #$01
                 ora #$02                ; cancel KEY_DOWN
                 sta InputFlags
 
-                lda #itKeyboard
+_4a             lda #itKeyboard
                 sta InputType
 
                 jmp _CleanUpXIT
@@ -186,11 +189,14 @@ _5              pla
                 bne _6
 
                 lda InputFlags
+                bit #$02
+                beq _5a
+
                 eor #$02
                 ora #$01                ; cancel KEY_UP
                 sta InputFlags
 
-                lda #itKeyboard
+_5a             lda #itKeyboard
                 sta InputType
 
                 jmp _CleanUpXIT
@@ -212,11 +218,14 @@ _6              pla
                 bne _7
 
                 lda InputFlags
+                bit #$04
+                beq _6a
+
                 eor #$04
                 ora #$08                ; cancel KEY_RIGHT
                 sta InputFlags
 
-                lda #itKeyboard
+_6a             lda #itKeyboard
                 sta InputType
 
                 bra _CleanUpXIT
@@ -238,11 +247,14 @@ _7              pla
                 bne _8
 
                 lda InputFlags
+                bit #$08
+                beq _7a
+
                 eor #$08
                 ora #$04                ; cancel KEY_LEFT
                 sta InputFlags
 
-                lda #itKeyboard
+_7a             lda #itKeyboard
                 sta InputType
 
                 bra _CleanUpXIT
@@ -350,7 +362,15 @@ _0              ldx InputType
 
 ;--------------------------------------
 
-_1              lda HANDICAP
+_1
+;-----------
+                jsr DebugText   ; HACK:
+;-----------
+
+                .RenderText $78,$74,HeaderText,BITMAPTXT3
+                .m8i8
+
+                lda HANDICAP
                 beq _3                  ; skip when handicap is active
 
                 lda InputFlags          ; read fire button
@@ -408,18 +428,8 @@ _4a             .setbank $03
                 sta CrossFlag
                 sta SID_CTRL1           ; TODO: no distortion; no volume
 
-                .setbank $04
-                ldx #79
-_next2          sta TXTWDW,X            ; clear text window
-                dex
-                cpx #4
-                bne _next2
+                jsr RenderFooter        ; default footer text
 
-                .RenderText $7A,$72,FooterText1,BITMAPTXT0
-                .RenderText $7A,$72,FooterText2,BITMAPTXT1
-                .m8i8
-
-                .setbank $03
                 lda #$08
                 sta DELAY
                 clc

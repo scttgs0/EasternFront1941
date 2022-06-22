@@ -255,7 +255,9 @@ OnesDigit       .byte 0,1,2,3,4,5,6,7,8,9
                 .byte 0,1,2,3,4,5,6,7,8,9
                 .byte 0,1,2,3,4,5
 
-TxtTbl          .text "        ENTER YOUR ORDERS       "
+TxtTbl          .text "       EASTERN FRONT 1941       "
+                .text "  COPYRIGHT 1981 CHRIS CRAWFORD "
+                .text "        ENTER YOUR ORDERS       "
                 .text "            GAME OVER           "
                 .text "FIGURING MOVE; NO ORDERS ALLOWED"
 

@@ -1,7 +1,15 @@
-TXTWDW          .text '           EASTERN FRONT 1941           '
-                .text '      COPYRIGHT 1981 CHRIS CRAWFORD     '
-                .text '      PLEASE ENTER YOUR ORDERS NOW      '
+TXTWDW          .text '                 <title>                '
+                .text '               <copyright>              '
+                .text '                <message>               '
 TXTWDWTOP       .text '                                        '
+                    ; '                           AA 0 0000 A  '    ; CharCode Btn RLDU J/K
+                                                                    ; J/K = Joystick/Keyboard is active
+                                                                    ; U = Up
+                                                                    ; D = Down
+                                                                    ; L = Left
+                                                                    ; R = Right
+                                                                    ; Btn = Fire Button
+                                                                    ; CharCode = Last key code (press or release event)
 
 HeaderText      = TXTWDWTOP
 FooterText1     = TXTWDW

@@ -309,6 +309,43 @@ BlitText        .proc
 
 
 ;======================================
+;
+;======================================
+RenderFooter   .proc
+                pha
+                phx
+                phy
+                .setbank $04
+                .m8i8
+
+                ldx #79
+_next2          sta TXTWDW,X            ; clear text window
+                dex
+                cpx #4
+                bne _next2
+
+;   restore game tile and copyright
+                ldx #31
+_4b             lda TxtTbl,X
+                sta FooterText1+4,X
+                lda TxtTbl+32,X
+                sta FooterText2+4,X
+                dex
+                bpl _4b
+
+                .RenderText $7A,$72,FooterText1,BITMAPTXT0
+                .RenderText $7A,$72,FooterText2,BITMAPTXT1
+
+                .m8i8
+                .setbank $03
+                ply
+                plx
+                pla
+                rts
+                .endproc
+
+
+;======================================
 ; Copying data from system RAM to VRAM
 ;--------------------------------------
 ; Inputs (pushed to stack, listed top down)
