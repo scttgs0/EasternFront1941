@@ -1,11 +1,11 @@
 RenderText      .macro bkgColorIndex,foreColorIndex,srcAddr,destAddr
-                .m16i8
-                pea #<>\srcAddr
+                ; .m16i8
+                ;!!pea #<>\srcAddr
                 ldx #\bkgColorIndex
                 phx
                 ldx #\foreColorIndex
                 phx
-                jsl TransformText
+                ;!!jsl TransformText
                 pla                     ; clean up stack
                 pla
 
@@ -13,5 +13,5 @@ RenderText      .macro bkgColorIndex,foreColorIndex,srcAddr,destAddr
                 sta DEST
                 lda #`(\destAddr-VRAM)
                 sta DEST+2
-                jsr BlitText
+                ;!!jsr BlitText
                 .endmacro
