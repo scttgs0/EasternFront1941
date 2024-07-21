@@ -1,6 +1,7 @@
+
 # Eastern Front (1941) - C256 Foenix Port
 
-This is a port targeting the [Foenix Retro Systems C256](https://c256foenix.com/) platform.
+This is a port targeting the [Foenix Retro Systems F256](https://c256foenix.com/) platform.
 
 ---
 
