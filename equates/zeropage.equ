@@ -161,3 +161,8 @@ InputFlags      .byte ?         ; [$D8]
 InputType       .byte ?
 itJoystick  = 0
 itKeyboard  = 1
+
+;--------------------------------------
+
+FALSE           = 0
+TRUE            = 1

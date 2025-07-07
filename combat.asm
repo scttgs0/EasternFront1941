@@ -1,8 +1,8 @@
-;================================================================
-;================================================================
-; Eastern Front (1941)
-; 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
-;================================================================
+
+; SPDX-PackageSummary: Eastern Front (1941)
+; SPDX-PackageOriginator: Chris Crawford
+; SPDX-PackageCopyrightText: 11/30/81 Copyright Chris Crawford 1981
+; SPDX-FileName: combat.asm
 
 
 ;======================================
@@ -39,12 +39,12 @@ _2              sta SWAP,X
                 sta activeCorpsY
                 jsr SwitchCorps
 
-                .setbank $AF
+                ; .setbank $AF
 
                 ldy #$08
                 ldx #$8F
-_next1          stx SID_CTRL1           ; TODO: no distortion; max volume
-                sty SID_FREQ1           ; TODO: AUDIO Freq
+_next1          stx SID1_CTRL1           ; TODO: no distortion; max volume
+                sty SID1_FREQ1           ; TODO: AUDIO Freq
                 jsr STALL
 
                 tya
@@ -55,7 +55,7 @@ _next1          stx SID_CTRL1           ; TODO: no distortion; max volume
                 cpx #$7F
                 bne _next1
 
-                .setbank $03
+                ; .setbank $03
 
 ;   replace original unit character
                 jsr SwitchCorps
@@ -84,7 +84,7 @@ _3              ldx HowManyOrders,Y
                 lsr A
 
 ;   evaluate defender's strike
-_doBattle       cmp SID_RANDOM
+_doBattle       ;!! cmp SID1_RANDOM
                 bcc _attacker
 
                 ldx ARMY
@@ -117,7 +117,7 @@ _attacker       ldx ARMY
                 beq _6
 
                 lsr A                   ; river attack penalty
-_6              cmp SID_RANDOM
+_6              ;!! cmp SID1_RANDOM
                 bcc _8
 
                 ldx DEFNDR              ; attacker strikes defender
@@ -319,7 +319,7 @@ _1              lda #$18
                 asl A                   ; double distance
                 asl A
                 adc #$4A
-                cmp SID_RANDOM
+                ;!! cmp SID1_RANDOM
                 bcc _6
 
                 lda #$10                ; harder to get supplies in winter
@@ -377,7 +377,7 @@ _6              lsr CombatStrength,X
 
 _XIT            rts
 
-_7              lda SID_RANDOM
+_7              ;!! lda SID1_RANDOM
                 and #$02
                 tay
                 jmp _next2

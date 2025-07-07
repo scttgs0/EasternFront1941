@@ -1,8 +1,8 @@
-;==================================================================
-;==================================================================
-; Eastern Front (1941)
-; 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
-;==================================================================
+
+; SPDX-PackageSummary: Eastern Front (1941)
+; SPDX-PackageOriginator: Chris Crawford
+; SPDX-PackageCopyrightText: 11/30/81 Copyright Chris Crawford 1981
+; SPDX-FileName: thinking.asm
 
 ;
 ; Russian artificial intelligence routine
@@ -130,9 +130,9 @@ _next2          lda ArrivalTurn,Y
                 bcs _2
 
                 sta TEMPR
-                .setbank $00
+                ; .setbank $00
                 lda IFR-55,Y
-                .setbank $03
+                ; .setbank $03
                 sec
                 sbc TEMPR
                 bcc _2                  ; no good using nearby armies
@@ -350,9 +350,9 @@ _next10         lda LV,X
                 adc TEMPR
                 tay
                 iny
-                .setbank $00
+                ; .setbank $00
                 lda LINARR,Y
-                .setbank $03
+                ; .setbank $03
                 beq _21
 
                 lda LPTS
@@ -374,11 +374,11 @@ _next12         stx COLUM
                 cpx OCOLUM
                 beq _23
 
-                .setbank $00
+                ; .setbank $00
                 lda LV,X
                 sec
                 sbc LV,Y
-                .setbank $03
+                ; .setbank $03
                 beq _23
                 bmi _23
 
@@ -460,10 +460,10 @@ _next15         lda LINARR,X
 
                 ldx #$18
 _next16         ldy ROTARR,X
-                .setbank $00
+                ; .setbank $00
                 lda BAKARR,X
                 sta LINARR,Y
-                .setbank $03
+                ; .setbank $03
                 dex
                 bpl _next16
 
@@ -553,9 +553,9 @@ _next19         lda OBJX-55,Y
                 cmp TARGX
                 bne _39
 
-                .setbank $02
+                ; .setbank $02
                 lda MoraleCheck2._OBJY-55,Y
-                .setbank $03
+                ; .setbank $03
                 cmp TARGY
                 bne _39
 

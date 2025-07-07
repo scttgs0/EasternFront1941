@@ -1,3 +1,9 @@
+
+; SPDX-PackageSummary: Eastern Front (1941)
+; SPDX-PackageOriginator: Chris Crawford
+; SPDX-PackageCopyrightText: 11/30/81 Copyright Chris Crawford 1981
+; SPDX-FileName: TEXT.asm
+
 TXTWDW          .text '                 <title>                '
                 .text '               <copyright>              '
                 .text '                <message>               '
@@ -21,7 +27,7 @@ FooterText3     = TXTWDW+80
 ;--------------------------------------
                 .align $40
 ;--------------------------------------
-Text2Bitmap     .fill 640*16,$00
+Text2Bitmap     ;!!.fill 640*16,$00
 
 ColumnOffset    .word ?
 GlyphOffset     .word ?
@@ -43,10 +49,10 @@ BackColor       .byte ?
 ;======================================
 TransformText   .proc
                 php
-                .setbank $04
+                ; .setbank $04
 
 ;   clear the line buffer
-                .m8i8
+                ; .m8i8
                 lda 5,S                 ; retrieve and save
                 sta ForeColor
 
@@ -55,7 +61,7 @@ TransformText   .proc
                 xba
                 lda 6,S
 
-                .m16i16
+                ; .m16i16
                 ldy #$27fe
 _nextClear      sta Text2Bitmap,Y
                 dey
@@ -67,7 +73,7 @@ _nextClear      sta Text2Bitmap,Y
                 sta pSource
 
 ;   retrieve char
-                .m8
+                ; .m8
                 ldx #$FFFF
                 phx
 _nextChar       plx
@@ -83,7 +89,7 @@ _nextChar       plx
                 beq _nextChar
 
 ;   set the column pointer
-                .m16
+                ; .m16
                 pha                     ; remember Char
 
                 txa
@@ -111,7 +117,7 @@ _nextChar       plx
                 sta pGlyph
 
 ;   populate the buffer
-                .m8i16
+                ; .m8i16
                 ldx #$00
 _nextRow        ldy #$00
 _nextCol        phy
@@ -135,18 +141,18 @@ _2              ply
                 cpy #$10
                 bne _nextCol
 
-                .m16
+                ; .m16
                 lda pBuffer
                 clc
                 adc #640
                 sta pBuffer
 
-                .m8
+                ; .m8
                 cpx #$100
                 bne _nextRow
                 bra _nextChar
 
-_XIT            .setbank $03
+_XIT            ; .setbank $03
                 plp
                 rtl
                 .endproc

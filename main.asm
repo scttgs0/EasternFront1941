@@ -1,8 +1,8 @@
-;==================================================================
-;==================================================================
-; Eastern Front (1941)
-; 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
-;==================================================================
+
+; SPDX-PackageSummary: Eastern Front (1941)
+; SPDX-PackageOriginator: Chris Crawford
+; SPDX-PackageCopyrightText: 11/30/81 Copyright Chris Crawford 1981
+; SPDX-FileName: main.asm
 
 
 ;--------------------------------------
@@ -11,20 +11,22 @@
 START           ldx #$08
 _next1          lda COLTAB,X            ; initialize sprite and playfield colors
                 sta LUTSprColor0,X      ; TODO: Sprite-0+ color
+
                 dex
                 bpl _next1
 
                 ldx #$14
 _next2          lda DPINITVALS,X       ; initialize direct-page values
                 sta pMap,X
+
                 dex
                 bpl _next2
 
-                .frsGraphics mcGraphicsOn|mcBitmapOn|mcTileMapOn|mcSpriteOn,mcVideoMode640
-                ; .frsMouse_off HACK:
+                .frsGraphics mcGraphicsOn|mcBitmapOn|mcTileMapOn|mcSpriteOn,mcVideoMode240
+                .frsMouse_off
                 .frsBorder_off
 
-                jsr InitLUT
+                jsr InitGfxPalette
                 jsr InitTiles
 
                 jsr InitMap
@@ -33,43 +35,46 @@ _next2          lda DPINITVALS,X       ; initialize direct-page values
                 jsr InitSprites
                 jsr InitBitmap
 
-                .m16i16
                 lda #$00
                 sta X_POS
-                sta TILE3_WINDOW_X_POS  ; fine scroll
-                sta TILE2_WINDOW_X_POS  ; fine scroll
-                ;lda #$120
+                sta TILE0_SCROLL_X      ; fine scroll
+                sta TILE1_SCROLL_X      ; fine scroll
+                lda #$20
                 sta Y_POS
-                sta TILE3_WINDOW_Y_POS
-                sta TILE2_WINDOW_Y_POS
+                sta TILE0_SCROLL_Y
+                sta TILE1_SCROLL_Y
+                lda #$01
+                sta TILE0_SCROLL_Y+1
+                sta TILE1_SCROLL_Y+1
 
-                .m8i8
                 ldx #$00
 _next3          lda MusterStrength,X    ; combat strength = muster strength
                 sta CombatStrength,X
+
                 lda #$00                ; no orders
                 sta HowManyOrders,X
 
                 lda #$FF                ; no execute actions; set turn number to -1
                 sta EXEC,X
+
                 inx
                 cpx #$A0
                 bne _next3
 
 ;   position sprites
-                .m16
+                ; .m16
                 lda #7*$10-8
                 sta shSpr0PositionX
-                sta SP00_X_POS
+                sta SPR(sprite_t.X, 0)
                 lda #6*$10-8
                 sta shSpr0PositionY
-                sta SP00_Y_POS
+                sta SPR(sprite_t.Y, 0)
 
                 lda #$00                ; move to off-screen
-                sta SP01_X_POS
-                sta SP01_Y_POS
-                sta SP02_X_POS
-                sta SP02_Y_POS
+                sta SPR(sprite_t.X, 1)
+                sta SPR(sprite_t.Y, 1)
+                sta SPR(sprite_t.X, 2)
+                sta SPR(sprite_t.Y, 2)
 
 ;---
 ;                .m16i16
@@ -79,8 +84,8 @@ _next3          lda MusterStrength,X    ; combat strength = muster strength
 ;                 beq _reset
 ; _setPos         sta TILE3_WINDOW_X_POS
 ;                 sta TILE3_WINDOW_Y_POS
-;                 sta TILE2_WINDOW_X_POS
-;                 sta TILE2_WINDOW_Y_POS
+;                 sta TILE2_SCROLL_X
+;                 sta TILE2_SCROLL_Y
 ;                 ;ldy #$04
 ; _again          ldx #$800
 ; _wait           inx
@@ -100,23 +105,24 @@ _next3          lda MusterStrength,X    ; combat strength = muster strength
 
 ;   enable vertical blank interrupt
 
-                .m8i8
-                ldx #HandleIrq_END-HandleIrq
-_relocate       lda @l $024000,X        ; HandleIrq address
-                sta @l $002000,X        ; new address within Bank 00
+                ; .m8i8
+                ldx #HandleIrq.HandleIrq_END-HandleIrq
+_relocate       ;!!lda @l $024000,X        ; HandleIrq address
+                ;!!sta @l $002000,X        ; new address within Bank 00
+
                 dex
                 bpl _relocate
 
                 sei                     ; disable IRQ
 
-                .m16
-                lda @l vecIRQ
+                ; .m16
+                ;!! lda @l vecIRQ
                 sta IRQ_PRIOR
 
-                lda #<>$002000
-                sta @l vecIRQ
+                ;!!lda #<>$002000
+                ;!!sta @l vecIRQ
 
-                .m8
+                ; .m8
                 lda #$07                ; reset consol
                 sta CONSOL
 
@@ -124,16 +130,16 @@ _relocate       lda @l $024000,X        ; HandleIrq address
                 sta InputFlags
                 stz InputType           ; joystick
 
-                lda @l INT_MASK_REG0
-                and #~FNX0_INT00_SOF    ; enable Start-of-Frame IRQ
-                sta @l INT_MASK_REG0
+                ;!!lda @l INT_MASK_REG0
+                ;!!and #~FNX0_INT00_SOF    ; enable Start-of-Frame IRQ
+                ;!!sta @l INT_MASK_REG0
 
-                lda @l INT_MASK_REG1
-                and #~FNX1_INT00_KBD    ; enable Keyboard IRQ
-                sta @l INT_MASK_REG1
+                ;!!lda @l INT_MASK_REG1
+                ;!!and #~FNX1_INT00_KBD    ; enable Keyboard IRQ
+                ;!!sta @l INT_MASK_REG1
 
                 cli                     ; enable IRQ
-                wai
+                ;!!wai
 
                 bra MainLoop
 
@@ -142,7 +148,7 @@ _relocate       lda @l $024000,X        ; HandleIrq address
 ;
 ;--------------------------------------
 MainLoop        .proc
-                .m8i8
+                ; .m8i8
 NewTurn         inc TURN
 
 ;   do calendar calculations
@@ -162,13 +168,13 @@ NewTurn         inc TURN
                 jsr DisplayNumber
 
 ;   why??? - in the event the score has less digits than previously
-                .setbank $04
+                ; .setbank $04
                 lda #$00
                 sta FooterText1,Y
-                .setbank $03
+                ; .setbank $03
 
 ;   update text window
-                jsr RenderFooter        ; default footer text
+                ;!!jsr RenderFooter        ; default footer text
 
 ;   update unit tile map
                 jsr RefreshUnitOverlay
@@ -187,6 +193,7 @@ _FINI           bra _FINI               ; freeze up... endless loop
 _0              lda #$00                ; allow input
                 sta BUTTON_MASK
                 sta activeCorps
+
                 jsr TextMessage
 
 ;_endless        bra _endless
@@ -218,7 +225,7 @@ _next3          stx ARMY
                 bcc _1
 
                 inc CombatStrength,X
-                cmp SID_RANDOM
+                ;!! cmp SID1_RANDOM
                 bcc _1
 
                 inc CombatStrength,X
@@ -419,8 +426,8 @@ _3              sta DAY
 ;======================================
 CalendarDisplay .proc
                 php
-                .setbank $04
-                .m8i8
+                ; .setbank $04
+                ; .m8i8
 
 ;   clear existing display
                 ldy #39
@@ -435,12 +442,12 @@ _next1          sta TXTWDWTOP,Y
                 clc
                 adc #$10
                 jsr DisplayWord
-                .setbank $04
+                ; .setbank $04
 
 ;   display day
                 lda DAY
                 jsr DisplayNumber
-                .setbank $04
+                ; .setbank $04
 
 ;   comma
                 lda #$2C
@@ -468,10 +475,10 @@ _next1          sta TXTWDWTOP,Y
                 jsr DebugText   ; HACK:
 ;-----------
 
-                .RenderText $78,$74,HeaderText,BITMAPTXT3
+                ;!!.RenderText $78,$74,HeaderText,BITMAPTXT3
 
-                .m8i8
-                .setbank $03
+                ; .m8i8
+                ; .setbank $03
                 plp
                 rts
                 .endproc
@@ -529,17 +536,17 @@ _7              cmp #$01
                 lda #$FF
                 sta SEASN2
                 sta SEASN3
-                bra _XIT
+                ;!!bra _XIT
 
 _8              cmp #$03
                 beq _9
 
 ;   no seasonal changes for remaining months
-                bra _XIT
+                ;!!bra _XIT
 
 ;   November and March...
 ;   freeze those rivers, baby
-_9              lda SID_RANDOM
+_9              ;!! lda SID1_RANDOM
                 and #$07
                 clc
                 adc #$07
@@ -588,7 +595,7 @@ _13             ora SEASN1
                 sta SWAP,X
                 bra _15
 
-_14             sta (MAPPTR),Y
+_14             ;!!sta (MAPPTR),Y
 _15             inc activeCorpsX
                 lda activeCorpsX
                 sta LONGITUDE
@@ -810,7 +817,7 @@ TerrainB        .proc
                 sec
                 sbc LONGITUDE
                 tay
-                lda (MAPPTR),Y
+                ;!!lda (MAPPTR),Y
                 sta TRNCOD
                 and #$3F
                 cmp #$3D                ; is infantry?
@@ -1031,7 +1038,7 @@ _DONE           sty TRNTYP
 ;======================================
 TextMessage     .proc
                 php
-                .setbank $04
+                ; .setbank $04
 
                 asl A                   ; *32
                 asl A
@@ -1047,9 +1054,9 @@ _next1          lda TxtTbl+64,X         ; +64 to skip the title and copyright
                 cpy #$20
                 bne _next1
 
-                .RenderText $7B,$73,FooterText3,BITMAPTXT2
+                ;!!.RenderText $7B,$73,FooterText3,BITMAPTXT2
 
-                .setbank $03
+                ; .setbank $03
                 plp
                 rts
                 .endproc

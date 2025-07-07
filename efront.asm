@@ -1,8 +1,8 @@
-;==================================================================
-;==================================================================
-; Eastern Front (1941)
-; 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
-;==================================================================
+
+; SPDX-PackageSummary: Eastern Front (1941)
+; SPDX-PackageOriginator: Chris Crawford
+; SPDX-PackageCopyrightText: 11/30/81 Copyright Chris Crawford 1981
+; SPDX-FileName: efront.asm
 
 
 ;   MEMORY MAP:
@@ -33,94 +33,108 @@
 ;                   09:e800-0a:afff     footer
 
 
-                .cpu "65816"
+                .include "equates/system_f256.equ"
+                .include "equates/zeropage.equ"
 
-                .include "equates_system_c256.asm"
-                .include "equates_directpage.asm"
-                .include "macros_65816.asm"
-                .include "macros_frs_graphic.asm"
-                .include "macros_frs_mouse.asm"
-                .include "macros_game.asm"
-
-
-;--------------------------------------
-;--------------------------------------
-                * = INIT-40
-;--------------------------------------
-                .text "PGX"
-                .byte $01
-                .dword BOOT
-
-BOOT            clc
-                xce
-                .m8i8
-                .setdp $0800
-                .setbank $03
-
-                jml START
+                .include "macros/f256_graphic.mac"
+                .include "macros/f256_mouse.mac"
+                .include "macros/f256_random.mac"
+                .include "macros/f256_sprite.mac"
+                .include "macros/game.mac"
 
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $02_1000
+                * = $2000
+;--------------------------------------
+
+.if PGZ=0
+                .byte $F2,$56               ; signature
+                .byte $02                   ; block count
+                .byte $01                   ; start at block1
+                .addr BOOT_                 ; execute address
+                .word $0001                 ; version
+                .word $0000                 ; kernel
+                .null 'Eastern Front 1941'  ; binary name
+.endif
+
+
+;--------------------------------------
+;--------------------------------------
+                ; * = INIT-40
+;--------------------------------------
+                ; .text "PGX"
+                ; .byte $01
+                ; .dword BOOT_
+
+BOOT_           cld
+
+                ldx #$FF
+                txs
+
+                stz IOPAGE_CTRL
+
+                stz BACKGROUND_COLOR_R
+                stz BACKGROUND_COLOR_G
+                stz BACKGROUND_COLOR_B
+
+                jmp START
+
+
+;--------------------------------------
+;--------------------------------------
+                ; * = $02_1000
 ;--------------------------------------
 
                 .include "thinking.asm"
-
-                .align $1000
                 .include "main.asm"
-
-                .align $1000
                 .include "combat.asm"
-
-                .align $1000
                 .include "interrupt.asm"
-
-                .align $1000
-                .include "platform_c256.asm"
-
-
-;--------------------------------------
-;--------------------------------------
-                * = $03_0000
-;--------------------------------------
-                .include "data.asm"
+                .include "platform_f256.asm"
+                .include "facade.asm"
 
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $04_0000
+                .align $0100
 ;--------------------------------------
-palette         .include "PALETTE.asm"
+                .include "data/DATA.inc"
+
+
+;--------------------------------------
+;--------------------------------------
+                .align $0400
+;--------------------------------------
+palette         .include "data/PALETTE.inc"
 palette_end
 
-                .align $1000
-font            .include "FONT.asm"
+                .align $0100
+font            .include "data/FONT.inc"
 
-                .align $1000
+                ;!!.align $1000
 textData        .include "TEXT.asm"
 
-                .align $1000
-mapData         .include "MAP.asm"
+                .align $01_0000
+mapData         .include "data/MAP.inc"
 
-                .align $1000
+                .align $0100
 unitsData       .fill MAPWIDTH*MAPHEIGHT,$00
 
 
 ;--------------------------------------
+                * = $05_0000
 ;--------------------------------------
-                .align $10000
-;--------------------------------------
-tiles           .include "TILES.asm"
+
+tiles           .include "data/TILES.inc"
 
                 .align $1000
-stamps          .include "STAMPS.asm"
+stamps          .include "data/STAMPS.inc"
 
 
 ;--------------------------------------
 ;--------------------------------------
-                .align $10000
+                ;!!.align $10000
 ;--------------------------------------
-HeaderPanel     .binary "images/header.raw"
-                .fill $39800,$00
-FooterPanel     .binary "images/footer.raw"
+HeaderPanel     ;!!.binary "images/header.raw"
+                ;!!.fill $39800,$00
+FooterPanel     ;!!.binary "images/footer.raw"

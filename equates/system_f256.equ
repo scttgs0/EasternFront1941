@@ -106,6 +106,7 @@ locLayer0_BM2       = $02
 locLayer0_TL0       = $04
 locLayer0_TL1       = $05
 locLayer0_TL2       = $06
+
 locLayer1_BM0       = $00
 locLayer1_BM1       = $10
 locLayer1_BM2       = $20
@@ -185,7 +186,7 @@ BITMAP2_ADDR            = $D111         ; [long] Bits[18:0]
 
 TILE0_CTRL              = $D200
 tcEnable            = $01
-tcSmallTiles        = $08
+tcSmallTiles        = $10
 TILE0_ADDR              = $D201         ; [long] Bits[18:0]
 TILE0_SIZE_X            = $D204         ; [word]
 TILE0_SIZE_Y            = $D206         ; [word]
@@ -215,30 +216,30 @@ TILE2_SCROLL_X          = $D220
 TILE2_SCROLL_Y          = $D222
 
 TILESET0_ADDR           = $D280         ; [long] Bits[18:0]
-TILESET0_ADDR_CFG       = $D283
+TILESET0_CTRL           = $D283
 tsVertical          = $00
 tsSquare            = $08
 
 TILESET1_ADDR           = $D284         ; [long] Bits[18:0]
-TILESET1_ADDR_CFG       = $D287
+TILESET1_CTRL           = $D287
 
 TILESET2_ADDR           = $D288         ; [long] Bits[18:0]
-TILESET2_ADDR_CFG       = $D28B
+TILESET2_CTRL           = $D28B
 
 TILESET3_ADDR           = $D28C         ; [long] Bits[18:0]
-TILESET3_ADDR_CFG       = $D28F
+TILESET3_CTRL           = $D28F
 
 TILESET4_ADDR           = $D290         ; [long] Bits[18:0]
-TILESET4_ADDR_CFG       = $D293
+TILESET4_CTRL           = $D293
 
 TILESET5_ADDR           = $D294         ; [long] Bits[18:0]
-TILESET5_ADDR_CFG       = $D297
+TILESET5_CTRL           = $D297
 
 TILESET6_ADDR           = $D298         ; [long] Bits[18:0]
-TILESET6_ADDR_CFG       = $D29B
+TILESET6_CTRL           = $D29B
 
 TILESET7_ADDR           = $D29C         ; [long] Bits[18:0]
-TILESET7_ADDR_CFG       = $D29F
+TILESET7_CTRL           = $D29F
 
 ;--------------------------------------
 
@@ -252,12 +253,56 @@ XY_ADDR                 = $D30B         ; [long] [R] Bits[17:0]
 
 ;--------------------------------------
 
+sidAttack2ms        = 0
+sidAttack8ms        = 1
+sidAttack16ms       = 2
+sidAttack24ms       = 3
+sidAttack38ms       = 4
+sidAttack56ms       = 5
+sidAttack68ms       = 6
+sidAttack80ms       = 7
+sidAttack100ms      = 8
+sidAttack250ms      = 9
+sidAttack500ms      = 10
+sidAttack800ms      = 11
+sidAttack1s         = 12
+sidAttack3s         = 13
+sidAttack5s         = 14
+sidAttack8s         = 15
+
+sidDecay6ms         = 0
+sidDecay24ms        = 1
+sidDecay48ms        = 2
+sidDecay72ms        = 3
+sidDecay114ms       = 4
+sidDecay168ms       = 5
+sidDecay204ms       = 6
+sidDecay240ms       = 7
+sidDecay300ms       = 8
+sidDecay750ms       = 9
+sidDecay1500ms      = 10
+sidDecay2400ms      = 11
+sidDecay3s          = 12
+sidDecay9s          = 13
+sidDecay14s         = 14
+sidDecay24s         = 15
+
+; - - - - - - - - - - - - - - - - - - -
+
 SID1_BASE               = $D400
-SID1_FREQ1              = $D400         ; [word]
-SID1_PULSE1             = $D402         ; [word]
+SID1_FREQ1              = $D400         ; [word] range[$0000:FFFF] (0-8192Hz)  F=(W/8) Hz
+SID1_PULSE1             = $D402         ; [word; 12-bits]
 SID1_CTRL1              = $D404
-SID1_ATDCY1             = $D405
-SID1_SUREL1             = $D406
+sidcGate           = $01                ; [when=1,ADS begins][when=0,Release begins]
+sidcSync           = $02                ; tie with Voice 3
+sidcRing           = $04                ; tie with Voice 3
+sidcTest           = $08                ; [when=1,locked]
+sidcTri            = $10
+sidcSaw            = $20
+sidcPulse          = $40
+sidcNoise          = $80
+SID1_ATDCY1             = $D405         ; bits [4:7]=Attack (range[2ms:8s]); bits [0:3]=Decay (range[6ms:24s])
+SID1_SUREL1             = $D406         ; bits [4:7]=Sustain (range[0:15]=[0:100%]); bits [0:3]=Release (range[6ms:24s])
 
 SID1_FREQ2              = $D407         ; [word]
 SID1_PULSE2             = $D409         ; [word]
@@ -271,11 +316,23 @@ SID1_CTRL3              = $D412
 SID1_ATDCY3             = $D413
 SID1_SUREL3             = $D414
 
-SID1_CUTOFF             = $D415         ; [word]
+SID1_CUTOFF             = $D415         ; [word; 11-bits]  F=(30+W*5.8) Hz
 SID1_RESON              = $D417
+sidrFilterV1        = $01
+sidrFilterV2        = $02
+sidrFilterV3        = $04
+sidrFilterExt       = $08
+sidrFreq            = $F0               ; bits [4-7]=range[0:15]
 SID1_SIGVOL             = $D418
-SID1_RANDOM             = $D41B
-SID1_ENV3               = $D41C
+sidvVolume          = $0F               ; bits [0:3]=range[0:15]
+sidvLowpass         = $10
+sidvBandpass        = $20
+sidvHighpass        = $40
+sidvV3              = $80               ; [when=0,Voice 3 is OFF]
+SID1_NOISE              = $D41B         ; [read-only]
+SID1_ENV3               = $D41C         ; [read-only]
+
+; - - - - - - - - - - - - - - - - - - -
 
 SID2_BASE               = $D500
 SID2_FREQ1              = $D500         ; [word]
@@ -299,8 +356,8 @@ SID2_SUREL3             = $D514
 SID2_CUTOFF             = $D515         ; [word]
 SID2_RESON              = $D517
 SID2_SIGVOL             = $D518
-SID2_RANDOM             = $D51B
-SID2_ENV3               = $D51C
+SID2_NOISE              = $D51B         ; [read-only]
+SID2_ENV3               = $D51C         ; [read-only]
 
 ;--------------------------------------
 
@@ -519,7 +576,7 @@ BG_CHAR_LUT_PTR         = $D840         ; 16 entries = ARGB
 
 SPRITE_BASE             = $D900
 
-; SP00_CTRL             = $D900
+; SP00_CTRL             = $D900         ; [write-only]
 scEnable            = $01
 scLUT0              = $00
 scLUT1              = $02
@@ -536,31 +593,31 @@ scSIZE_24           = $20
 scSIZE_16           = $40
 scSIZE_8            = $60
 
-; SP00_ADDR             = $D901      ; [long] Bits[18:0]
-; SP00_X                = $D904      ; [word]
-; SP00_Y                = $D906      ; [word]
+; SP00_ADDR             = $D901         ; [write-only] [long] Bits[18:0]
+; SP00_X                = $D904         ; [write-only] [word]
+; SP00_Y                = $D906         ; [write-only] [word]
 
-; SP01_CTRL             = $D908
-; SP01_ADDR             = $D909
-; SP01_X                = $D90C
-; SP01_Y                = $D90E
+; SP01_CTRL             = $D908         ; [write-only]
+; SP01_ADDR             = $D909         ; [write-only]
+; SP01_X                = $D90C         ; [write-only]
+; SP01_Y                = $D90E         ; [write-only]
 
-; SP02_CTRL             = $D910
-; SP02_ADDR             = $D911
-; SP02_X                = $D914
-; SP02_Y                = $D916
+; SP02_CTRL             = $D910         ; [write-only]
+; SP02_ADDR             = $D911         ; [write-only]
+; SP02_X                = $D914         ; [write-only]
+; SP02_Y                = $D916         ; [write-only]
 
-; SP03_CTRL             = $D918
-; SP03_ADDR             = $D919
-; SP03_X                = $D91C
-; SP03_Y                = $D91E
+; SP03_CTRL             = $D918         ; [write-only]
+; SP03_ADDR             = $D919         ; [write-only]
+; SP03_X                = $D91C         ; [write-only]
+; SP03_Y                = $D91E         ; [write-only]
 
 ;...
 
-; SP63_CTRL             = $DAF8
-; SP63_ADDR             = $DAF9
-; SP63_X                = $DAFC
-; SP63_Y                = $DAFE
+; SP63_CTRL             = $DAF8         ; [write-only]
+; SP63_ADDR             = $DAF9         ; [write-only]
+; SP63_X                = $DAFC         ; [write-only]
+; SP63_Y                = $DAFE         ; [write-only]
 
 ;--------------------------------------
 
@@ -624,6 +681,7 @@ VIA0_IO2_PORTA          = $DC0F
 
 JOYSTICK0               = $DC00         ; (R) Joystick 0
 JOYSTICK1               = $DC01
+joyNONE             = $0F
 joyUP               = $01               ;           1110            bit-0   UP
 joyDOWN             = $02               ;      1010   |   0110      bit-1   DOWN
 joyLEFT             = $04               ;          \  |  /          bit-2   LEFT

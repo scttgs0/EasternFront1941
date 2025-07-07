@@ -1,10 +1,9 @@
 
-;-------------------------------------------
-;-------------------------------------------
-; Eastern Front (1941)
-; 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
-;-------------------------------------------
-;-------------------------------------------
+; SPDX-PackageSummary: Eastern Front (1941)
+; SPDX-PackageOriginator: Chris Crawford
+; SPDX-PackageCopyrightText: 11/30/81 Copyright Chris Crawford 1981
+; SPDX-FileName: DATA.inc
+
 
 corpsCount      = $9E
 idxRussianUnits = $37
@@ -12,11 +11,11 @@ idxRussianUnits = $37
 ; x-coordinates = range[45:0]   upper-left  = (45,38)
 ; y-coordinates = range[38:0]   lower-right = (0,0)
 
-;finns at start
+; finns at start
 ;   35,38   144,32  10,0    45-35=10    38-38=0
 ;   36,37   160,16   9,1    45-36=9     38-37=1
 
-;russian at start
+; russian at start
 ;   33,37   192,32  12,1    45-33=12    38-37=1
 ;   31,34   224,80  14,4    45-31=14    38-34=4
 
@@ -204,6 +203,7 @@ HundredDigit    .byte 0,0,0,0,0,0,0,0
                 .byte 2,2,2,2,2,2,2,2
                 .byte 2,2,2,2,2,2,2,2
                 .byte 2,2,2,2,2,2,2,2
+
 TensDigit       .byte 0,0,0,0,0,0,0,0,0,0
                 .byte 1,1,1,1,1,1,1,1,1,1
                 .byte 2,2,2,2,2,2,2,2,2,2
@@ -230,6 +230,7 @@ TensDigit       .byte 0,0,0,0,0,0,0,0,0,0
                 .byte 3,3,3,3,3,3,3,3,3,3
                 .byte 4,4,4,4,4,4,4,4,4,4
                 .byte 5,5,5,5,5,5
+
 OnesDigit       .byte 0,1,2,3,4,5,6,7,8,9
                 .byte 0,1,2,3,4,5,6,7,8,9
                 .byte 0,1,2,3,4,5,6,7,8,9
@@ -337,9 +338,15 @@ ROTARR          .byte 4,9,14,19,24
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ; added for binary compatibility
+
 OBJX            ;.fill 104
-                .byte $03,$08,$0d,$12,$17,$02,$07,$0c,$11,$16,$01,$06,$0b,$10,$15,$00,$05,$0a,$0f,$14
-                .fill 84
+                .byte $03,$08,$0D,$12
+                .byte $17,$02,$07,$0C
+                .byte $11,$16,$01,$06
+                .byte $0B,$10,$15,$00
+                .byte $05,$0A,$0F,$14
+                .fill 84,$00
+
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 ;--------------------------------------
@@ -376,7 +383,7 @@ DPINITVALS      .word $0000             ; map address
                 .byte $00               ; active corp
                 .word $02A8             ; cursor x  $310 - player-0-x
                                         ;   =735 - player-0-x - left-border... =735-104-48... =583
-                .word $0268             ; cursor y  $2C0 - player-0-y      
+                .word $0268             ; cursor y  $2C0 - player-0-y
                                         ;   =623 - player-0-y - top-border...  =623-88-32...  =503
                 .word $0068             ; player-0 position x
                 .word $0058             ; player-0 position y

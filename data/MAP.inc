@@ -1,10 +1,9 @@
 
-;-------------------------------------------
-;-------------------------------------------
-; Eastern Front (1941)
-; 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
-;-------------------------------------------
-;-------------------------------------------
+; SPDX-PackageSummary: Eastern Front (1941)
+; SPDX-PackageOriginator: Chris Crawford
+; SPDX-PackageCopyrightText: 11/30/81 Copyright Chris Crawford 1981
+; SPDX-FileName: MAP.inc
+
 
 MAPWIDTH        = 50
 MAPHEIGHT       = 43

@@ -1,55 +1,59 @@
-;===================================================================
-;===================================================================
-; Eastern Front (1941)
-; 11/30/81 COPYRIGHT CHRIS CRAWFORD 1981
-;===================================================================
+
+; SPDX-PackageSummary: Eastern Front (1941)
+; SPDX-PackageOriginator: Chris Crawford
+; SPDX-PackageCopyrightText: 11/30/81 Copyright Chris Crawford 1981
+; SPDX-FileName: interrupt.asm
 
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; To be relocated to 00:2000
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                .logical $00_2000
-
-HandleIrq       .m16i16
+; Main IRQ Handler
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+HandleIrq       .proc
                 pha
                 phx
                 phy
 
-                .m8i8
-                lda @l INT_PENDING_REG1
-                and #FNX1_INT00_KBD
-                cmp #FNX1_INT00_KBD
-                bne _1
+;   switch to system map
+                lda IOPAGE_CTRL
+                pha                     ; preserve
+                stz IOPAGE_CTRL
 
-                jsl KeyboardHandler
+                ; lda INT_PENDING_REG1
+                ; bit #INT01_VIA1
+                ; beq _1
 
-                lda @l INT_PENDING_REG1
-                sta @l INT_PENDING_REG1
+                ; lda INT_PENDING_REG1
+                ; sta INT_PENDING_REG1
 
-_1              lda @l INT_PENDING_REG0
-                and #FNX0_INT00_SOF
-                cmp #FNX0_INT00_SOF
-                bne _XIT
+                ; jsr KeyboardHandler
 
-                jsl VbiHandler
+_1              lda INT_PENDING_REG0
+                bit #INT00_SOF
+                beq _XIT
 
-                lda @l INT_PENDING_REG0
-                sta @l INT_PENDING_REG0
+                lda INT_PENDING_REG0
+                sta INT_PENDING_REG0
 
-_XIT            .m16i16
+                jsr VbiHandler
+
+_XIT            pla                     ; restore
+                sta IOPAGE_CTRL
+
                 ply
                 plx
                 pla
 
-                .m8i8
 HandleIrq_END   rti
                 ;jmp IRQ_PRIOR
 
-                .endlogical
+                .endproc
 
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; Handle Key notifications
+; Key Notifications
 ;--------------------------------------
 ;   ESC         $01/$81  press/release
 ;   R-Ctrl      $1D/$9D
@@ -73,15 +77,11 @@ KEY_DOWN        = $50
 KEY_CTRL        = $1D                   ; fire button
 ;---
 
-                .m16i16
                 pha
                 phx
                 phy
 
-                .m8i8
-                .setbank $03
-
-                lda KBD_INPT_BUF
+                lda PS2_KEYBD_IN
                 pha
                 sta KEYCHAR
 
@@ -160,11 +160,11 @@ _4              pla
                 bne _5
 
                 lda InputFlags
-                bit #$01
+                bit #joyUP
                 beq _4a
 
-                eor #$01
-                ora #$02                ; cancel KEY_DOWN
+                eor #joyUP
+                ora #joyDOWN            ; cancel KEY_DOWN
                 sta InputFlags
 
 _4a             lda #itKeyboard
@@ -178,7 +178,7 @@ _4r             pla
                 bne _5r
 
                 lda InputFlags
-                ora #$01
+                ora #joyUP
                 sta InputFlags
 
                 jmp _CleanUpXIT
@@ -189,11 +189,11 @@ _5              pla
                 bne _6
 
                 lda InputFlags
-                bit #$02
+                bit #joyDOWN
                 beq _5a
 
-                eor #$02
-                ora #$01                ; cancel KEY_UP
+                eor #joyDOWN
+                ora #joyUP              ; cancel KEY_UP
                 sta InputFlags
 
 _5a             lda #itKeyboard
@@ -207,7 +207,7 @@ _5r             pla
                 bne _6r
 
                 lda InputFlags
-                ora #$02
+                ora #joyDOWN
                 sta InputFlags
 
                 jmp _CleanUpXIT
@@ -218,11 +218,11 @@ _6              pla
                 bne _7
 
                 lda InputFlags
-                bit #$04
+                bit #joyLEFT
                 beq _6a
 
-                eor #$04
-                ora #$08                ; cancel KEY_RIGHT
+                eor #joyLEFT
+                ora #joyRIGHT           ; cancel KEY_RIGHT
                 sta InputFlags
 
 _6a             lda #itKeyboard
@@ -236,7 +236,7 @@ _6r             pla
                 bne _7r
 
                 lda InputFlags
-                ora #$04
+                ora #joyLEFT
                 sta InputFlags
 
                 bra _CleanUpXIT
@@ -247,11 +247,11 @@ _7              pla
                 bne _8
 
                 lda InputFlags
-                bit #$08
+                bit #joyRIGHT
                 beq _7a
 
-                eor #$08
-                ora #$04                ; cancel KEY_LEFT
+                eor #joyRIGHT
+                ora #joyLEFT            ; cancel KEY_LEFT
                 sta InputFlags
 
 _7a             lda #itKeyboard
@@ -265,7 +265,7 @@ _7r             pla
                 bne _8r
 
                 lda InputFlags
-                ora #$08
+                ora #joyRIGHT
                 sta InputFlags
 
                 bra _CleanUpXIT
@@ -275,7 +275,7 @@ _8              pla
                 bne _XIT
 
                 lda InputFlags
-                eor #$10
+                eor #joyButton0
                 sta InputFlags
 
                 lda #itKeyboard
@@ -289,22 +289,19 @@ _8r             pla
                 bne _XIT
 
                 lda InputFlags
-                ora #$10
+                ora #joyButton0
                 sta InputFlags
 
                 stz KEYCHAR
                 bra _XIT
 
-_CleanUpXIT     ;stz KEYCHAR    HACK:
+_CleanUpXIT     stz KEYCHAR
                 pla
 
-_XIT            .m16i16
-                ply
+_XIT            ply
                 plx
                 pla
-
-                .m8i8
-                rtl
+                rts
                 .endproc
 
 
@@ -312,17 +309,15 @@ _XIT            .m16i16
 ; Handle Vertical Blank Interrupt (SOF)
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 VbiHandler      .proc
-                .m16i16
+                ; .m16i16
                 pha
                 phx
                 phy
 
-                .m8i8
-                .setbank $03
+                ; .m8i8
+                ; .setbank $03
 
-                lda JIFFYCLOCK
-                inc A
-                sta JIFFYCLOCK
+                inc JIFFYCLOCK          ; increment the jiffy clock each VBI
 
                 lda JOYSTICK0           ; read joystick0
                 and #$1F
@@ -367,8 +362,8 @@ _1
                 jsr DebugText   ; HACK:
 ;-----------
 
-                .RenderText $78,$74,HeaderText,BITMAPTXT3
-                .m8i8
+                ;!!.RenderText $78,$74,HeaderText,BITMAPTXT3
+                ; .m8i8
 
                 lda HANDICAP
                 beq _3                  ; skip when handicap is active
@@ -406,7 +401,7 @@ _3a             lda BUTTON_FLAG         ; no button now; previous status
 
                 jmp NoButton
 
-_4              .setbank $04            ; button just released
+_4              ; .setbank $04            ; button just released
                 lda SprColor0
                 cmp #$84                ; is the cursor highlighted?
                 beq _4a                 ;   no, skip
@@ -420,15 +415,15 @@ _nextChannel    lda SprColor0,Y         ; remove brightening on the cursor
                 dey
                 bpl _nextChannel
 
-                jsr InitLUT
+                ;!!jsr InitLUT
 
-_4a             .setbank $03
+_4a             ; .setbank $03
                 lda #$00
                 sta BUTTON_FLAG         ; =false
                 sta CrossFlag
-                sta SID_CTRL1           ; TODO: no distortion; no volume
+                sta SID1_CTRL1           ; TODO: no distortion; no volume
 
-                jsr RenderFooter        ; default footer text
+                ;!!jsr RenderFooter        ; default footer text
 
                 lda #$08
                 sta DELAY
@@ -453,7 +448,7 @@ _5              lda InputFlags          ; button is pressed - joystick0 read
                 jmp ORDERS              ;   yes
 
 _6              sta DEBOUNCE_TIMER      ;   no, clear debounce
-                sta SID_CTRL1           ; TODO: distortion/volume
+                sta SID1_CTRL1           ; TODO: distortion/volume
                 sta JoystickFlag
 
                 lda BUTTON_FLAG
@@ -486,12 +481,12 @@ _8              lda KEYCHAR             ; last key pressed
                 jsr ClearArrow
                 jsr ClearMaltakreuze
 
-                .m16
+                ; .m16
                 lda BASEX
                 sta STEPX
                 lda BASEY
                 sta STEPY
-                .m8
+                ; .m8
 
 _9              lda JIFFYCLOCK
                 and #$03
@@ -502,7 +497,7 @@ _9              lda JIFFYCLOCK
 _10             ldy HOWMNY              ;   yes
                 bne _11                 ; any orders to show?
 
-                jmp _printCursor        ;   no, go ahead to maltakreuze
+                ;!!jmp _printCursor        ;   no, go ahead to maltakreuze
 
 _11             jsr ClearArrow          ;   yes, clear old arrow
 
@@ -530,11 +525,11 @@ _next3          lsr A                   ; /4
                 bne _next3
 
 ;---
-                .m16i16
+                ; .m16i16
 _14             sta ArrowIndex
 ;   multiple by 1024 (size of the arrow stamp)
-                xba                     ; *256
-                and #$FF00
+                ;!!xba                     ; *256
+                ;!!and #$FF00
                 asl A                   ; *4
                 asl A
                 sta wTEMP
@@ -542,17 +537,17 @@ _14             sta ArrowIndex
 ;   get arrow image and store it to player RAM
                 tax
 
-                lda #<>(SPRITES+$400-VRAM)  ; PLYR1_UP is the base address
+                ;!!lda #<>(SPRITES+$400-VRAM)  ; PLYR1_UP is the base address
                 clc
                 adc wTEMP               ; add the displacement for the appropriate arrow
-                sta SP01_ADDR
+                ;!!sta SP01_ADDR
 
                 lda STEPX               ; position arrow
-                sta SP01_X_POS
+                sta SPR(sprite_t.X, 1)
                 lda STEPY
-                sta SP01_Y_POS
+                sta SPR(sprite_t.Y, 1)
 
-                .m16i8
+                ; .m16i8
 ;   now step arrow
                 ldx ArrowIndex
                 lda STEPX
@@ -564,7 +559,7 @@ _14             sta ArrowIndex
                 adc YADD,X
                 sta STEPY
 
-                .m8
+                ; .m8
                 inc StepCount           ; next step
                 lda StepCount
                 and #$07
@@ -581,31 +576,31 @@ _14             sta ArrowIndex
                 sta OrderCount          ;   yes, reset to start of arrow's path
 
 ;   display maltese cross ('maltakreuze' or KRZ)
-_printCursor    .m16
+_printCursor    ; .m16
                 lda STEPY
                 and #$F0
                 ora #$08
                 sta CrossY
-                sta SP02_Y_POS
+                sta SPR(sprite_t.Y, 2)
 
                 lda STEPX
                 and #$F0
                 ora #$08
                 sta CrossX
-                sta SP02_X_POS          ; Sprite-2 x-position
+                sta SPR(sprite_t.X, 2)  ; Sprite-2 x-position
 
-                .m8
+                ; .m8
                 lda #$FF                ; cross is visible
                 sta CrossFlag
 
                 jsr ClearArrow
 
-                .m16
+                ; .m16
                 lda BASEX               ; reset arrow's coords
                 sta STEPX
                 lda BASEY
                 sta STEPY
-                .m8
+                ; .m8
 
 _XIT            jmp ENDISR
 
@@ -622,7 +617,7 @@ FirstBtnPass    .proc
                 sta BUTTON_FLAG         ; =true
 
 ;   first get coords of center of cursor (map frame)
-                .m16
+                ; .m16
                 lda cursorMapX
                 sec
                 sbc #$10
@@ -651,7 +646,7 @@ FirstBtnPass    .proc
                 sta activeCorpsY
 
 ;   look for a match with unit coordinates
-                .m8
+                ; .m8
                 ldx #corpsCount
 _next1          lda CorpsY,X
                 cmp activeCorpsY
@@ -684,7 +679,7 @@ _match          lda #$00
 
                 stx activeCorps
 
-                .setbank $04
+                ; .setbank $04
                 ldy #2                  ; brighten up the cursor
 _nextChannel    lda SprColor0,Y
                 clc
@@ -693,7 +688,7 @@ _nextChannel    lda SprColor0,Y
                 dey
                 bpl _nextChannel
 
-                jsr InitLUT
+                ;!!jsr InitLUT
 
 ;   clear text window
                 lda #$00
@@ -704,7 +699,7 @@ _nextChar       sta TXTWDW,Y
                 bne _nextChar
 
 ;   display unit specs
-                .setbank $03
+                ; .setbank $03
 
                 ldy #$08
                 ldx activeCorps
@@ -737,11 +732,11 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
                 lda #$1F                ; "MUSTER"
                 jsr DisplayWord
 
-                .setbank $04
+                ; .setbank $04
                 dey
                 lda #$3A                ; ":"
                 sta TXTWDW,Y
-                .setbank $03
+                ; .setbank $03
 
                 iny
                 iny
@@ -757,11 +752,11 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
                 lda #$21                ; "STRENGTH"
                 jsr DisplayWord
 
-                .setbank $04
+                ; .setbank $04
                 dey
                 lda #$3A                ; ":"
                 sta TXTWDW,Y
-                .setbank $03
+                ; .setbank $03
 
                 iny
                 iny
@@ -769,9 +764,9 @@ _3              jsr DisplayWord         ; display unit size (corps or army)
                 lda CombatStrength,X    ; combat strength
                 jsr DisplayNumber
 
-                .RenderText $7A,$72,FooterText1,BITMAPTXT0
-                .RenderText $7A,$72,FooterText2,BITMAPTXT1
-                .m8i8
+                ;!!.RenderText $7A,$72,FooterText1,BITMAPTXT0
+                ;!!.RenderText $7A,$72,FooterText2,BITMAPTXT1
+                ; .m8i8
 
                 jsr SwitchCorps         ; flip unit with terrain
 
@@ -793,7 +788,7 @@ _4              lda #$01
                 lda #$00
                 sta StepCount
 
-                .m16
+                ; .m16
                 lda wTX
                 and #$07
                 clc
@@ -814,7 +809,7 @@ _4              lda #$01
                 sta STEPY
 
 ;   set up page 6 values
-                .m8
+                ; .m8
                 ldx activeCorps
                 lda HowManyOrders,X
                 sta HOWMNY
@@ -876,9 +871,9 @@ _4              lda #$00
 _5              tay
                 sta STICKI
                 lda BEEPTB,Y
-                sta SID_FREQ1           ; TODO: "BEEP!"
+                sta SID1_FREQ1           ; TODO: "BEEP!"
                 lda #$A8
-                sta SID_CTRL1           ; TODO: distortion-5; half volume
+                sta SID1_CTRL1           ; TODO: distortion-5; half volume
                 lda #$FF
                 sta JoystickFlag
 
@@ -921,7 +916,7 @@ _6              ldy TEMPI
 ;   move maltakreuze
                 jsr ClearMaltakreuze
 
-                .m16
+                ; .m16
                 ldx STICKI
                 lda CrossX
                 clc
@@ -934,11 +929,11 @@ _6              ldy TEMPI
                 sta CrossY
 
                 lda CrossX              ; display it
-                sta SP02_X_POS          ; Sprite-2 x-position
+                sta SPR(sprite_t.X, 2)  ; Sprite-2 x-position
 
                 lda CrossY
-                sta SP02_Y_POS
-                .m8
+                sta SPR(sprite_t.Y, 2)
+                ; .m8
 
                 bra EXITI
 
@@ -956,7 +951,7 @@ NoButton        .proc
                 eor #$0F
                 bne Scroll
 
-                sta SID_CTRL1           ; TODO: no distortion; volume set based on joystick movement
+                sta SID1_CTRL1           ; TODO: no distortion; volume set based on joystick movement
                 sta JoystickFlag
 
                 lda #$08
@@ -1006,15 +1001,15 @@ _1              clc
                 and #$0F
                 pha                     ; save it on stack for other bit checks
 
-_checkLeft      .m8
+_checkLeft      ; .m8
                 pla
                 pha
                 and #$04                ; joystick left?
                 bne _checkRight         ;   no, move on
 
-                .m16
+                ; .m16
                 lda cursorMapX          ; already at limit?
-                cmp #$2E8
+                ;!!cmp #$2E8
                 beq _checkUp            ;   yes, move on
 
 _2              inc A
@@ -1028,7 +1023,7 @@ _3              lda shSpr0PositionX
                 dec A
                 dec A
                 sta shSpr0PositionX
-                sta SP00_X_POS          ; Sprite-0 x-position
+                sta SPR(sprite_t.X, 0) ; Sprite-0 x-position
                 bne _checkUp
 
 _4              lda X_POS
@@ -1037,8 +1032,8 @@ _4              lda X_POS
                 dec A                   ; decrement x-coordinate
                 dec A
                 sta X_POS
-                sta TILE3_WINDOW_X_POS  ; fine scroll
-                sta TILE2_WINDOW_X_POS
+                ;!!sta TILE3_WINDOW_X_POS  ; fine scroll
+                sta TILE2_SCROLL_X
 
                 bra _checkUp            ; no, move on
 
@@ -1046,13 +1041,13 @@ _4              lda X_POS
                 ; clv
                 ; bvc _checkUp          ; no point in checking for joystick right
 
-_checkRight     .m8
+_checkRight     ; .m8
                 pla                     ; get back joystick byte
                 pha                     ; save it again
                 and #$08                ; joystick right?
                 bne _checkUp            ;   no, move on
 
-                .m16
+                ; .m16
                 lda cursorMapX
                 cmp #$18
                 beq _checkUp
@@ -1062,13 +1057,13 @@ _5              dec A
                 sta cursorMapX
 
 _6              lda shSpr0PositionX
-                cmp #$278
+                ;!!cmp #$278
                 beq _7
 
                 inc A
                 inc A
                 sta shSpr0PositionX
-                sta SP00_X_POS          ; Sprite-0 x-position
+                sta SPR(sprite_t.X, 0) ; Sprite-0 x-position
                 bne _checkUp
 
 _7              lda X_POS
@@ -1078,15 +1073,15 @@ _7              lda X_POS
                 inc A                   ; no, increment x-coordinate
                 inc A
                 sta X_POS
-                sta TILE3_WINDOW_X_POS  ; fine scroll
-                sta TILE2_WINDOW_X_POS
+                ;!!sta TILE3_WINDOW_X_POS  ; fine scroll
+                sta TILE2_SCROLL_X
 
                 bra _checkUp            ; scroll overflow? if not, move on
 
                 ;dec OFFLO              ; yes, set up offset for character scroll
                 ;dec OFFHI
 
-_checkUp        .m8
+_checkUp        ; .m8
                 pla                     ; get back joystick byte
                 pha                     ; save it again
                 and #$01                ; joystick up?
@@ -1094,9 +1089,9 @@ _checkUp        .m8
 
                 pla                     ; clean up stack
 
-                .m16
+                ; .m16
                 lda cursorMapY
-                cmp #$278
+                ;!!cmp #$278
                 beq _XIT
 
 _8              inc A
@@ -1110,7 +1105,7 @@ _9              lda shSpr0PositionY
 _10             dec A
                 dec A
                 sta shSpr0PositionY
-                sta SP00_Y_POS
+                sta SPR(sprite_t.Y, 0)
                 bra _XIT
 
 _11             lda Y_POS
@@ -1119,8 +1114,8 @@ _11             lda Y_POS
                 dec A
                 dec A
                 sta Y_POS
-                sta TILE3_WINDOW_Y_POS  ; fine scroll
-                sta TILE2_WINDOW_Y_POS
+                sta TILE0_SCROLL_Y      ; fine scroll
+                sta TILE1_SCROLL_Y
                 bra _XIT
 
 _11skip         ;bra _checkDown          ; scroll overflow? If not, amble on
@@ -1133,12 +1128,12 @@ _11skip         ;bra _checkDown          ; scroll overflow? If not, amble on
                 ; sbc #$00
                 ; sta OFFHI
 
-_checkDown      .m8
+_checkDown      ; .m8
                 pla
                 and #$02                ; joystick down?
                 bne _XIT                ;   no, trudge on
 
-                .m16
+                ; .m16
                 lda cursorMapY
                 cmp #$18
                 beq _XIT
@@ -1148,24 +1143,24 @@ _12             dec A
                 sta cursorMapY
 
 _13             lda shSpr0PositionY
-                cmp #$188
+                ;!!cmp #$188
                 beq _15
 
 _14             inc A
                 inc A
                 sta shSpr0PositionY
-                sta SP00_Y_POS
+                sta SPR(sprite_t.Y, 0)
                 bra _XIT
 
 _15             lda Y_POS
-                cmp #$120
+                ;!!cmp #$120
                 beq _XIT
 
                 inc A                   ; no, decrement y-coordinate
                 inc A
                 sta Y_POS
-                sta TILE3_WINDOW_Y_POS  ; fine scroll
-                sta TILE2_WINDOW_Y_POS
+                sta TILE0_SCROLL_Y      ; fine scroll
+                sta TILE1_SCROLL_Y
                 bra _XIT                ; no, move on
 
                 ; .m8
@@ -1177,7 +1172,7 @@ _15             lda Y_POS
                 ; adc #$00
                 ; sta OFFHI
 
-_XIT            .m8
+_XIT            ; .m8
                 .endproc
 
                 ;[fall-through]
@@ -1187,7 +1182,7 @@ _XIT            .m8
 ;
 ;--------------------------------------
 ENDISR          .proc
-                .m16
+                ; .m16
                 lda Y_POS
                 lsr A                   ; /32
                 lsr A
@@ -1195,7 +1190,7 @@ ENDISR          .proc
                 lsr A
                 lsr A
 
-                .m8
+                ; .m8
                 cmp #$11
                 bcs _1
 
@@ -1214,13 +1209,13 @@ _2              sta TEMPI
                 sec
                 sbc TEMPI
 
-_3              .m16i16
+_3              ; .m16i16
                 ply
                 plx
                 pla
 
-                .m8i8
-                rtl
+                ; .m8i8
+                rts
                 .endproc
 
 
@@ -1235,18 +1230,18 @@ _3              .m16i16
 ;======================================
 SwitchCorps     .proc
                 php
-                .setbank $04
-                .m16i8
+                ; .setbank $04
+                ; .m16i8
 
 ;   MAP origin is lower-right
 ;   wTEMP origin is upper-left
 ;   convert the coordinate systems
 ;   wTEMP = 38-activeCorpsY*50
                 lda #38                 ; MAP HEIGHT excluding border
-                .m8
+                ; .m8
                 sec
                 sbc activeCorpsY
-                .m16
+                ; .m16
 ;   multiple by 50 -- *32 + *16 + *2 = *50
                 pha
                 asl A                   ; *32
@@ -1270,41 +1265,41 @@ SwitchCorps     .proc
                 adc wTEMP
 
                 clc
-                adc #$E000+MAPWIDTH*3   ; MAP address + top border
+                ;!!adc #$E000+MAPWIDTH*3   ; MAP address + top border
                 sta pMap
 
 ;   offset = 45-activeCorpsX+2
                 lda #45                 ; MAP WIDTH excluding border
-                .m8
+                ; .m8
                 sec
                 sbc activeCorpsX
-                .m16
+                ; .m16
                 clc
                 adc #2
 
 ;   retrieve the terrain type
-                .m8
+                ; .m8
                 tay
-                lda (pMap),Y
+                ;!!lda (pMap),Y
 
                 ldx activeCorps         ; index 0 is unused -- indicates the end of the list
                 beq _XIT
 
                 pha
                 lda SWAP,X
-                sta (pMap),Y
+                ;!!sta (pMap),Y
                 pla
                 sta SWAP,X
 
 ;   place unit tile
-                .m16
+                ; .m16
                 lda pMap
                 clc
-                adc #$1000              ; UNIT tile map is $1000 bytes ahead of MAP
+                ;!!adc #$1000              ; UNIT tile map is $1000 bytes ahead of MAP
                 sta wTEMP
 
-                .m8
-                lda (pMap),Y
+                ; .m8
+                ;!!lda (pMap),Y
                 cmp #$3D                ; german
                 beq _1
                 cmp #$3E
@@ -1321,12 +1316,12 @@ SwitchCorps     .proc
                 beq _1
 
                 lda #$00                ; not a unit counter -- clear the tile
-                sta (wTEMP),Y
+                ;!!sta (wTEMP),Y
                 bra _XIT
 
-_1              sta (wTEMP),Y           ; place the unit on the UNIT tile map
+_1              ;!!sta (wTEMP),Y           ; place the unit on the UNIT tile map
 
-_XIT            .setbank $03
+_XIT            ; .setbank $03
                 plp
                 rts
                 .endproc
@@ -1336,12 +1331,12 @@ _XIT            .setbank $03
 ; Clear the arrow player
 ;======================================
 ClearArrow      .proc
-                .m16
+                ; .m16
                 lda #$00                ; move to off-screen
-                sta SP01_X_POS
-                sta SP01_Y_POS
+                sta SPR(sprite_t.X, 1)
+                sta SPR(sprite_t.Y, 1)
 
-                .m8
+                ; .m8
                 rts
                 .endproc
 
@@ -1350,12 +1345,12 @@ ClearArrow      .proc
 ; Clear the Maltakreuze
 ;======================================
 ClearMaltakreuze .proc
-                .m16
+                ; .m16
                 lda #$00                ; move to off-screen
-                sta SP02_X_POS
-                sta SP02_Y_POS
+                sta SPR(sprite_t.X, 2)
+                sta SPR(sprite_t.Y, 2)
 
-                .m8
+                ; .m8
                 lda #$00                ; cross is not visible
                 sta CrossFlag
                 rts
@@ -1369,7 +1364,7 @@ ClearMaltakreuze .proc
 Squawk          .proc
                 ldy #$00
 
-                .setbank $04
+                ; .setbank $04
 _next1          lda ERRMSG,X
                 sta FooterText3+4,Y
                 iny
@@ -1377,11 +1372,11 @@ _next1          lda ERRMSG,X
                 cpy #$20
                 bne _next1
 
-                .setbank $03
+                ; .setbank $03
                 lda #$68
-                sta SID_CTRL1           ; TODO: distortion-3; half volume
+                sta SID1_CTRL1           ; TODO: distortion-3; half volume
                 lda #$50
-                sta SID_FREQ1           ; TODO: "HONK!"
+                sta SID1_FREQ1           ; TODO: "HONK!"
                 lda #$FF
                 sta ERRFLG
                 jmp EXITI
@@ -1399,7 +1394,7 @@ ClearError      .proc
                 lda #$00
                 sta ERRFLG
 
-                .setbank $04
+                ; .setbank $04
                 ldy #$00
                 ldx #$1F
 _next1          sta FooterText3+4,Y
@@ -1407,7 +1402,7 @@ _next1          sta FooterText3+4,Y
                 dex
                 bpl _next1
 
-                .setbank $03
+                ; .setbank $03
 _XIT            rts
                 .endproc
 
@@ -1421,7 +1416,7 @@ _XIT            rts
 ;   Y           Position offset
 ;======================================
 DisplayNumber   .proc
-                .setbank $04
+                ; .setbank $04
 
                 tax
                 clc
@@ -1446,7 +1441,7 @@ _3              lda OnesDigit,X
                 sta TXTWDW,Y
                 iny
 
-                .setbank $03
+                ; .setbank $03
                 rts
                 .endproc
 
@@ -1454,6 +1449,12 @@ _3              lda OnesDigit,X
 ;======================================
 ; Display a single word from a long
 ; table of words
+;--------------------------------------
+; at entry
+;   A           word index
+;   Y           TXTWDW char position
+; upon exit
+;   Y           next cursor position
 ;======================================
 DisplayWord     .proc
                 asl A                   ; *8
@@ -1461,7 +1462,7 @@ DisplayWord     .proc
                 asl A
                 bcc ENTRY2
 
-                .setbank $04
+                ; .setbank $04
                 tax
 _next1          lda WordsTbl+256,X      ; COMBAT|STRENGTH
                 beq _1                  ; finished once we hit the first space character
@@ -1473,14 +1474,12 @@ _next1          lda WordsTbl+256,X      ; COMBAT|STRENGTH
                 and #$07
                 bne _next1
 
-                .setbank $03
-_1              iny
-                rts
+_1              bra ENTRY2._XIT
 
 ENTRY2          tax                     ; this is another entry point
-                .setbank $04
+                ; .setbank $04
 _next1          lda WordsTbl,X
-                beq _1                  ; finished once we hit the first space character
+                beq _XIT                ; finished once we hit the first space character
 
                 sta TXTWDW,Y
                 iny
@@ -1489,7 +1488,7 @@ _next1          lda WordsTbl,X
                 and #$07
                 bne _next1
 
-                .setbank $03
-_1              iny
+_XIT            ; .setbank $03
+                iny                     ; next cursor position
                 rts
                 .endproc
