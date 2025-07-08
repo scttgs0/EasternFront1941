@@ -402,8 +402,8 @@ _next1          lda Palette,Y
 ; Set it up for tile set 0
 ;======================================
 InitTiles       .proc
+map             = $01_0000
 tiles           = $05_0000
-worldmap        = $04_E000
 ;---
 
                 pha
@@ -427,14 +427,15 @@ worldmap        = $04_E000
                 lda #tsVertical
                 sta TILESET0_CTRL
 
-                lda #<worldmap          ; Set the source address
+;   define the tile map
+                lda #<map
                 sta TILE0_ADDR
-                lda #>worldmap
+                lda #>map
                 sta TILE0_ADDR+1
-                lda #`worldmap
+                lda #`map
                 sta TILE0_ADDR+2
 
-                lda #50                 ; Set the size of the tile map
+                lda #50
                 sta TILE0_SIZE_X
                 stz TILE0_SIZE_X+1
                 lda #43
@@ -446,11 +447,11 @@ worldmap        = $04_E000
                 stz TILE0_SCROLL_Y+1
                 stz TILE0_SCROLL_Y
 
-;   enable the tilemap, use 8x8 pixel tiles
+;   enable the tile map, use 8x8-pixel tiles
                 lda #tcEnable|tcSmallTiles
                 sta TILE0_CTRL
 
-;   enable tiles on layer 0
+;   enable on layer 0
                 lda #locLayer0_TL0
                 sta LAYER_ORDER_CTRL_0
 

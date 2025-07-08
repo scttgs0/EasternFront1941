@@ -33,19 +33,24 @@ _next2          lda DPINITVALS,X       ; initialize direct-page values
                 jsr InitUnitOverlay
 
                 jsr InitSprites
-                jsr InitBitmap
+                ;;; jsr InitBitmap
+
+                stz BITMAP0_CTRL        ; disabled
+                stz BITMAP1_CTRL
+                stz BITMAP2_CTRL
 
                 lda #$00
                 sta X_POS
                 sta TILE0_SCROLL_X      ; fine scroll
+                stz TILE0_SCROLL_X+1
                 sta TILE1_SCROLL_X      ; fine scroll
+                stz TILE1_SCROLL_X+1
                 lda #$20
                 sta Y_POS
                 sta TILE0_SCROLL_Y
+                stz TILE0_SCROLL_Y+1
                 sta TILE1_SCROLL_Y
-                lda #$01
-                sta TILE0_SCROLL_Y+1
-                sta TILE1_SCROLL_Y+1
+                stz TILE1_SCROLL_Y+1
 
                 ldx #$00
 _next3          lda MusterStrength,X    ; combat strength = muster strength
