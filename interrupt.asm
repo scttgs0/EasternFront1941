@@ -11,11 +11,14 @@
 ; Main IRQ Handler
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-HandleIrq       .proc
+irqMain         .proc
                 pha
                 phx
                 phy
 
+                cld
+
+; - - - - - - - - - - - - - - - - - - -
 ;   switch to system map
                 lda IOPAGE_CTRL
                 pha                     ; preserve
@@ -37,18 +40,19 @@ _1              lda INT_PENDING_REG0
                 lda INT_PENDING_REG0
                 sta INT_PENDING_REG0
 
-                jsr VbiHandler
+                jsr irqVBIHandler
 
+; - - - - - - - - - - - - - - - - - - -
 _XIT            pla                     ; restore
                 sta IOPAGE_CTRL
+; - - - - - - - - - - - - - - - - - - -
 
                 ply
                 plx
                 pla
 
-HandleIrq_END   rti
-                ;jmp IRQ_PRIOR
-
+irqMain_END     ;jmp IRQ_PRIOR
+                rti
                 .endproc
 
 
@@ -99,6 +103,7 @@ _1              pla                     ;   no
 
                 jmp _CleanUpXIT
 
+; - - - - - - - - - - - - - - - - - - -
 _1r             pla
                 pha
                 cmp #KEY_F2|$80
@@ -110,6 +115,7 @@ _1r             pla
 
                 jmp _CleanUpXIT
 
+; - - - - - - - - - - - - - - - - - - -
 _2              pla
                 pha
                 cmp #KEY_F3
@@ -121,6 +127,7 @@ _2              pla
 
                 jmp _CleanUpXIT
 
+; - - - - - - - - - - - - - - - - - - -
 _2r             pla
                 pha
                 cmp #KEY_F3|$80
@@ -132,6 +139,7 @@ _2r             pla
 
                 jmp _CleanUpXIT
 
+; - - - - - - - - - - - - - - - - - - -
 _3              pla
                 pha
                 cmp #KEY_F4
@@ -143,6 +151,7 @@ _3              pla
 
                 jmp _CleanUpXIT
 
+; - - - - - - - - - - - - - - - - - - -
 _3r             pla
                 pha
                 cmp #KEY_F4|$80
@@ -154,6 +163,7 @@ _3r             pla
 
                 jmp _CleanUpXIT
 
+; - - - - - - - - - - - - - - - - - - -
 _4              pla
                 pha
                 cmp #KEY_UP
@@ -172,6 +182,7 @@ _4a             lda #itKeyboard
 
                 jmp _CleanUpXIT
 
+; - - - - - - - - - - - - - - - - - - -
 _4r             pla
                 pha
                 cmp #KEY_UP|$80
@@ -183,6 +194,7 @@ _4r             pla
 
                 jmp _CleanUpXIT
 
+; - - - - - - - - - - - - - - - - - - -
 _5              pla
                 pha
                 cmp #KEY_DOWN
@@ -201,6 +213,7 @@ _5a             lda #itKeyboard
 
                 jmp _CleanUpXIT
 
+; - - - - - - - - - - - - - - - - - - -
 _5r             pla
                 pha
                 cmp #KEY_DOWN|$80
@@ -212,6 +225,7 @@ _5r             pla
 
                 jmp _CleanUpXIT
 
+; - - - - - - - - - - - - - - - - - - -
 _6              pla
                 pha
                 cmp #KEY_LEFT
@@ -306,9 +320,9 @@ _XIT            ply
 
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; Handle Vertical Blank Interrupt (SOF)
+; Vertical Blank Interrupt (SOF)
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-VbiHandler      .proc
+irqVBIHandler   .proc
                 ; .m16i16
                 pha
                 phx

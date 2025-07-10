@@ -435,7 +435,7 @@ tiles           = $05_0000
                 lda #`map
                 sta TILE0_ADDR+2
 
-                lda #50
+                lda #50                 ; Set the size of the tile map
                 sta TILE0_SIZE_X
                 stz TILE0_SIZE_X+1
                 lda #43
@@ -451,7 +451,7 @@ tiles           = $05_0000
                 lda #tcEnable|tcSmallTiles
                 sta TILE0_CTRL
 
-;   enable on layer 0
+;   enable tiles on layer 0
                 lda #locLayer0_TL0
                 sta LAYER_ORDER_CTRL_0
 
@@ -538,11 +538,11 @@ InitBitmap      .proc
 ;   switch to system map
                 stz IOPAGE_CTRL
 
-                ;lda #<ScreenRAM         ; Set the destination address
+                lda #<ScreenRAM         ; Set the destination address
                 sta BITMAP2_ADDR
-                ;lda #>ScreenRAM
+                lda #>ScreenRAM
                 sta BITMAP2_ADDR+1
-                ;lda #`ScreenRAM
+                lda #`ScreenRAM
                 sta BITMAP2_ADDR+2
 
                 lda #bmcEnable|bmcLUT0
