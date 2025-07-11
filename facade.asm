@@ -147,6 +147,8 @@ _nextPlayer     dex
 
 ;======================================
 ; Render High Score
+;--------------------------------------
+; preserve      A, X, Y
 ;======================================
 ; RenderHiScore   .proc
 ; v_RenderLine    .var 2*CharResX
@@ -331,6 +333,8 @@ _nextPlayer     dex
 
 ;======================================
 ; Render Title
+;--------------------------------------
+; preserve      A, X, Y
 ;======================================
 ; RenderTitle     .proc
 ; v_RenderLine    .var 24*CharResX

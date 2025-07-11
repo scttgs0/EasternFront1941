@@ -323,13 +323,9 @@ _XIT            ply
 ; Vertical Blank Interrupt (SOF)
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 irqVBIHandler   .proc
-                ; .m16i16
                 pha
                 phx
                 phy
-
-                ; .m8i8
-                ; .setbank $03
 
                 inc JIFFYCLOCK          ; increment the jiffy clock each VBI
 
