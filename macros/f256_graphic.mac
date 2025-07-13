@@ -1,0 +1,44 @@
+
+; SPDX-FileName: f256_graphic.mac
+; SPDX-FileCopyrightText: Copyright 2023, Scott Giese
+; SPDX-License-Identifier: GPL-3.0-or-later
+
+
+frsGraphics     .macro
+                pha
+
+                lda #\1
+                sta MASTER_CTRL_L
+                lda #\2
+                sta MASTER_CTRL_H
+
+                pla
+                .endmacro
+
+frsBorder_off   .macro
+                stz BORDER_CTRL
+                stz BORDER_SIZE_X
+                stz BORDER_SIZE_Y
+                .endmacro
+
+frsBorder_on    .macro color,xSize,ySize
+                pha
+
+                lda #$01
+                sta BORDER_CTRL
+
+                lda \xSize
+                sta BORDER_SIZE_X
+
+                lda \ySize
+                sta BORDER_SIZE_Y
+
+                lda \color>>16&$FF
+                sta BORDER_COLOR_R
+                lda \color>>8&$FF
+                sta BORDER_COLOR_G
+                lda \color&$FF
+                sta BORDER_COLOR_B
+
+                pla
+                .endmacro

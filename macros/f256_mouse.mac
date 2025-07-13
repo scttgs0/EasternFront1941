@@ -1,0 +1,18 @@
+
+; SPDX-FileName: f256_mouse.mac
+; SPDX-FileCopyrightText: Copyright 2023, Scott Giese
+; SPDX-License-Identifier: GPL-3.0-or-later
+
+
+frsMouse_off    .macro
+                stz MOUSE_CTRL
+                .endmacro
+
+frsMouse_on     .macro
+                pha
+
+                lda #1
+                sta MOUSE_CTRL
+
+                pla
+                .endmacro

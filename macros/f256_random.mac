@@ -1,0 +1,27 @@
+
+; SPDX-FileName: f256_random.mac
+; SPDX-FileCopyrightText: Copyright 2023, Scott Giese
+; SPDX-License-Identifier: GPL-3.0-or-later
+
+
+frsRandomREG    = RNG_DAT
+
+frsRandomByte   .macro
+                lda frsRandomREG
+                .endmacro
+
+frsRandomByteX  .macro
+                ldx frsRandomREG
+                .endmacro
+
+frsRandomByteY  .macro
+                ldy frsRandomREG
+                .endmacro
+
+frsRandomWord   .macro
+                ; lda frsRandomREG
+                .endmacro
+
+frsRandomClamp  .macro clamp
+                ; TODO:
+                .endmacro

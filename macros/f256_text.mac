@@ -1,0 +1,34 @@
+
+; SPDX-FileName: f256_text.mac
+; SPDX-FileCopyrightText: Copyright 2023, Scott Giese
+; SPDX-License-Identifier: GPL-3.0-or-later
+
+
+frsCursor       .macro
+                lda #\1
+                sta CURSOR_CTRL
+                .endmacro
+
+frsSetCursor    .macro
+                lda #<\1
+                sta CURSOR_X
+                lda #>\1
+                sta CURSOR_X+1
+
+                lda #<\2
+                sta CURSOR_Y
+                lda #>\2
+                sta CURSOR_Y+1
+                .endmacro
+
+frsFont0        .macro
+                lda MASTER_CTRL_H
+                and #~mcFontSet1
+                sta MASTER_CTRL_H
+                .endmacro
+
+frsFont1        .macro
+                lda MASTER_CTRL_H
+                ora #mcFontSet1
+                sta MASTER_CTRL_H
+                .endmacro
