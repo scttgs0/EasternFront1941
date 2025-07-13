@@ -876,6 +876,7 @@ _3              lda LATITUDE
 _match          stx UNITNO
                 lda SWAP,X
                 sta TRNCOD
+
                 rts
                 .endproc
 
@@ -890,6 +891,7 @@ DINGO           .proc
 
                 lda #$FF
                 sta EXEC,X
+
                 rts
                 .endproc
 

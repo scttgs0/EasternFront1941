@@ -402,7 +402,7 @@ _next1          lda Palette,Y
 ; Set it up for tile set 0
 ;======================================
 InitTiles       .proc
-map             = $01_0000
+map             = $01_10CC
 tiles           = $05_0000
 ;---
 

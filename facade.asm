@@ -767,9 +767,6 @@ _nextPlayer     dex
 InitMap         .proc
                 pha
 
-                ;!!.setbank `MAPWDW;
-
-                ;!!.m8i16
                 ldx #0
                 ldy #0
 _nextTile       ;!!lda MAPWDW,Y            ; Get the tile code
